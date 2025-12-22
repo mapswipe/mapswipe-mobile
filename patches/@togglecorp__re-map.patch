@@ -1,0 +1,135 @@
+diff --git a/build/cjs/index.js b/build/cjs/index.js
+index 269ffd22b14cd256b8ff1d5f77bdda9d1e93b756..b81ed98a482600cab9b6f81cb293aeea08ddd067 100644
+--- a/build/cjs/index.js
++++ b/build/cjs/index.js
+@@ -50,8 +50,8 @@ const initialSourceChildState = {
+ const SourceChildContext = /*#__PURE__*/React.createContext(initialSourceChildState);
+ 
+ function isWebglSupported() {
+-  if (window.WebGLRenderingContext) {
+-    const canvas = document.createElement('canvas');
++  if (window?.WebGLRenderingContext) {
++    const canvas = document?.createElement('canvas');
+     try {
+       // Note that { failIfMajorPerformanceCaveat: true } can be passed
+       // as a second argument to canvas.getContext(), causing the check
+@@ -577,8 +577,8 @@ const useDimension = (targetRef, debounceDuration = 200) => {
+       };
+     }
+     addResizeHandler(targetRef, r => {
+-      window.clearTimeout(timeoutRef.current);
+-      timeoutRef.current = window.setTimeout(() => {
++      window?.clearTimeout(timeoutRef.current);
++      timeoutRef.current = window?.setTimeout(() => {
+         const different = !rect
+         // || r.x !== rect.x
+         // || r.y !== rect.y
+@@ -589,19 +589,20 @@ const useDimension = (targetRef, debounceDuration = 200) => {
+       }, debounceDuration);
+     });
+     return () => {
+-      window.clearTimeout(timeoutRef.current);
++      window?.clearTimeout(timeoutRef.current);
+       removeResizeHandler(targetRef);
+     };
+   });
+   return rect;
+ };
+ 
+-const style = {
++const defaultStyle = {
+   padding: 0
+ };
+ function MapContainer(props) {
+   const {
+-    className
++    className,
++    style = defaultStyle,
+   } = props;
+   const {
+     mapContainerRef,
+@@ -1150,7 +1151,7 @@ function MapOrder(props) {
+     }
+ 
+     // NOTE: To ensure layers are mounted, we use setTimeout
+-    timeoutRef.current = window.setTimeout(() => {
++    timeoutRef.current = window?.setTimeout(() => {
+       // NOTE: just to be safe, only try ordering layers that are mounted
+       const validLayerIdentifiers = ordering.filter(layerIdentifier => !!map.getLayer(layerIdentifier));
+       for (let i = 0; i < validLayerIdentifiers.length; i += 1) {
+@@ -1161,7 +1162,7 @@ function MapOrder(props) {
+       }
+     }, 0);
+     return () => {
+-      window.clearTimeout(timeoutRef.current);
++      window?.clearTimeout(timeoutRef.current);
+     };
+   }, [map, ordering]);
+   return null;
+@@ -1246,7 +1247,7 @@ function MapPopup(props) {
+   const [initialCoordinates] = React.useState(coordinates);
+ 
+   // Create popup <div>
+-  const div = React.useMemo(() => document.createElement('div'), []);
++  const div = React.useMemo(() => document?.createElement('div'), []);
+ 
+   // Create mapbox popup and assign to popup <div>
+   React.useEffect(() => {
+diff --git a/build/esm/MapContainer/index.d.ts b/build/esm/MapContainer/index.d.ts
+index a37fffa778b88827283d354417f7755f45ff709c..9c9a67e931b25c43baa71839112af74d03849791 100644
+--- a/build/esm/MapContainer/index.d.ts
++++ b/build/esm/MapContainer/index.d.ts
+@@ -1,6 +1,9 @@
+ import React from 'react';
++import { CSSProperties } from 'react';
++
+ interface Props {
+     className?: string;
++    style?: CSSProperties;
+ }
+ declare function MapContainer(props: Props): React.JSX.Element;
+ export default MapContainer;
+diff --git a/build/esm/MapContainer/index.js b/build/esm/MapContainer/index.js
+index 2d5add99a741108f1d8b6ae6898c0574f45250b0..c79ccbb5cba12b70caa995da2f1fedcc92b39631 100644
+--- a/build/esm/MapContainer/index.js
++++ b/build/esm/MapContainer/index.js
+@@ -2,12 +2,13 @@ import React, { useContext, useEffect } from 'react';
+ import { MapChildContext } from '../context.js';
+ import useDimension from './useDimension.js';
+ 
+-const style = {
++const defaultStyle = {
+   padding: 0
+ };
+ function MapContainer(props) {
+   const {
+-    className
++    className,
++    style = defaultStyle,
+   } = props;
+   const {
+     mapContainerRef,
+diff --git a/build/esm/MapContainer/useDimension.js b/build/esm/MapContainer/useDimension.js
+index d2c943a059a27b0ff126f11f8697557dd60a1f8d..ab7310139dcc7890de900afc2aa829a4b7bfa086 100644
+--- a/build/esm/MapContainer/useDimension.js
++++ b/build/esm/MapContainer/useDimension.js
+@@ -48,8 +48,8 @@ const useDimension = (targetRef, debounceDuration = 200) => {
+       };
+     }
+     addResizeHandler(targetRef, r => {
+-      window.clearTimeout(timeoutRef.current);
+-      timeoutRef.current = window.setTimeout(() => {
++      window?.clearTimeout(timeoutRef.current);
++      timeoutRef.current = window?.setTimeout(() => {
+         const different = !rect
+         // || r.x !== rect.x
+         // || r.y !== rect.y
+@@ -60,7 +60,7 @@ const useDimension = (targetRef, debounceDuration = 200) => {
+       }, debounceDuration);
+     });
+     return () => {
+-      window.clearTimeout(timeoutRef.current);
++      window?.clearTimeout(timeoutRef.current);
+       removeResizeHandler(targetRef);
+     };
+   });

@@ -1,59 +1,89 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { isDefined } from '@togglecorp/fujs';
 import 'react-native-reanimated';
-
-import { useColorScheme } from '@/components/useColorScheme';
+import { User } from 'firebase/auth';
+import { StatusBar } from 'expo-status-bar';
+import { firebaseAuth } from '@/utils/firebase';
+import AuthContext, { AuthContextProps } from '@/contexts/auth';
+import { Stack } from 'expo-router';
+import Page from '@/components/Page';
+import { ActivityIndicator, View } from 'react-native';
+import Text from '@/components/Text';
 
 export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
+    // Catch any errors thrown by the Layout component.
+    ErrorBoundary,
 } from 'expo-router';
 
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
+export default function AppLayout() {
+    const [user, setUser] = useState<User | null | undefined>();
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+    useEffect(() => {
+        const unSubscribe = firebaseAuth.onAuthStateChanged((authUser) => {
+            setUser(authUser);
+        });
 
-export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
-  });
+        return unSubscribe;
+    }, []);
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+    const authContextValue = useMemo<AuthContextProps>(() => {
+        if (user === undefined) {
+            return {
+                authPending: true,
+                isLoggedIn: false,
+                user,
+            }
+        }
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+        if (user === null) {
+            return {
+                authPending: false,
+                isLoggedIn: false,
+                user,
+            }
+        }
+
+        return {
+            authPending: false,
+            isLoggedIn: true,
+            user,
+        }
+    }, [user]);
+
+    if (user === undefined) {
+        return (
+            <Page title="MapSwipe">
+                <View
+                    style={{
+                        flex: 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 10,
+                    }}
+                >
+                    <ActivityIndicator size="large" />
+                    <Text>
+                        Getting things ready...
+                    </Text>
+                </View>
+            </Page>
+        );
     }
-  }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+    const isAuthenticated = isDefined(user);
 
-  return <RootLayoutNav />;
-}
+    return (
+        <AuthContext.Provider value={authContextValue}>
+            <StatusBar style="auto" />
+            <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Protected guard={!isAuthenticated}>
+                    <Stack.Screen name="login" />
+                </Stack.Protected>
+                <Stack.Protected guard={isAuthenticated}>
+                    <Stack.Screen name="(auth)" />
+                </Stack.Protected>
+            </Stack>
+        </AuthContext.Provider>
+    );
 
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
-  );
 }
