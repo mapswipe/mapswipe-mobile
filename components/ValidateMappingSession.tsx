@@ -1,14 +1,15 @@
 import { firebaseRef } from "@/utils/firebase";
 import { FeatureGeoJson, ValidateProject, ValidateTask } from "@/utils/types";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, Button } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { isDefined, isNotDefined } from "@togglecorp/fujs";
 import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
 import BlockListView from "@/components/BlockListView";
 import { inflate } from 'pako';
 import { decode } from 'base-64';
-import MapTile from "./MapTile";
-import InlineListView from "./InlineListView";
+import MapTile from "@/components/MapTile";
+import InlineListView from "@/components/InlineListView";
+import Button from "@/components/Button";
 
 interface Props {
     taskGroupId: string;
@@ -82,23 +83,24 @@ function ValidateMappingSession(props: Props) {
                         tileServer={projectDetails.tileServer}
                     />
                     <InlineListView
+                        spacing="2xs"
                         withCenteredContent
+                    >
+                        {projectDetails.customOptions?.map((option) => (
+                            <Button
+                                key={option.value}
+                                title={option.title}
+                            />
+                        ))}
+                    </InlineListView>
+                    <InlineListView
+                        withCenteredContent
+                        spacing="2xs"
                     >
                         <Button
                             title="Prev"
                             onPress={handlePrevPress}
                         />
-                        <InlineListView
-                            spacing="2xs"
-                            withCenteredContent
-                        >
-                            {projectDetails.customOptions?.map((option) => (
-                                <Button
-                                    key={option.value}
-                                    title={option.title}
-                                />
-                            ))}
-                        </InlineListView>
                         <Button
                             title="Next"
                             onPress={handleNextPress}

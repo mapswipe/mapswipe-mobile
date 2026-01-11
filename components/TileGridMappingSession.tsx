@@ -10,6 +10,7 @@ import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
 import { useMemo } from "react";
 import { firebaseRef } from "@/utils/firebase";
 import { buildTasks } from "@/utils/task";
+import useTheme from "@/hooks/useTheme";
 
 interface Props {
     taskGroupId: string;
@@ -22,7 +23,12 @@ function TileGridMappingSession(props: Props) {
         projectDetails,
     } = props;
 
-    const { width: pageWidth } = useWindowDimensions();
+    const theme = useTheme();
+
+    const {
+        width: pageWidth,
+        height: pageHeight,
+    } = useWindowDimensions();
 
     const taskGroupQuery = useMemo(() => (
         firebaseRef( `v2/groups/${projectDetails.projectId}/${taskGroupId}`)
@@ -72,7 +78,7 @@ function TileGridMappingSession(props: Props) {
         );
     }, [projectDetails, groupDetails]);
 
-    const tileWidth = pageWidth / 2;
+    const tileWidth = Math.min(pageWidth / 2, pageHeight / 4);
 
     return (
         <FlatList
@@ -88,7 +94,7 @@ function TileGridMappingSession(props: Props) {
                             style={{
                                 width: tileWidth,
                                 aspectRatio: 1,
-                                borderColor: 'rgba(255, 255, 255, .1)',
+                                borderColor: theme.mapBoundary,
                                 borderWidth: 1,
                             }}
                         />

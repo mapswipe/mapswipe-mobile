@@ -51,10 +51,10 @@ function InlineListView(props: Props) {
         <View
             style={[
                 spacingStyle,
-                style,
                 styles.inlineListView,
                 withCenteredContent && styles.withCenteredContent,
                 !withoutWrap && styles.withWrap,
+                style,
             ]}
         >
             {children}

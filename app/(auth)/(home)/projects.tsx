@@ -10,36 +10,23 @@ import { Image } from 'expo-image';
 import Text from "@/components/Text";
 import Link from "@/components/Link";
 import InlineListView from "@/components/InlineListView";
+import useTheme from "@/hooks/useTheme";
+import { ICON_SIZE_XL } from "@/constants/dimensions";
 
 const styles = StyleSheet.create({
     projectItem: {
         backgroundColor: '#ffffff',
     },
     projectImage: {
-        width: 120,
-        height: 120,
+        height: ICON_SIZE_XL,
+        aspectRatio: 1,
         borderRadius: 20,
     },
     projectImagePlaceholder: {
-        width: 120,
-        height: 120,
-        backgroundColor: '#a1a1a1',
+        height: ICON_SIZE_XL,
+        aspectRatio: 1,
         borderRadius: 20,
     },
-    projectTitle: {
-        flexGrow: 0,
-        flexShrink: 1,
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    projectDescription: {
-        flexGrow: 0,
-        flexShrink: 1,
-        opacity: 0.5,
-    },
-    projectRegion: {
-        opacity: 0.5,
-    }
 });
 
 
@@ -55,11 +42,13 @@ function Projects() {
 
     const { list: projectList } = useFirebaseDatabaseList<FbProject>({ query: projectsQuery });
 
+    const theme = useTheme();
+
     return (
         <FlatList
             data={projectList}
             keyExtractor={(project) => project.projectId}
-            ItemSeparatorComponent={() => <View style={{ height: 2 }} />}
+            ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: theme.border }} />}
             renderItem={({ item: project }) => (
                 <InlineListView
                     key={project.projectId}
@@ -77,7 +66,10 @@ function Projects() {
                     )}
                     {isNotDefined(project.image) && (
                         <View
-                            style={styles.projectImagePlaceholder}
+                            style={[
+                                styles.projectImagePlaceholder,
+                                { backgroundColor: theme.primaryLight },
+                            ]}
                         />
                     )}
                     <BlockListView
@@ -87,7 +79,7 @@ function Projects() {
                             flexGrow: 1,
                         }}
                     >
-                        <Text style={styles.projectTitle}>
+                        <Text variant="title">
                             {project.projectTopic}
                         </Text>
                         <BlockListView
@@ -97,24 +89,26 @@ function Projects() {
                                 flexGrow: 1,
                             }}
                         >
-                            <Text style={styles.projectRegion}>
+                            <Text variant="description">
                                 {project.projectRegion}
                                 {isDefined(project.projectNumber) ? ` (${project.projectNumber})` : null}
                             </Text>
-                            <Text style={styles.projectRegion}>
+                            <Text variant="description">
                                 {project.requestingOrganisation}
                             </Text>
                         </BlockListView>
-                        <Link
-                            href={{
-                                pathname: '/(auth)/project/[id]',
-                                params: {
-                                    id: project.projectId,
-                                },
-                            }}
-                        >
-                            View details
-                        </Link>
+                        <InlineListView>
+                            <Link
+                                href={{
+                                    pathname: '/(auth)/project/[id]',
+                                    params: {
+                                        id: project.projectId,
+                                    },
+                                }}
+                            >
+                                View details
+                            </Link>
+                        </InlineListView>
                     </BlockListView>
                 </InlineListView>
             )}

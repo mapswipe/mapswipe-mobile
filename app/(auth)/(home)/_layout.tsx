@@ -1,12 +1,16 @@
+import { SPACING_2XS } from '@/constants/dimensions';
+import useTheme from '@/hooks/useTheme';
 import { Tabs } from 'expo-router';
 import { MapPinIcon, UserIcon } from 'phosphor-react-native';
 
 function HomeLayout() {
+    const theme = useTheme();
+
     return (
         <Tabs
             screenOptions={{
                 headerTitleStyle: {
-                    paddingInlineStart: 10,
+                    paddingInlineStart: SPACING_2XS,
                 },
             }}
         >
@@ -18,9 +22,10 @@ function HomeLayout() {
                 name="projects"
                 options={{
                     title: 'Projects',
+                    tabBarActiveTintColor: theme.primaryDark,
                     tabBarIcon: ({ focused, color }) => (
                         <MapPinIcon
-                            color={color}
+                            color={focused ? theme.primary : color}
                             weight={focused ? 'fill' : 'regular'}
                         />
                     ),
@@ -30,9 +35,10 @@ function HomeLayout() {
                 name="profile"
                 options={{
                     title: 'Profile',
+                    tabBarActiveTintColor: theme.primaryDark,
                     tabBarIcon: ({ focused, color }) => (
                         <UserIcon
-                            color={color}
+                            color={focused ? theme.primary : color}
                             weight={focused ? 'fill' : 'regular'}
                         />
                     ),

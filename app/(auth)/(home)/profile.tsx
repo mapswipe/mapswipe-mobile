@@ -1,5 +1,7 @@
 import BlockListView from "@/components/BlockListView";
+import Button from "@/components/Button";
 import Page from "@/components/Page";
+import Text from "@/components/Text";
 import useAuth from "@/hooks/useAuth";
 import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
 import { firebaseAuth, firebaseRef } from "@/utils/firebase";
@@ -7,7 +9,7 @@ import { FbUserUpdateInput } from "@/utils/types";
 import { isDefined } from "@togglecorp/fujs";
 import { Image } from "expo-image";
 import { useMemo } from "react";
-import { Button, Text, View } from "react-native";
+import { View } from "react-native";
 
 function Profile() {
     const { user } = useAuth();

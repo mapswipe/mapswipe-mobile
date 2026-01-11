@@ -41,7 +41,7 @@ function MapTaskGroup() {
             withFullWidthContent
         >
             <BlockListView withPadding>
-                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                <Text variant="title">
                     {projectDetails?.projectInstruction}
                 </Text>
             </BlockListView>

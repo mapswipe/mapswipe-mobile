@@ -3,12 +3,16 @@ import { Pressable } from 'react-native';
 import Text from './Text';
 import InlineListView from './InlineListView';
 import { CaretRightIcon } from 'phosphor-react-native';
+import useTheme from '@/hooks/useTheme';
+import { FONT_SIZE_MD } from '@/constants/dimensions';
 
 function Link(props: LinkProps) {
     const {
         children,
         ...otherProps
     } = props;
+
+    const theme = useTheme();
 
     return (
         <ExpoLink
@@ -20,10 +24,12 @@ function Link(props: LinkProps) {
                     spacing="3xs"
                     withCenteredContent
                     style={{
-                        borderColor: 'blue',
+                        borderColor: theme.primaryDark,
+                        backgroundColor: theme.primary,
                         borderWidth: 1,
                         borderRadius: 20,
                         flexShrink: 0,
+                        flexGrow: 0,
                     }}
                     withPadding
                     withAdditionalInlinePadding
@@ -31,7 +37,7 @@ function Link(props: LinkProps) {
                 >
                     <Text
                         style={{
-                            color: 'blue',
+                            color: theme.textOnPrimary,
                             textTransform: 'uppercase',
                         }}
                     >
@@ -39,9 +45,9 @@ function Link(props: LinkProps) {
                     </Text>
                     <CaretRightIcon
                         style={{
-                            color: 'blue',
+                            color: theme.textOnPrimary,
                         }}
-                        size={14}
+                        size={FONT_SIZE_MD}
                     />
                 </InlineListView>
             </Pressable>

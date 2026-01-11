@@ -1,3 +1,17 @@
+import {
+    SPACING_2XL,
+    SPACING_2XS,
+    SPACING_3XL,
+    SPACING_3XS,
+    SPACING_4XL,
+    SPACING_4XS,
+    SPACING_LG,
+    SPACING_MD,
+    SPACING_NONE,
+    SPACING_SM,
+    SPACING_XL,
+    SPACING_XS,
+} from "@/constants/dimensions";
 import { bound } from "@togglecorp/fujs";
 import { TextStyle, ViewStyle } from "react-native";
 
@@ -38,17 +52,18 @@ export function getOpticallyCorrectedSpacingValue(value: number, mode: SpacingMo
 }
 
 const spacingValues = [
-    0,
-    4,
-    8,
-    12,
-    16,
-    20,
-    24,
-    28,
-    32,
-    36,
-    40,
+    SPACING_NONE,
+    SPACING_4XS,
+    SPACING_3XS,
+    SPACING_2XS,
+    SPACING_XS,
+    SPACING_SM,
+    SPACING_MD,
+    SPACING_LG,
+    SPACING_XL,
+    SPACING_2XL,
+    SPACING_3XL,
+    SPACING_4XL,
 ];
 
 const spacingTypeToStartIndexMap: Record<SpacingType, number> = {
@@ -66,9 +81,9 @@ const spacingTypeToStartIndexMap: Record<SpacingType, number> = {
     '4xl': 11,
 }
 
-export function getSpacingValue(spacing: SpacingType = 'md', offset = 0) {
+export function getSpacingValue(spacingType: SpacingType = 'md', offset = 0) {
     const index = bound(
-        spacingTypeToStartIndexMap[spacing] + offset,
+        spacingTypeToStartIndexMap[spacingType] + offset,
         0,
         spacingValues.length - 1,
     );

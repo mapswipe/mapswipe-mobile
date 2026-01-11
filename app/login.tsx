@@ -15,10 +15,15 @@ function Login() {
 
     const handleLoginPress = useCallback(async () => {
         if (isTruthyString(email) && isTruthyString(password)) {
-            setPending(true);
-            await signInWithEmailAndPassword(firebaseAuth, email, password);
-            setPending(false);
-            router.replace('/');
+            try {
+                setPending(true);
+                await signInWithEmailAndPassword(firebaseAuth, email, password);
+                setPending(false);
+                router.replace('/');
+            } catch (ex) {
+                setPending(false);
+                console.info(ex);
+            }
         }
     }, [email, password]);
 
@@ -42,6 +47,7 @@ function Login() {
                                 placeholder="email"
                                 value={email}
                                 onChangeText={setEmail}
+                                readOnly={pending}
                             />
                         )}
                     />
@@ -55,6 +61,7 @@ function Login() {
                                 placeholder="password"
                                 value={password}
                                 onChangeText={setPassword}
+                                readOnly={pending}
                             />
                         )}
                     />

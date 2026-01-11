@@ -3,7 +3,7 @@ import { useEffect } from "react";
 
 function AuthIndex() {
     useEffect(() => {
-        router.replace('/home/projects');
+        router.replace('/(auth)/(home)/projects');
     }, []);
 
     return null;
