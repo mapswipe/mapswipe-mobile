@@ -5,10 +5,20 @@ import InlineListView from './InlineListView';
 import { CaretRightIcon } from 'phosphor-react-native';
 import useTheme from '@/hooks/useTheme';
 import { FONT_SIZE_MD } from '@/constants/dimensions';
+import { SpacingType } from '@/utils/styles';
 
-function Link(props: LinkProps) {
+interface Props extends LinkProps {
+    withForwardIcon?: boolean;
+    withoutAdditionalPaddding?: boolean;
+    spacing?: SpacingType;
+}
+
+function Link(props: Props) {
     const {
+        withForwardIcon,
         children,
+        withoutAdditionalPaddding,
+        spacing,
         ...otherProps
     } = props;
 
@@ -21,7 +31,8 @@ function Link(props: LinkProps) {
         >
             <Pressable>
                 <InlineListView
-                    spacing="3xs"
+                    spacing={spacing}
+                    spacingOffset={-4}
                     withCenteredContent
                     style={{
                         borderColor: theme.primaryDark,
@@ -32,23 +43,28 @@ function Link(props: LinkProps) {
                         flexGrow: 0,
                     }}
                     withPadding
-                    withAdditionalInlinePadding
+                    withAdditionalInlinePadding={!withoutAdditionalPaddding}
                     withoutOpticalCorrection
                 >
-                    <Text
-                        style={{
-                            color: theme.textOnPrimary,
-                            textTransform: 'uppercase',
-                        }}
-                    >
-                        {children}
-                    </Text>
-                    <CaretRightIcon
-                        style={{
-                            color: theme.textOnPrimary,
-                        }}
-                        size={FONT_SIZE_MD}
-                    />
+                    {typeof children === 'string' && (
+                        <Text
+                            style={{
+                                color: theme.textOnPrimary,
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            {children}
+                        </Text>
+                    )}
+                    {typeof children !== 'string' && children}
+                    {withForwardIcon && (
+                        <CaretRightIcon
+                            style={{
+                                color: theme.textOnPrimary,
+                            }}
+                            size={FONT_SIZE_MD}
+                        />
+                    )}
                 </InlineListView>
             </Pressable>
         </ExpoLink>

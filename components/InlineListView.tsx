@@ -10,6 +10,9 @@ const styles = StyleSheet.create({
     withCenteredContent: {
         justifyContent: 'center',
     },
+    withSpaceBetweenContents: {
+        justifyContent: 'space-between',
+    },
     withWrap: {
         flexWrap: 'wrap',
     },
@@ -23,9 +26,11 @@ interface Props {
     withCenteredContent?: boolean;
     withoutWrap?: boolean;
     withoutOpticalCorrection?: boolean;
+    withSpaceBetweenContents?: boolean;
 
     // FIXME this should not be here
     withAdditionalInlinePadding?: boolean;
+    spacingOffset?: number;
 }
 
 function InlineListView(props: Props) {
@@ -38,10 +43,13 @@ function InlineListView(props: Props) {
         withoutWrap,
         withoutOpticalCorrection,
         withAdditionalInlinePadding,
+        withSpaceBetweenContents,
+        spacingOffset,
     } = props;
 
     const spacingStyle = useSpacingToken({
         spacing,
+        offset: spacingOffset,
         modes: withPadding ? fullSpacings : gapSpacings,
         withoutOpticalCorrection,
         withAdditionalInlinePadding,
@@ -53,6 +61,7 @@ function InlineListView(props: Props) {
                 spacingStyle,
                 styles.inlineListView,
                 withCenteredContent && styles.withCenteredContent,
+                withSpaceBetweenContents && styles.withSpaceBetweenContents,
                 !withoutWrap && styles.withWrap,
                 style,
             ]}

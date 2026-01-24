@@ -9,9 +9,7 @@ function HomeLayout() {
     return (
         <Tabs
             screenOptions={{
-                headerTitleStyle: {
-                    paddingInlineStart: SPACING_2XS,
-                },
+                headerShown: false,
             }}
         >
             <Tabs.Screen

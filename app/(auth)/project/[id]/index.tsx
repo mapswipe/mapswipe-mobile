@@ -3,13 +3,13 @@ import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
 import { firebaseRef } from "@/utils/firebase";
 import { FbProject } from "@/utils/types";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import Text from "@/components/Text";
 import Link from "@/components/Link";
 import { View, StatusBar as NativeStatusBar } from "react-native";
 import { Image } from "expo-image";
 import useTheme from "@/hooks/useTheme";
-import { setStatusBarStyle, StatusBar } from "expo-status-bar";
+import { StatusBar } from "expo-status-bar";
 
 export default function ProjectDetail() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
