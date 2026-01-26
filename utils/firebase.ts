@@ -1,6 +1,8 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import { getDatabase, ref } from 'firebase/database';
+import { Platform } from 'react-native';
 
 // Optionally import the services that you want to use
 // import {...} from 'firebase/firestore';
@@ -19,9 +21,18 @@ const firebaseConfig = {
     // measurementId: 'G-measurement-id',
 };
 
+const getAuthForApp = (app: FirebaseApp) => {
+    if (Platform.OS === 'web') {
+        return getAuth(app);
+    }
+    return initializeAuth(app, {
+        persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+    });
+};
+
 export const firebaseApp = initializeApp(firebaseConfig);
-export const firebaseAuth = getAuth(firebaseApp);
 export const firebaseDatabase = getDatabase(firebaseApp);
+export const firebaseAuth = getAuthForApp(firebaseApp);
 
 export function firebaseRef(path?: string) {
     return ref(firebaseDatabase, path);
