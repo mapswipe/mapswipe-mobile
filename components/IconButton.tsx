@@ -1,9 +1,12 @@
-import { Pressable, PressableProps } from "react-native";
+import { useCallback } from 'react';
+import {
+    Pressable,
+    PressableProps,
+} from 'react-native';
 
-import Icon from "./Icon";
-import { useCallback } from "react";
-import BlockListView from "./BlockListView";
-import Text from "./Text";
+import BlockListView from './BlockListView';
+import Icon from './Icon';
+import Text from './Text';
 
 interface Props<NAME> extends Omit<PressableProps, 'onPress'> {
     name: NAME;
@@ -36,6 +39,7 @@ function IconButton<const NAME>(props: Props<NAME>) {
             withCenteredContent
         >
             <Pressable
+                // eslint-disable-next-line react/jsx-props-no-spreading
                 {...pressableProps}
                 onPress={handlePress}
                 disabled={disabled}

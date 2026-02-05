@@ -84,7 +84,7 @@ const appConfigs = compat.config({
         'react/jsx-props-no-spreading': 'warn',
         'react/style-prop-object': ['error', { allow: ['StatusBar'] }],
         'global-require': 'off',
-        'react-native/no-unused-styles': 'warn',
+        'react-native/no-unused-styles': 'off',
         'react-native/no-inline-styles': 'warn',
         'react-native/no-color-literals': 'off',
     },
@@ -101,7 +101,7 @@ const appConfigs = compat.config({
                             // packages `react` related packages come first
                             ['^react', '^react-native', '^expo', '^@expo', '^@?\\w'],
                             // internal packages
-                            ['^#.+$'],
+                            ['^@/'],
                             // parent imports. Put `..` last
                             // other relative imports. Put same-folder imports and `.` last
                             ['^\\.\\.(?!/?$)', '^\\.\\./?$', '^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
@@ -115,7 +115,14 @@ const appConfigs = compat.config({
     ],
 }).map((conf) => ({
     ...conf,
-    files: ['app/**/*.tsx', 'app/**/*.jsx', 'app/**/*.ts', 'app/**/*.js', 'generated/**/*.ts'],
+    files: [
+        'app/**/*.tsx', 'app/**/*.jsx', 'app/**/*.ts', 'app/**/*.js', 'generated/**/*.ts',
+        'components/**/*.tsx', 'components/**/*.jsx', 'components/**/*.ts', 'components/**/*.js',
+        'contexts/**/*.tsx', 'contexts/**/*.jsx', 'contexts/**/*.ts', 'contexts/**/*.js',
+        'hooks/**/*.tsx', 'hooks/**/*.jsx', 'hooks/**/*.ts', 'hooks/**/*.js',
+        'utils/**/*.tsx', 'utils/**/*.jsx', 'utils/**/*.ts', 'utils/**/*.js',
+        'constants/**/*.tsx', 'constants/**/*.jsx', 'constants/**/*.ts', 'constants/**/*.js',
+    ],
     ignores: [
         "node_modules/",
         ".expo/",

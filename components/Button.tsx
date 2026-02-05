@@ -1,9 +1,15 @@
-import useTheme from "@/hooks/useTheme";
-import { Pressable, PressableProps, Text } from "react-native";
-import InlineListView from "./InlineListView";
-import { useCallback } from "react";
-import Icon from "./Icon";
-import { isDefined } from "@togglecorp/fujs";
+import { useCallback } from 'react';
+import {
+    Pressable,
+    PressableProps,
+    Text,
+} from 'react-native';
+import { isDefined } from '@togglecorp/fujs';
+
+import useTheme from '@/hooks/useTheme';
+
+import Icon from './Icon';
+import InlineListView from './InlineListView';
 
 interface Props<NAME> extends Omit<PressableProps, 'onPress'> {
     name: NAME;
@@ -30,6 +36,7 @@ function Button<const NAME>(props: Props<NAME>) {
 
     return (
         <Pressable
+            // eslint-disable-next-line react/jsx-props-no-spreading
             {...pressableProps}
             onPress={handlePress}
             disabled={disabled}
@@ -53,7 +60,7 @@ function Button<const NAME>(props: Props<NAME>) {
                 {isDefined(iconName) && (
                     <Icon name={iconName} />
                 )}
-                <Text 
+                <Text
                     style={{
                         // color: theme.textOnPrimary,
                         textTransform: 'uppercase',

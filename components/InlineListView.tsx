@@ -1,6 +1,15 @@
-import useSpacingToken from "@/hooks/useSpacingToken";
-import { fullSpacings, gapSpacings, SpacingType } from "@/utils/styles";
-import { StyleSheet, View, ViewStyle } from "react-native";
+import {
+    StyleSheet,
+    View,
+    ViewStyle,
+} from 'react-native';
+
+import useSpacingToken from '@/hooks/useSpacingToken';
+import {
+    fullSpacings,
+    gapSpacings,
+    SpacingType,
+} from '@/utils/styles';
 
 const styles = StyleSheet.create({
     inlineListView: {

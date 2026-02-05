@@ -1,5 +1,6 @@
-import { getThemeColors } from "@/constants/theme";
-import { useColorScheme } from "react-native";
+import { useColorScheme } from 'react-native';
+
+import { getThemeColors } from '@/constants/theme';
 
 function useTheme() {
     const scheme = useColorScheme();

@@ -7,13 +7,13 @@ import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
+import { FbUser } from '@/firebaseGenerated/extended_models';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import {
     firebaseAuth,
     firebaseRef,
 } from '@/utils/firebase';
-import { FbUserUpdateInput } from '@/utils/types';
 
 function Profile() {
     const { user } = useAuth();
@@ -24,10 +24,9 @@ function Profile() {
             : undefined
     ), [user]);
 
-    const { data: userDetails } = useFirebaseDatabase<FbUserUpdateInput>(
+    const { data: userDetails } = useFirebaseDatabase<FbUser>(
         { query: userDetailQuery },
     );
-    console.log('here', userDetails);
 
     return (
         <Page title="Profile">

@@ -75,6 +75,7 @@ function Projects() {
             }}
             data={projectList}
             keyExtractor={(project) => project.projectId}
+            // eslint-disable-next-line react/no-unstable-nested-components
             ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
             renderItem={({ item: project }) => (
                 <BlockListView

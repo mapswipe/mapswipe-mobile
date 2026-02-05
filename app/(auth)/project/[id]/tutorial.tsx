@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -15,6 +16,13 @@ import {
     FbTutorial,
 } from '@/utils/types';
 
+const styles = StyleSheet.create({
+    blockNumber: {
+        width: '100%',
+        height: IMAGE_SIZE_MD,
+    },
+});
+
 function Tutorial() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
 
@@ -26,7 +34,7 @@ function Tutorial() {
 
     const tutorialQuery = useMemo(() => (
         isDefined(projectDetails?.tutorialId)
-            ? firebaseRef(`v2/projects/${projectDetails.tutorialId}`)
+            ? firebaseRef(`v2/projects/${projectDetails?.tutorialId}`)
             : undefined
     ), [projectDetails?.tutorialId]);
 
@@ -64,10 +72,7 @@ function Tutorial() {
                                         return (
                                             <Image
                                                 key={block.blockNumber}
-                                                style={{
-                                                    width: '100%',
-                                                    height: IMAGE_SIZE_MD,
-                                                }}
+                                                style={styles.blockNumber}
                                                 source={block.image}
                                             />
                                         );
@@ -79,6 +84,7 @@ function Tutorial() {
                         ))}
                         {tutorialDetails?.screens?.map((screen, i) => (
                             <BlockListView
+                                // eslint-disable-next-line react/no-array-index-key
                                 key={i}
                                 spacing="3xs"
                             >

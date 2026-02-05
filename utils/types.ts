@@ -174,7 +174,8 @@ export interface FbMappingTaskStreetCreateOnlyInput {
     groupId: string;
 }
 
-/** Represents TILE_MAP_SERVICE mapping group fields that are valid while creating a mapping group */
+/** Represents TILE_MAP_SERVICE mapping group fields
+ * that are valid while creating a mapping group */
 export interface FbMappingGroupTileMapServiceCreateOnlyInput {
     groupId: string;
     xMax: number;
@@ -202,6 +203,7 @@ export interface FbMappingGroupValidateCreateOnlyInput {
 /** Represents VALIDATE mapping task fields that are valid while creating a task */
 export interface FbMappingTaskValidateCreateOnlyInput {
     taskId: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     geojson: Record<string, any>;
 }
 
@@ -529,6 +531,7 @@ export const PROJECT_TYPE_VALIDATE_IMAGE = 10 satisfies FbEnumProjectType;
 
 type BaseProject = FbProjectCreateOnlyInput & FbProjectUpdateInput;
 
+// FIXME: Move these types to firebase
 export type FindProject = BaseProject & FbProjectFindCreateOnlyInput & {
     projectType: typeof PROJECT_TYPE_FIND;
 };
@@ -552,7 +555,6 @@ export type StreetProject = BaseProject & FbProjectStreetCreateOnlyInput & {
 export type ValidateImageProject = BaseProject & FbProjectValidateImageCreateOnlyInput & {
     projectType: typeof PROJECT_TYPE_VALIDATE_IMAGE;
 };
-
 
 export type FbProject = FindProject
 | CompareProject
@@ -578,7 +580,6 @@ export type FbTask = FbMappingTaskCreateOnlyInput
     & FbMappingTaskValidateImageCreateOnlyInput
     & FbMappingTaskStreetCreateOnlyInput;
 
-
 export type TileTask = FbMappingTaskCreateOnlyInput & FbMappingTaskCompareCreateOnlyInput & {
     taskZ: FbProjectFindCreateOnlyInput['zoomLevel'];
 };
@@ -594,4 +595,3 @@ export interface ResultOption {
     label: string;
     color: string;
 }
-

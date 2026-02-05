@@ -1,6 +1,9 @@
 'use dom';
 
-import { lazy, useMemo } from 'react';
+import {
+    lazy,
+    useMemo,
+} from 'react';
 import {
     isNotDefined,
     randomString,
@@ -10,7 +13,7 @@ import { standardizeQuadKey } from '@/utils/geo';
 import { FbObjRasterTileServer } from '@/utils/types';
 
 const MapLazy = lazy(async () => {
-    const mod = await import("@togglecorp/re-map");
+    const mod = await import('@togglecorp/re-map');
     return { default: mod.default };
 });
 
@@ -65,7 +68,7 @@ function BaseMap(props: Props) {
             }],
         };
         return spec;
-    }, [url, credits]);
+    }, [url, credits, tileSize]);
 
     const mapKey = useMemo(() => (
         // FIXME(frozenhelium): map key is added here
@@ -91,4 +94,3 @@ function BaseMap(props: Props) {
 }
 
 export default BaseMap;
-

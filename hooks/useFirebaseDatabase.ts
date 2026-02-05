@@ -1,10 +1,10 @@
 import React from 'react';
-import {
-    Query,
-    onValue,
-    DataSnapshot,
-} from 'firebase/database';
 import { isNotDefined } from '@togglecorp/fujs';
+import {
+    DataSnapshot,
+    onValue,
+    Query,
+} from 'firebase/database';
 
 interface Props {
     query: Query | undefined;

@@ -1,6 +1,13 @@
-import { isFalsyString, isTruthyString } from "@togglecorp/fujs";
-import { StyleSheet, Text, View } from "react-native";
-import BlockListView from "./BlockListView";
+import {
+    StyleSheet,
+    Text,
+} from 'react-native';
+import {
+    isFalsyString,
+    isTruthyString,
+} from '@togglecorp/fujs';
+
+import BlockListView from './BlockListView';
 
 const styles = StyleSheet.create({
     inputContainerLayout: {

@@ -1,6 +1,7 @@
-import { FbObjRasterTileServer } from "@/utils/types";
-import { View } from "react-native";
-import Text from "@/components/Text";
+import { View } from 'react-native';
+
+import Text from '@/components/Text';
+import { FbObjRasterTileServer } from '@/utils/types';
 
 interface Props {
     baseTileServer: FbObjRasterTileServer;

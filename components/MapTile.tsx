@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
     Camera,
     LineLayer,
@@ -6,9 +7,15 @@ import {
     RasterSource,
     ShapeSource,
 } from '@maplibre/maplibre-react-native';
-import { getBbox, standardizeQuadKey } from "@/utils/geo";
-import { isDefined, isNotDefined } from '@togglecorp/fujs';
-import { useMemo } from 'react';
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
+
+import {
+    getBbox,
+    standardizeQuadKey,
+} from '@/utils/geo';
 import { FbObjRasterTileServer } from '@/utils/types';
 
 interface Props {
@@ -22,9 +29,8 @@ function MapTile(props: Props) {
         tileServer,
     } = props;
 
-
     const center = useMemo<[number, number] | undefined>(() => {
-        const bounds = getBbox(geoJson)
+        const bounds = getBbox(geoJson);
 
         if (isNotDefined(bounds)) {
             return undefined;
@@ -56,7 +62,7 @@ function MapTile(props: Props) {
             <RasterSource
                 id="base-raster-source"
                 tileUrlTemplates={[
-                    standardizeQuadKey(tileServer.url)
+                    standardizeQuadKey(tileServer.url),
                 ]}
             >
                 <RasterLayer

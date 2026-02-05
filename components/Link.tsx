@@ -1,11 +1,16 @@
-import { Link as ExpoLink, LinkProps } from 'expo-router';
 import { Pressable } from 'react-native';
-import Text from './Text';
-import InlineListView from './InlineListView';
+import {
+    Link as ExpoLink,
+    LinkProps,
+} from 'expo-router';
 import { CaretRightIcon } from 'phosphor-react-native';
-import useTheme from '@/hooks/useTheme';
+
 import { FONT_SIZE_MD } from '@/constants/dimensions';
+import useTheme from '@/hooks/useTheme';
 import { SpacingType } from '@/utils/styles';
+
+import InlineListView from './InlineListView';
+import Text from './Text';
 
 interface Props extends LinkProps {
     withForwardIcon?: boolean;
@@ -72,5 +77,3 @@ function Link(props: Props) {
 }
 
 export default Link;
-
-

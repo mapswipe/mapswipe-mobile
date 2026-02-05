@@ -4,7 +4,6 @@ import {
     UserIcon,
 } from 'phosphor-react-native';
 
-import { SPACING_2XS } from '@/constants/dimensions';
 import useTheme from '@/hooks/useTheme';
 
 function HomeLayout() {
@@ -25,6 +24,7 @@ function HomeLayout() {
                 options={{
                     title: 'Projects',
                     tabBarActiveTintColor: theme.primaryDark,
+                    // eslint-disable-next-line react/no-unstable-nested-components
                     tabBarIcon: ({ focused, color }) => (
                         <MapPinIcon
                             color={focused ? theme.primary : color}
@@ -38,6 +38,7 @@ function HomeLayout() {
                 options={{
                     title: 'Profile',
                     tabBarActiveTintColor: theme.primaryDark,
+                    // eslint-disable-next-line react/no-unstable-nested-components
                     tabBarIcon: ({ focused, color }) => (
                         <UserIcon
                             color={focused ? theme.primary : color}

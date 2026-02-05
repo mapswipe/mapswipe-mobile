@@ -31,3 +31,6 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Check for unused files
+        run: pnpm lint:unused

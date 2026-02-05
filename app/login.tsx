@@ -31,6 +31,7 @@ function Login() {
                 router.replace('/');
             } catch (ex) {
                 setPending(false);
+                // eslint-disable-next-line no-console
                 console.info(ex);
             }
         }

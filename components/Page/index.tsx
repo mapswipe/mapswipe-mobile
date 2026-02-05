@@ -1,6 +1,5 @@
-import { Text, View, StyleSheet } from "react-native";
-import BlockListView from "../BlockListView";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const styles = StyleSheet.create({
     page: {

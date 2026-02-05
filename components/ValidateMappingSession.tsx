@@ -1,16 +1,41 @@
-import { firebaseRef } from "@/utils/firebase";
-import { FeatureGeoJson, Results, ValidateProject, ValidateTask } from "@/utils/types";
-import { Dispatch, SetStateAction, useCallback, useMemo, useState } from "react";
-import { ActivityIndicator } from "react-native";
-import { isDefined, isNotDefined } from "@togglecorp/fujs";
-import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
-import BlockListView from "@/components/BlockListView";
-import { inflate } from 'pako';
+import {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
+import {
+    ActivityIndicator,
+    StyleSheet,
+} from 'react-native';
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
 import { decode } from 'base-64';
-import MapTile from "@/components/MapTile";
-import InlineListView from "@/components/InlineListView";
-import Button from "@/components/Button";
-import IconButton from "./IconButton";
+import { inflate } from 'pako';
+
+import BlockListView from '@/components/BlockListView';
+import Button from '@/components/Button';
+import InlineListView from '@/components/InlineListView';
+import MapTile from '@/components/MapTile';
+import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import { firebaseRef } from '@/utils/firebase';
+import {
+    FeatureGeoJson,
+    Results,
+    ValidateProject,
+    ValidateTask,
+} from '@/utils/types';
+
+import IconButton from './IconButton';
+
+const styles = StyleSheet.create({
+    loadingContainer: {
+        alignItems: 'center',
+    },
+});
 
 interface Props {
     taskGroupId: string;
@@ -43,14 +68,12 @@ function ValidateMappingSession(props: Props) {
         }
 
         const decodedStr = decode(compressedTasks);
-        const charList = decodedStr.split('').map((splitteStr) => {
-            return splitteStr.charCodeAt(0)
-        })
-        const binaryCompressedTasks = new Uint8Array(charList)
-        const decompressedTasks = inflate(binaryCompressedTasks, { to: 'string' })
+        const charList = decodedStr.split('').map((splitteStr) => splitteStr.charCodeAt(0));
+        const binaryCompressedTasks = new Uint8Array(charList);
+        const decompressedTasks = inflate(binaryCompressedTasks, { to: 'string' });
 
         // FIXME: add schema validation
-        return JSON.parse(decompressedTasks) as unknown[]
+        return JSON.parse(decompressedTasks) as unknown[];
     }, [compressedTasks]);
 
     const currentTask = taskList[currentTaskIndex] as ValidateTask | undefined;
@@ -61,7 +84,7 @@ function ValidateMappingSession(props: Props) {
             (prevTaskIndex) => Math.min(
                 prevTaskIndex + 1,
                 maxTasks,
-            )
+            ),
         );
     }, [maxTasks]);
 
@@ -70,17 +93,17 @@ function ValidateMappingSession(props: Props) {
             (prevTaskIndex) => Math.max(
                 prevTaskIndex - 1,
                 0,
-            )
+            ),
         );
-    }, [maxTasks]);
+    }, []);
 
     const options = projectDetails.customOptions;
 
     const handleAnswerSelect = useCallback((newValue: number) => {
         if (isDefined(currentTask)) {
             onResultsChange((prevResults) => ({
-                    ...prevResults,
-                    [currentTask.taskId]: newValue,
+                ...prevResults,
+                [currentTask.taskId]: newValue,
             }));
         }
     }, [currentTask, onResultsChange]);
@@ -92,7 +115,7 @@ function ValidateMappingSession(props: Props) {
     return (
         <BlockListView withPadding>
             {isNotDefined(currentTask?.geojson) && (
-                <BlockListView style={{ alignItems: 'center' }}>
+                <BlockListView style={styles.loadingContainer}>
                     <ActivityIndicator size="large" />
                 </BlockListView>
             )}
