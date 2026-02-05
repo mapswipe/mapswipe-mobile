@@ -25,7 +25,7 @@ function MapTile(props: Props) {
         <View
             style={{
                 width: '100%',
-                aspectRatio: 0.8,
+                height: '60vh',
             }}
         >
             <BaseMap baseTileServer={tileServer}>

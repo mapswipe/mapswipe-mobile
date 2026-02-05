@@ -586,3 +586,12 @@ export type TileTask = FbMappingTaskCreateOnlyInput & FbMappingTaskCompareCreate
 export type FeatureGeoJson = GeoJSON.FeatureCollection<GeoJSON.Geometry>
     | GeoJSON.Feature<GeoJSON.Geometry>
     | GeoJSON.Geometry;
+
+export type Results = Record<string, number>;
+
+export interface ResultOption {
+    value: number;
+    label: string;
+    color: string;
+}
+

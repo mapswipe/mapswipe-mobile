@@ -1,6 +1,6 @@
 import { firebaseRef } from "@/utils/firebase";
-import { FeatureGeoJson, ValidateProject, ValidateTask } from "@/utils/types";
-import { useCallback, useMemo, useState } from "react";
+import { FeatureGeoJson, Results, ValidateProject, ValidateTask } from "@/utils/types";
+import { Dispatch, SetStateAction, useCallback, useMemo, useState } from "react";
 import { ActivityIndicator } from "react-native";
 import { isDefined, isNotDefined } from "@togglecorp/fujs";
 import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
@@ -10,16 +10,21 @@ import { decode } from 'base-64';
 import MapTile from "@/components/MapTile";
 import InlineListView from "@/components/InlineListView";
 import Button from "@/components/Button";
+import IconButton from "./IconButton";
 
 interface Props {
     taskGroupId: string;
     projectDetails: ValidateProject;
+    onResultsChange: Dispatch<SetStateAction<Results>>;
+    results: Results;
 }
 
 function ValidateMappingSession(props: Props) {
     const {
         taskGroupId,
         projectDetails,
+        results,
+        onResultsChange,
     } = props;
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
@@ -69,6 +74,21 @@ function ValidateMappingSession(props: Props) {
         );
     }, [maxTasks]);
 
+    const options = projectDetails.customOptions;
+
+    const handleAnswerSelect = useCallback((newValue: number) => {
+        if (isDefined(currentTask)) {
+            onResultsChange((prevResults) => ({
+                    ...prevResults,
+                    [currentTask.taskId]: newValue,
+            }));
+        }
+    }, [currentTask, onResultsChange]);
+
+    const selectedValue = isDefined(currentTask)
+        ? results[currentTask.taskId]
+        : undefined;
+
     return (
         <BlockListView withPadding>
             {isNotDefined(currentTask?.geojson) && (
@@ -82,28 +102,30 @@ function ValidateMappingSession(props: Props) {
                         geoJson={currentTask.geojson as FeatureGeoJson}
                         tileServer={projectDetails.tileServer}
                     />
-                    <InlineListView
-                        spacing="2xs"
-                        withCenteredContent
-                    >
-                        {projectDetails.customOptions?.map((option) => (
-                            <Button
+                    <InlineListView withCenteredContent>
+                        {options?.map((option) => (
+                            <IconButton
+                                name={option.value}
                                 key={option.value}
                                 title={option.title}
+                                onPress={handleAnswerSelect}
+                                iconName={option.icon}
+                                tintColor={option.iconColor}
+                                active={selectedValue === option.value}
                             />
                         ))}
                     </InlineListView>
-                    <InlineListView
-                        withCenteredContent
-                        spacing="2xs"
-                    >
+                    <InlineListView withSpaceBetweenContents>
                         <Button
+                            name="prev"
                             title="Prev"
                             onPress={handlePrevPress}
                         />
                         <Button
+                            name="next"
                             title="Next"
                             onPress={handleNextPress}
+                            disabled={isNotDefined(selectedValue)}
                         />
                     </InlineListView>
                 </>

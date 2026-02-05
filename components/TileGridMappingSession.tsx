@@ -2,28 +2,31 @@ import {
     CompletenessProject,
     FbMappingGroupTileMapServiceCreateOnlyInput,
     FindProject,
+    Results,
+    ResultOption,
 } from "@/utils/types";
-import { compareNumber, isDefined, isNotDefined, listToGroupList, mapToList } from "@togglecorp/fujs";
+import { compareNumber, isDefined, isNotDefined, listToGroupList, listToMap, mapToList } from "@togglecorp/fujs";
 import { FlatList, useWindowDimensions, View } from "react-native";
-import { Image } from "expo-image";
 import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
-import { useMemo } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo } from "react";
 import { firebaseRef } from "@/utils/firebase";
 import { buildTasks } from "@/utils/task";
-import useTheme from "@/hooks/useTheme";
+import ImageTile from "./ImageTile";
 
 interface Props {
     taskGroupId: string;
     projectDetails: FindProject | CompletenessProject;
+    onResultsChange: Dispatch<SetStateAction<Results>>;
+    results: Results;
 }
 
 function TileGridMappingSession(props: Props) {
     const {
         taskGroupId,
         projectDetails,
+        results,
+        onResultsChange,
     } = props;
-
-    const theme = useTheme();
 
     const {
         width: pageWidth,
@@ -38,12 +41,63 @@ function TileGridMappingSession(props: Props) {
         query: taskGroupQuery,
     });
 
-    const groupedTasks = useMemo(() => {
+    const options = useMemo<ResultOption[]>(() => ([
+        { value: 0, label: 'No', color: 'transparent' },
+        { value: 1, label: 'Yes', color: 'green' },
+        { value: 2, label: 'Maybe', color: 'yellow' },
+        { value: 3, label: 'Bad Imagery', color: 'red' },
+    ]), []);
+
+
+    const getNextValue = useCallback((value: number | undefined) => {
+        if (isNotDefined(value)) {
+            return options[0].value;
+        }
+
+        const optionIndex = options.findIndex(
+            ({ value: optionValue }) => value === optionValue
+        );
+
+        const nextIndex = optionIndex + 1;
+        if (optionIndex === -1 || nextIndex >= options.length) {
+            return options[0].value;
+        }
+
+        return options[nextIndex].value;
+    }, [options]);
+
+    const optionsByValue = useMemo(() => (
+        listToMap(options, ({ value }) => value)
+    ), [options]);
+
+    const tasks = useMemo(() => {
         if (isNotDefined(groupDetails)) {
             return [];
         }
 
-        const tasks = buildTasks(projectDetails, groupDetails);
+        return buildTasks(projectDetails, groupDetails);
+
+    }, []);
+
+    useEffect(() => {
+        if (isNotDefined(tasks) || tasks.length === 0) {
+            return;
+        }
+
+        onResultsChange(
+            listToMap(
+                tasks,
+                ({ taskId }) => taskId,
+                () => options[0].value,
+            )
+        );
+    }, [tasks, options]);
+
+
+    const groupedTasks = useMemo(() => {
+        if (isNotDefined(tasks) || tasks.length === 0) {
+            return [];
+        }
 
         const sortedTasks = [...tasks].sort(
             (a, b) => compareNumber(a.taskX, b.taskX)
@@ -80,6 +134,13 @@ function TileGridMappingSession(props: Props) {
 
     const tileWidth = Math.min(pageWidth / 2, pageHeight / 4);
 
+    const handleTilePress = useCallback((taskId: string) => {
+        onResultsChange((prevResults) => ({
+            ...prevResults,
+            [taskId]: getNextValue(prevResults[taskId]),
+        }));
+    }, [getNextValue]);
+
     return (
         <FlatList
             key={groupedTasks.length}
@@ -87,18 +148,23 @@ function TileGridMappingSession(props: Props) {
             keyExtractor={(groupedTasks) => groupedTasks.taskX}
             renderItem={({ item: groupedTasks }) => (
                 <View>
-                    {groupedTasks.taskList.map((task) => (
-                        <Image
-                            key={task.taskId}
-                            source={task.url}
-                            style={{
-                                width: tileWidth,
-                                aspectRatio: 1,
-                                borderColor: theme.mapBoundary,
-                                borderWidth: 1,
-                            }}
-                        />
-                    ))}
+                    {groupedTasks.taskList.map((task) => {
+                        const result = results[task.taskId];
+                        const selectedOption = isDefined(result)
+                            ? optionsByValue[result]
+                            : undefined;
+
+                        return (
+                            <ImageTile
+                                key={task.taskId}
+                                taskId={task.taskId}
+                                url={task.url}
+                                width={tileWidth}
+                                tintColor={selectedOption?.color}
+                                onPress={handleTilePress}
+                            />
+                        );
+                    })}
                 </View>
             )}
             horizontal

@@ -16,9 +16,11 @@ import {
     PROJECT_TYPE_STREET,
     PROJECT_TYPE_VALIDATE,
     PROJECT_TYPE_VALIDATE_IMAGE,
+    Results,
 } from "@/utils/types";
 import { useLocalSearchParams } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+
 
 function MapTaskGroup() {
     const {
@@ -34,6 +36,7 @@ function MapTaskGroup() {
     ), [projectId]);
 
     const { data: projectDetails } = useFirebaseDatabase<FbProject>({ query: projectQuery });
+    const [results, setResults] = useState<Results>({});
 
     return (
         <Page
@@ -49,6 +52,8 @@ function MapTaskGroup() {
                 <TileGridMappingSession
                     taskGroupId={taskGroupId}
                     projectDetails={projectDetails}
+                    results={results}
+                    onResultsChange={setResults}
                 />
             )}
             {projectDetails?.projectType === PROJECT_TYPE_COMPARE && (
@@ -61,12 +66,16 @@ function MapTaskGroup() {
                 <ValidateMappingSession
                     taskGroupId={taskGroupId}
                     projectDetails={projectDetails}
+                    results={results}
+                    onResultsChange={setResults}
                 />
             )}
             {projectDetails?.projectType === PROJECT_TYPE_COMPLETENESS && (
                 <TileGridMappingSession
                     taskGroupId={taskGroupId}
                     projectDetails={projectDetails}
+                    results={results}
+                    onResultsChange={setResults}
                 />
             )}
             {projectDetails?.projectType === PROJECT_TYPE_VALIDATE_IMAGE && (
