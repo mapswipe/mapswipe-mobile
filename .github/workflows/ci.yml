@@ -1,0 +1,33 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+      - main
+jobs:
+  lint_typecheck:
+    name: 🚴 Lint + Typecheck 🚴
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck

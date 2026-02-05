@@ -1,9 +1,13 @@
-import Page from "@/components/Page";
-import Text from "@/components/Text";
-import useAuth from "@/hooks/useAuth";
-import { router } from "expo-router";
-import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { useEffect } from 'react';
+import {
+    ActivityIndicator,
+    View,
+} from 'react-native';
+import { router } from 'expo-router';
+
+import Page from '@/components/Page';
+import Text from '@/components/Text';
+import useAuth from '@/hooks/useAuth';
 
 function AppIndex() {
     const {

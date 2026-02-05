@@ -1,7 +1,11 @@
+import { Tabs } from 'expo-router';
+import {
+    MapPinIcon,
+    UserIcon,
+} from 'phosphor-react-native';
+
 import { SPACING_2XS } from '@/constants/dimensions';
 import useTheme from '@/hooks/useTheme';
-import { Tabs } from 'expo-router';
-import { MapPinIcon, UserIcon } from 'phosphor-react-native';
 
 function HomeLayout() {
     const theme = useTheme();

@@ -1,15 +1,19 @@
-import BlockListView from "@/components/BlockListView";
-import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
-import { firebaseRef } from "@/utils/firebase";
-import { FbProject } from "@/utils/types";
-import { useLocalSearchParams } from "expo-router";
-import { useMemo } from "react";
-import Text from "@/components/Text";
-import Link from "@/components/Link";
-import { View, StatusBar as NativeStatusBar } from "react-native";
-import { Image } from "expo-image";
-import useTheme from "@/hooks/useTheme";
-import { StatusBar } from "expo-status-bar";
+import { useMemo } from 'react';
+import {
+    StatusBar as NativeStatusBar,
+    View,
+} from 'react-native';
+import { Image } from 'expo-image';
+import { useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+
+import BlockListView from '@/components/BlockListView';
+import Link from '@/components/Link';
+import Text from '@/components/Text';
+import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import useTheme from '@/hooks/useTheme';
+import { firebaseRef } from '@/utils/firebase';
+import { FbProject } from '@/utils/types';
 
 export default function ProjectDetail() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
@@ -77,4 +81,3 @@ export default function ProjectDetail() {
         </>
     );
 }
-

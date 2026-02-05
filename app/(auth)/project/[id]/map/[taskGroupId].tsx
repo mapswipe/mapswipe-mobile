@@ -1,13 +1,19 @@
-import BlockListView from "@/components/BlockListView";
-import CompareMappingSession from "@/components/CompareMappingSession";
-import Page from "@/components/Page";
-import StreetMappingSession from "@/components/StreetMappingSession";
-import Text from "@/components/Text";
-import TileGridMappingSession from "@/components/TileGridMappingSession";
-import ValidateImageMappingSession from "@/components/ValidateImageMappingSession";
-import ValidateMappingSession from "@/components/ValidateMappingSession";
-import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
-import { firebaseRef } from "@/utils/firebase";
+import {
+    useMemo,
+    useState,
+} from 'react';
+import { useLocalSearchParams } from 'expo-router';
+
+import BlockListView from '@/components/BlockListView';
+import CompareMappingSession from '@/components/CompareMappingSession';
+import Page from '@/components/Page';
+import StreetMappingSession from '@/components/StreetMappingSession';
+import Text from '@/components/Text';
+import TileGridMappingSession from '@/components/TileGridMappingSession';
+import ValidateImageMappingSession from '@/components/ValidateImageMappingSession';
+import ValidateMappingSession from '@/components/ValidateMappingSession';
+import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import { firebaseRef } from '@/utils/firebase';
 import {
     FbProject,
     PROJECT_TYPE_COMPARE,
@@ -17,10 +23,7 @@ import {
     PROJECT_TYPE_VALIDATE,
     PROJECT_TYPE_VALIDATE_IMAGE,
     Results,
-} from "@/utils/types";
-import { useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
-
+} from '@/utils/types';
 
 function MapTaskGroup() {
     const {

@@ -1,12 +1,21 @@
-import BlockListView from "@/components/BlockListView";
-import InputContainerLayout from "@/components/InputContainerLayout";
-import Page from "@/components/Page";
-import { firebaseAuth } from "@/utils/firebase";
-import { isTruthyString } from "@togglecorp/fujs";
-import { router } from "expo-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { useCallback, useState } from "react";
-import { Button, Text, TextInput, View } from "react-native";
+import {
+    useCallback,
+    useState,
+} from 'react';
+import {
+    Button,
+    Text,
+    TextInput,
+    View,
+} from 'react-native';
+import { router } from 'expo-router';
+import { isTruthyString } from '@togglecorp/fujs';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+
+import BlockListView from '@/components/BlockListView';
+import InputContainerLayout from '@/components/InputContainerLayout';
+import Page from '@/components/Page';
+import { firebaseAuth } from '@/utils/firebase';
 
 function Login() {
     const [email, setEmail] = useState<string>();

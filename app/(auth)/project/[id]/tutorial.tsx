@@ -1,15 +1,19 @@
-import BlockListView from "@/components/BlockListView";
-import Page from "@/components/Page";
-import Text from "@/components/Text";
-import { IMAGE_SIZE_MD } from "@/constants/dimensions";
-import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
-import { firebaseRef } from "@/utils/firebase";
-import { FbProject, FbTutorial } from "@/utils/types";
-import { isDefined } from "@togglecorp/fujs";
-import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { useMemo } from "react";
+import { useMemo } from 'react';
+import { Image } from 'expo-image';
+import { useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { isDefined } from '@togglecorp/fujs';
+
+import BlockListView from '@/components/BlockListView';
+import Page from '@/components/Page';
+import Text from '@/components/Text';
+import { IMAGE_SIZE_MD } from '@/constants/dimensions';
+import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import { firebaseRef } from '@/utils/firebase';
+import {
+    FbProject,
+    FbTutorial,
+} from '@/utils/types';
 
 function Tutorial() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
@@ -48,7 +52,7 @@ function Tutorial() {
                                     {page.title}
                                 </Text>
                                 {page.blocks?.map((block) => {
-                                    if(isDefined(block.textDescription)) {
+                                    if (isDefined(block.textDescription)) {
                                         return (
                                             <Text key={block.blockNumber}>
                                                 {block.textDescription}
@@ -56,7 +60,7 @@ function Tutorial() {
                                         );
                                     }
 
-                                    if(isDefined(block.image)) {
+                                    if (isDefined(block.image)) {
                                         return (
                                             <Image
                                                 key={block.blockNumber}

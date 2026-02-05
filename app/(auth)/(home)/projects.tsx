@@ -1,19 +1,31 @@
-import { useMemo } from "react";
-import { View, StyleSheet, FlatList } from "react-native";
+import { useMemo } from 'react';
+import {
+    FlatList,
+    StyleSheet,
+    View,
+} from 'react-native';
 import { Image } from 'expo-image';
-import { equalTo, limitToFirst, orderByChild, query } from "firebase/database";
-import { ArrowRightIcon } from "phosphor-react-native";
-import { isDefined, isNotDefined } from "@togglecorp/fujs";
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
+import {
+    equalTo,
+    limitToFirst,
+    orderByChild,
+    query,
+} from 'firebase/database';
+import { ArrowRightIcon } from 'phosphor-react-native';
 
-import BlockListView from "@/components/BlockListView";
-import Text from "@/components/Text";
-import Link from "@/components/Link";
-import InlineListView from "@/components/InlineListView";
-import useFirebaseDatabaseList from "@/hooks/useFirebaseDatabaseList";
-import useTheme from "@/hooks/useTheme";
-import { firebaseRef } from "@/utils/firebase";
-import { FbProject } from "@/utils/types";
-import { ICON_SIZE_XL } from "@/constants/dimensions";
+import BlockListView from '@/components/BlockListView';
+import InlineListView from '@/components/InlineListView';
+import Link from '@/components/Link';
+import Text from '@/components/Text';
+import { ICON_SIZE_XL } from '@/constants/dimensions';
+import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
+import useTheme from '@/hooks/useTheme';
+import { firebaseRef } from '@/utils/firebase';
+import { FbProject } from '@/utils/types';
 
 const styles = StyleSheet.create({
     projectItem: {
@@ -40,7 +52,6 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 20,
     },
 });
-
 
 function Projects() {
     const projectsQuery = useMemo(() => (

@@ -1,14 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
-import { isDefined } from '@togglecorp/fujs';
 import 'react-native-reanimated';
-import { User } from 'firebase/auth';
-import { StatusBar } from 'expo-status-bar';
-import { firebaseAuth } from '@/utils/firebase';
-import AuthContext, { AuthContextProps } from '@/contexts/auth';
+
+import {
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
+import {
+    ActivityIndicator,
+    View,
+} from 'react-native';
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { isDefined } from '@togglecorp/fujs';
+import { User } from 'firebase/auth';
+
 import Page from '@/components/Page';
-import { ActivityIndicator, View } from 'react-native';
 import Text from '@/components/Text';
+import AuthContext, { AuthContextProps } from '@/contexts/auth';
+import { firebaseAuth } from '@/utils/firebase';
 
 export {
     // Catch any errors thrown by the Layout component.
@@ -32,7 +41,7 @@ export default function AppLayout() {
                 authPending: true,
                 isLoggedIn: false,
                 user,
-            }
+            };
         }
 
         if (user === null) {
@@ -40,14 +49,14 @@ export default function AppLayout() {
                 authPending: false,
                 isLoggedIn: false,
                 user,
-            }
+            };
         }
 
         return {
             authPending: false,
             isLoggedIn: true,
             user,
-        }
+        };
     }, [user]);
 
     if (user === undefined) {
@@ -85,5 +94,4 @@ export default function AppLayout() {
             </Stack>
         </AuthContext.Provider>
     );
-
 }
