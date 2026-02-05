@@ -1,4 +1,8 @@
 nodeLinker: hoisted
-
 patchedDependencies:
   '@togglecorp/re-map': patches/@togglecorp__re-map.patch
+
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - '!firebase/functions'  # Explicitly exclude Firebase functions
