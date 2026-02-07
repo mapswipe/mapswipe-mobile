@@ -13,6 +13,8 @@
         "eslint-plugin-simple-import-sort",
         // FIXME: Remove this after type fixes are made
         "firebase-admin",
+        // FIXME: Remove this after type fixes are made
+        "expo-splash-screen",
         "@typescript-eslint/eslint-plugin"
     ],
     "ignoreExportsUsedInFile": true,
