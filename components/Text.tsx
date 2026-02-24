@@ -56,11 +56,11 @@ function Text(props: Props) {
     return (
         <NativeText
             style={[
-                style,
                 variant === 'heading' && styles.heading,
                 variant === 'title' && styles.title,
                 variant === 'label' && styles.label,
                 variant === 'description' && styles.description,
+                style,
             ]}
         >
             {children}

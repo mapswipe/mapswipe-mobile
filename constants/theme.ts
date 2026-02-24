@@ -1,16 +1,13 @@
 export type AppTheme = {
     // Brand
-    primary: string;
-    primaryLight: string;
-    primaryDark: string;
-    secondary: string;
-    secondaryLight: string;
-    secondaryDark: string;
+    primaryBlue: string;
+    primaryGreen: string;
+    primaryRed: string;
 
-    // UI surfaces
+    // Surfaces
     background: string;
-    surface: string;
-    surfaceMuted: string;
+    backgroundBrand: string;
+    backgroundMuted: string;
     card: string;
     border: string;
     divider: string;
@@ -21,11 +18,15 @@ export type AppTheme = {
     textMuted: string;
     textOnPrimary: string;
     textOnSecondary: string;
+    textOnBrand: string;
 
     // Feedback
     success: string;
+    successText: string;
     warning: string;
+    warningText: string;
     error: string;
+    errorText: string;
     info: string;
 
     // MapSwipe-specific states
@@ -33,89 +34,80 @@ export type AppTheme = {
     mapUncertain: string;
     mapRejected: string;
     mapBoundary: string;
-
     // Misc
-    overlay: string; // for modals / scrims
+    overlay: string;
 };
 
 export const lightTheme: AppTheme = {
     // Brand
-    primary: '#23085A',
-    primaryLight: '#4A2B8C',
-    primaryDark: '#17003D',
-    secondary: '#F59E0B',
-    secondaryLight: '#FCD34D',
-    secondaryDark: '#B45309',
-
-    // UI surfaces
-    background: '#F9FAFB',
-    surface: '#FFFFFF',
-    surfaceMuted: '#F3F4F6',
+    primaryBlue: '#0D1949',
+    primaryGreen: '#32A929',
+    primaryRed: '#E61C1C',
+    // Surfaces
+    background: '#F8FAFC',
+    backgroundBrand: '#0D1949',
+    backgroundMuted: '#F1F5F9',
     card: '#FFFFFF',
-    border: '#E5E7EB',
-    divider: '#E5E7EB',
-
+    border: '#E2E8F0',
+    divider: '#E2E8F0',
     // Text
-    textPrimary: '#111827',
-    textSecondary: '#4B5563',
-    textMuted: '#9CA3AF',
+    textPrimary: '#0F172A',
+    textSecondary: '#475569',
+    textMuted: '#94A3B8',
     textOnPrimary: '#FFFFFF',
-    textOnSecondary: '#111827',
-
+    textOnSecondary: '#FFFFFF',
+    textOnBrand: '#FFFFFF',
     // Feedback
-    success: '#16A34A',
+    success: '#32A929',
+    successText: '#FFFFFF',
     warning: '#F59E0B',
-    error: '#DC2626',
+    warningText: '#0F172A',
+    error: '#E61C1C',
+    errorText: '#FFFFFF',
     info: '#2563EB',
-
     // MapSwipe-specific states
     mapSelection: '#22C55E',
     mapUncertain: '#3B82F6',
     mapRejected: '#EF4444',
     mapBoundary: '#9CA3AF',
-
     // Misc
-    overlay: 'rgba(17, 24, 39, 0.45)', // slate-900-ish
+    overlay: 'rgba(17, 24, 39, 0.45)',
 };
 
 export const darkTheme: AppTheme = {
-    // Brand (keep consistent)
-    primary: '#9F7AEA', // Brighter indigo for dark surfaces (accessible)
-    primaryLight: '#C4B5FD',
-    primaryDark: '#6D28D9',
-    secondary: '#FBBF24', // Amber tuned for dark mode
-    secondaryLight: '#FDE68A',
-    secondaryDark: '#D97706',
-
-    // UI surfaces
-    background: '#0B1220',
-    surface: '#121B2E',
-    surfaceMuted: '#18233A',
-    card: '#121B2E',
-    border: '#26334D',
-    divider: '#26334D',
-
+    // Brand
+    primaryBlue: '#0D1949',
+    primaryGreen: '#32A929',
+    primaryRed: '#E61C1C',
+    // Surfaces
+    background: '#020617',
+    backgroundBrand: '#0D1949',
+    backgroundMuted: '#1E293B',
+    card: '#0F172A',
+    border: '#1E293B',
+    divider: '#1E293B',
     // Text
     textPrimary: '#F8FAFC',
-    textSecondary: '#CBD5E1',
-    textMuted: '#94A3B8',
-    textOnPrimary: '#0B1220',
-    textOnSecondary: '#0B1220',
-
-    // Feedback (slightly brighter for dark)
-    success: '#22C55E',
+    textSecondary: '#CBD5F5',
+    textMuted: '#64748B',
+    textOnPrimary: '#FFFFFF',
+    textOnSecondary: '#FFFFFF',
+    textOnBrand: '#FFFFFF',
+    // Feedback
+    success: '#32A929',
+    successText: '#052E16',
     warning: '#FBBF24',
-    error: '#F87171',
-    info: '#60A5FA',
-
-    // MapSwipe-specific states (ensure pop on satellite imagery)
-    mapSelection: '#34D399',
-    mapUncertain: '#60A5FA',
-    mapRejected: '#FB7185',
-    mapBoundary: '#94A3B8',
-
+    warningText: '#422006',
+    error: '#E61C1C',
+    errorText: '#450A0A',
+    info: '#3B82F6',
+    // MapSwipe-specific states
+    mapSelection: '#22C55E',
+    mapUncertain: '#3B82F6',
+    mapRejected: '#EF4444',
+    mapBoundary: '#9CA3AF',
     // Misc
-    overlay: 'rgba(2, 6, 23, 0.65)', // near-slate-950
+    overlay: 'rgba(17, 24, 39, 0.45)',
 };
 
 export function getThemeColors(colorScheme: 'light' | 'dark' = 'light') {

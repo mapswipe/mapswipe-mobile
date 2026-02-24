@@ -29,6 +29,7 @@ import {
     ValidateTask,
 } from '@/utils/types';
 
+import { type IconName } from './Icon';
 import IconButton from './IconButton';
 
 const styles = StyleSheet.create({
@@ -132,7 +133,8 @@ function ValidateMappingSession(props: Props) {
                                 key={option.value}
                                 title={option.title}
                                 onPress={handleAnswerSelect}
-                                iconName={option.icon}
+                                // FIXME: No casting
+                                iconName={option.icon as IconName}
                                 tintColor={option.iconColor}
                                 active={selectedValue === option.value}
                             />

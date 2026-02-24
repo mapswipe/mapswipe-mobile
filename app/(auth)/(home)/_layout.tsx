@@ -23,11 +23,11 @@ function HomeLayout() {
                 name="projects"
                 options={{
                     title: 'Projects',
-                    tabBarActiveTintColor: theme.primaryDark,
+                    tabBarActiveTintColor: theme.primaryBlue,
                     // eslint-disable-next-line react/no-unstable-nested-components
                     tabBarIcon: ({ focused, color }) => (
                         <MapPinIcon
-                            color={focused ? theme.primary : color}
+                            color={focused ? theme.primaryBlue : color}
                             weight={focused ? 'fill' : 'regular'}
                         />
                     ),
@@ -37,11 +37,11 @@ function HomeLayout() {
                 name="profile"
                 options={{
                     title: 'Profile',
-                    tabBarActiveTintColor: theme.primaryDark,
+                    tabBarActiveTintColor: theme.primaryBlue,
                     // eslint-disable-next-line react/no-unstable-nested-components
                     tabBarIcon: ({ focused, color }) => (
                         <UserIcon
-                            color={focused ? theme.primary : color}
+                            color={focused ? theme.primaryBlue : color}
                             weight={focused ? 'fill' : 'regular'}
                         />
                     ),

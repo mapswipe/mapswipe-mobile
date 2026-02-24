@@ -27,10 +27,10 @@ const styles = StyleSheet.create({
     },
 });
 
-interface Props {
+export interface Props {
     children: React.ReactNode;
     spacing?: SpacingType;
-    style?: ViewStyle;
+    style?: ViewStyle | ViewStyle[];
     withPadding?: boolean;
     withCenteredContent?: boolean;
     withoutWrap?: boolean;
@@ -72,7 +72,7 @@ function InlineListView(props: Props) {
                 withCenteredContent && styles.withCenteredContent,
                 withSpaceBetweenContents && styles.withSpaceBetweenContents,
                 !withoutWrap && styles.withWrap,
-                style,
+                ...(Array.isArray(style) ? style : [style]),
             ]}
         >
             {children}

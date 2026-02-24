@@ -3,8 +3,7 @@ import {
     useState,
 } from 'react';
 import {
-    Button,
-    Text,
+    StyleSheet,
     TextInput,
     View,
 } from 'react-native';
@@ -13,9 +12,22 @@ import { isTruthyString } from '@togglecorp/fujs';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
 import BlockListView from '@/components/BlockListView';
+import Button from '@/components/Button';
 import InputContainerLayout from '@/components/InputContainerLayout';
 import Page from '@/components/Page';
+import Text from '@/components/Text';
+import { type AppTheme } from '@/constants/theme';
+import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseAuth } from '@/utils/firebase';
+
+const createStyles = (theme: AppTheme) => StyleSheet.create({
+    page: {
+        backgroundColor: theme.backgroundBrand,
+    },
+    heading: {
+        color: theme.textOnBrand,
+    },
+});
 
 function Login() {
     const [email, setEmail] = useState<string>();
@@ -37,11 +49,19 @@ function Login() {
         }
     }, [email, password]);
 
+    const styles = useThemedStyles(createStyles);
+
     return (
-        <Page title="Login">
+        <Page
+            title="Login"
+            style={styles.page}
+        >
             <BlockListView withPadding>
                 <View>
-                    <Text style={{ fontSize: 24, fontWeight: 'bold' }}>
+                    <Text
+                        style={styles.heading}
+                        variant="heading"
+                    >
                         Welcome to MapSwipe!
                     </Text>
                 </View>
@@ -77,9 +97,12 @@ function Login() {
                     />
                 </BlockListView>
                 <Button
+                    name={undefined}
                     onPress={handleLoginPress}
                     title="login"
                     disabled={pending}
+                    colorVariant="primaryRed"
+                    styleVariant="filled"
                 />
             </BlockListView>
         </Page>

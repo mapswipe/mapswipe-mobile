@@ -21,3 +21,8 @@ export const FONT_SIZE_2XL = 24;
 export const FONT_SIZE_3XL = 30;
 
 export const IMAGE_SIZE_MD = 200;
+
+export const BORDER_RADIUS_SM = 10;
+export const BORDER_RADIUS_MD = 20;
+export const BORDER_RADIUS_LG = 30;
+export const BORDER_RADIUS_XL = 40;

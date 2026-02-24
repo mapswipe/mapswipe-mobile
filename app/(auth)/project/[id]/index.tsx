@@ -23,7 +23,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         top: 0,
         width: '100%',
         height: NativeStatusBar.currentHeight,
-        backgroundColor: theme.primaryDark,
+        backgroundColor: theme.primaryBlue,
         opacity: 0.33,
         zIndex: 1,
     },

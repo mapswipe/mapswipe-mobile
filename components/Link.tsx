@@ -32,6 +32,7 @@ function Link(props: Props) {
     return (
         <ExpoLink
             asChild
+            // eslint-disable-next-line react/jsx-props-no-spreading
             {...otherProps}
         >
             <Pressable>
@@ -40,8 +41,8 @@ function Link(props: Props) {
                     spacingOffset={-4}
                     withCenteredContent
                     style={{
-                        borderColor: theme.primaryDark,
-                        backgroundColor: theme.primary,
+                        borderColor: theme.primaryBlue,
+                        backgroundColor: theme.primaryBlue,
                         borderWidth: 1,
                         borderRadius: 20,
                         flexShrink: 0,

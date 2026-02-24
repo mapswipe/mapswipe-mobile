@@ -5,14 +5,14 @@ import {
 } from 'react-native';
 
 import BlockListView from './BlockListView';
-import Icon from './Icon';
+import Icon, { type IconName } from './Icon';
 import Text from './Text';
 
 interface Props<NAME> extends Omit<PressableProps, 'onPress'> {
     name: NAME;
     title?: string;
     onPress?: (name: NAME) => void;
-    iconName: string;
+    iconName: IconName;
     tintColor?: string;
     active?: boolean;
 }

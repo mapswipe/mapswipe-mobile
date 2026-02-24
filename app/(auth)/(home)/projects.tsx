@@ -66,6 +66,7 @@ function Projects() {
     const { list: projectList } = useFirebaseDatabaseList<FbProject>({ query: projectsQuery });
 
     const theme = useTheme();
+    console.log('here', projectList);
 
     return (
         <FlatList
@@ -93,7 +94,7 @@ function Projects() {
                         <View
                             style={[
                                 styles.projectImagePlaceholder,
-                                { backgroundColor: theme.primaryLight },
+                                { backgroundColor: theme.backgroundMuted },
                             ]}
                         />
                     )}

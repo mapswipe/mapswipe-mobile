@@ -29,7 +29,7 @@ import {
     XIcon,
 } from 'phosphor-react-native';
 
-type IconName =
+export type IconName =
 | 'add-outline'
 | 'alert-outline'
 | 'ban-outline'
@@ -99,7 +99,7 @@ const iconMap: Record<IconName, PhosphorIcon> = {
 };
 
 interface Props extends IconProps {
-    name: string;
+    name: IconName;
 }
 
 function Icon(props: Props) {
@@ -108,7 +108,7 @@ function Icon(props: Props) {
         ...phosphorIconProps
     } = props;
 
-    const name = nameFromProps as IconName;
+    const name = nameFromProps;
 
     const IconComponent = iconMap[name];
 
