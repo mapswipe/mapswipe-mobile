@@ -13,6 +13,8 @@ export const SPACING_4XL = 44;
 
 export const ICON_SIZE_XL = 120;
 
+export const FONT_SIZE_2XS = 10;
+export const FONT_SIZE_XS = 12;
 export const FONT_SIZE_SM = 14;
 export const FONT_SIZE_MD = 16;
 export const FONT_SIZE_LG = 18;

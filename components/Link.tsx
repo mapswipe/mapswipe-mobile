@@ -1,78 +1,45 @@
-import { Pressable } from 'react-native';
 import {
     Link as ExpoLink,
     LinkProps,
 } from 'expo-router';
-import { CaretRightIcon } from 'phosphor-react-native';
 
-import { FONT_SIZE_MD } from '@/constants/dimensions';
-import useTheme from '@/hooks/useTheme';
-import { SpacingType } from '@/utils/styles';
+import ButtonLayout, { type ButtonLayoutProps } from './ButtonLayout';
 
-import InlineListView from './InlineListView';
-import Text from './Text';
-
-interface Props extends LinkProps {
-    withForwardIcon?: boolean;
-    withoutAdditionalPaddding?: boolean;
-    spacing?: SpacingType;
-}
+type Props = LinkProps & ButtonLayoutProps;
 
 function Link(props: Props) {
     const {
-        withForwardIcon,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        onPress,
         children,
-        withoutAdditionalPaddding,
-        spacing,
+        colorVariant,
+        styleVariant,
+        disabled,
+        title,
+        fullWidth = false,
+        iconName,
+        href,
         ...otherProps
     } = props;
-
-    const theme = useTheme();
 
     return (
         <ExpoLink
             asChild
+            disabled={disabled}
+            href={href}
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...otherProps}
         >
-            <Pressable>
-                <InlineListView
-                    spacing={spacing}
-                    spacingOffset={-4}
-                    withCenteredContent
-                    style={{
-                        borderColor: theme.primaryBlue,
-                        backgroundColor: theme.primaryBlue,
-                        borderWidth: 1,
-                        borderRadius: 20,
-                        flexShrink: 0,
-                        flexGrow: 0,
-                    }}
-                    withPadding
-                    withAdditionalInlinePadding={!withoutAdditionalPaddding}
-                    withoutOpticalCorrection
-                >
-                    {typeof children === 'string' && (
-                        <Text
-                            style={{
-                                color: theme.textOnPrimary,
-                                textTransform: 'uppercase',
-                            }}
-                        >
-                            {children}
-                        </Text>
-                    )}
-                    {typeof children !== 'string' && children}
-                    {withForwardIcon && (
-                        <CaretRightIcon
-                            style={{
-                                color: theme.textOnPrimary,
-                            }}
-                            size={FONT_SIZE_MD}
-                        />
-                    )}
-                </InlineListView>
-            </Pressable>
+            <ButtonLayout
+                colorVariant={colorVariant}
+                styleVariant={styleVariant}
+                disabled={disabled}
+                title={title}
+                fullWidth={fullWidth}
+                iconName={iconName}
+            >
+                {children}
+            </ButtonLayout>
         </ExpoLink>
     );
 }

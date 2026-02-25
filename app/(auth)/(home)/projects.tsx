@@ -15,7 +15,6 @@ import {
     orderByChild,
     query,
 } from 'firebase/database';
-import { ArrowRightIcon } from 'phosphor-react-native';
 
 import BlockListView from '@/components/BlockListView';
 import InlineListView from '@/components/InlineListView';
@@ -66,7 +65,6 @@ function Projects() {
     const { list: projectList } = useFirebaseDatabaseList<FbProject>({ query: projectsQuery });
 
     const theme = useTheme();
-    console.log('here', projectList);
 
     return (
         <FlatList
@@ -115,11 +113,10 @@ function Projects() {
                                     id: project.projectId,
                                 },
                             }}
-                            withoutAdditionalPaddding
-                            spacing="sm"
-                        >
-                            <ArrowRightIcon style={{ color: theme.textOnPrimary }} />
-                        </Link>
+                            title="Go to project"
+                            styleVariant="underline"
+                            colorVariant="primaryBlue"
+                        />
                     </InlineListView>
                 </BlockListView>
             )}

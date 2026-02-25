@@ -12,12 +12,12 @@ import BlockListView from './BlockListView';
 const styles = StyleSheet.create({
     inputContainerLayout: {
         flexGrow: 1,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#3e466d',
         padding: 14,
-        borderRadius: 10,
+        borderRadius: 6,
     },
     label: {
-        color: '#717171',
+        color: '#ffffff',
         textTransform: 'uppercase',
         fontSize: 10,
     },

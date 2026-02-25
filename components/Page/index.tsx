@@ -1,4 +1,5 @@
 import {
+    ScrollView,
     StyleSheet,
     ViewStyle,
 } from 'react-native';
@@ -7,10 +8,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
+type Variant = 'normal' | 'brand';
+
+const createStyles = (theme: AppTheme, { variant }: { variant: Variant }) => StyleSheet.create({
     page: {
         flex: 1,
-        backgroundColor: theme.background,
+        backgroundColor: variant === 'brand' ? theme.backgroundBrand : theme.background,
     },
 });
 
@@ -18,7 +21,7 @@ interface Props {
     title: string;
     style?: ViewStyle,
     children: React.ReactNode;
-    withFullWidthContent?: boolean;
+    variant?: 'normal' | 'brand';
 }
 
 function Page(props: Props) {
@@ -26,10 +29,10 @@ function Page(props: Props) {
         title,
         children,
         style,
-        withFullWidthContent,
+        variant = 'normal',
     } = props;
 
-    const styles = useThemedStyles(createStyles);
+    const styles = useThemedStyles(createStyles, { variant });
 
     return (
         <SafeAreaView
@@ -38,7 +41,9 @@ function Page(props: Props) {
                 style,
             ]}
         >
-            {children}
+            <ScrollView>
+                {children}
+            </ScrollView>
         </SafeAreaView>
     );
 }

@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import BlockListView from '@/components/BlockListView';
 import Link from '@/components/Link';
+import Page from '@/components/Page';
 import Text from '@/components/Text';
 import { type AppTheme } from '@/constants/theme';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
@@ -52,7 +53,7 @@ export default function ProjectDetail() {
     const { data: project } = useFirebaseDatabase<FbProject>({ query: projectQuery });
 
     return (
-        <>
+        <Page title={project?.name ?? 'Project'}>
             <StatusBar style="inverted" />
             <BlockListView>
                 <View
@@ -78,9 +79,9 @@ export default function ProjectDetail() {
                                 id: projectId,
                             },
                         }}
-                    >
-                        Start tutorial
-                    </Link>
+                        colorVariant="primaryGreen"
+                        title="Start tutorial"
+                    />
                     <Link
                         href={{
                             pathname: '/project/[id]/map',
@@ -88,11 +89,10 @@ export default function ProjectDetail() {
                                 id: projectId,
                             },
                         }}
-                    >
-                        Map now
-                    </Link>
+                        title="Map now"
+                    />
                 </BlockListView>
             </BlockListView>
-        </>
+        </Page>
     );
 }

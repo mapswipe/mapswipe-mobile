@@ -2,30 +2,41 @@ import {
     useCallback,
     useState,
 } from 'react';
-import {
-    StyleSheet,
-    TextInput,
-    View,
-} from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { isTruthyString } from '@togglecorp/fujs';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
+import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
-import InputContainerLayout from '@/components/InputContainerLayout';
+import Link from '@/components/Link';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
+import TextInput from '@/components/TextInput';
+import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseAuth } from '@/utils/firebase';
 
+const disclaimer = '* All the data you contribute to MapSwipe is open and available to anyone. Your username is public, but your email and password will never be shared with anyone.';
+
 const createStyles = (theme: AppTheme) => StyleSheet.create({
-    page: {
-        backgroundColor: theme.backgroundBrand,
+    mainContent: {
+        flexDirection: 'column',
+        gap: 48,
     },
-    heading: {
+    icon: {
+        width: 128,
+        height: 128,
+    },
+    page: {
+        paddingTop: 96,
+    },
+    text: {
         color: theme.textOnBrand,
+        fontSize: FONT_SIZE_XS,
     },
 });
 
@@ -54,56 +65,79 @@ function Login() {
     return (
         <Page
             title="Login"
+            variant="brand"
             style={styles.page}
         >
-            <BlockListView withPadding>
-                <View>
-                    <Text
-                        style={styles.heading}
-                        variant="heading"
-                    >
-                        Welcome to MapSwipe!
-                    </Text>
-                </View>
-                <BlockListView>
-                    <InputContainerLayout
-                        labelText="Email"
-                        input={(
-                            <TextInput
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                                autoComplete="email"
-                                keyboardType="email-address"
-                                placeholder="email"
-                                value={email}
-                                onChangeText={setEmail}
-                                readOnly={pending}
-                            />
-                        )}
-                    />
-                    <InputContainerLayout
-                        labelText="Password"
-                        input={(
-                            <TextInput
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                                keyboardType="email-address"
-                                placeholder="password"
-                                value={password}
-                                onChangeText={setPassword}
-                                readOnly={pending}
-                            />
-                        )}
+            <BlockListView
+                spacing="sm"
+            >
+                <BlockListView withCenteredContent>
+                    <Image
+                        style={styles.icon}
+                        source={logo}
                     />
                 </BlockListView>
-                <Button
-                    name={undefined}
-                    onPress={handleLoginPress}
-                    title="login"
-                    disabled={pending}
-                    colorVariant="primaryRed"
-                    styleVariant="filled"
-                />
+                <BlockListView
+                    withPadding
+                >
+                    <TextInput
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        autoComplete="email"
+                        keyboardType="email-address"
+                        placeholder="Enter your email"
+                        placeholderTextColor="#fff"
+                        value={email}
+                        onChangeText={setEmail}
+                        readOnly={pending}
+                    />
+                    <TextInput
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        placeholder="Enter your password"
+                        placeholderTextColor="#fff"
+                        value={password}
+                        onChangeText={setPassword}
+                        readOnly={pending}
+                        secureTextEntry
+                    />
+                </BlockListView>
+                <BlockListView
+                    withPadding
+                >
+                    <Text
+                        variant="label"
+                        style={styles.text}
+                    >
+                        {disclaimer}
+                    </Text>
+                    <Button
+                        name={undefined}
+                        onPress={handleLoginPress}
+                        title="login"
+                        disabled={pending}
+                        colorVariant="primaryRed"
+                        styleVariant="filled"
+                    />
+                    <BlockListView>
+                        <Link
+                            spacing="xs"
+                            href={{
+                                // FIXME: Create forgot password page
+                                pathname: '/project',
+                            }}
+                            title="Forgot your password?"
+                        />
+                        <Link
+                            spacing="xs"
+                            href={{
+                                // FIXME: Create forgot password page
+                                pathname: '/project',
+                            }}
+                            title="Create New Account"
+                        />
+                    </BlockListView>
+                </BlockListView>
             </BlockListView>
         </Page>
     );

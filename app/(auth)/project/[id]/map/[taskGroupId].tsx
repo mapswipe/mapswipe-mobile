@@ -42,10 +42,7 @@ function MapTaskGroup() {
     const [results, setResults] = useState<Results>({});
 
     return (
-        <Page
-            title="Map project"
-            withFullWidthContent
-        >
+        <Page title="Map project">
             <BlockListView withPadding>
                 <Text variant="title">
                     {projectDetails?.projectInstruction}

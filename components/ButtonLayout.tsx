@@ -12,7 +12,7 @@ import Icon, { type IconName } from './Icon';
 import InlineListView, { type Props as InlineLayoutProps } from './InlineListView';
 
 export type ButtonColorVariant = 'primaryBlue' | 'primaryGreen' | 'primaryRed' | 'success' | 'danger';
-export type ButtonStyleVariant = 'outline' | 'filled' | 'transparent' | 'block';
+export type ButtonStyleVariant = 'outline' | 'filled' | 'transparent' | 'block' | 'underline';
 
 const VARIANT_COLOR: Record<ButtonColorVariant, keyof AppTheme> = {
     primaryBlue: 'primaryBlue',
@@ -27,9 +27,10 @@ const createStyles = (
     options: {
         colorVariant: ButtonColorVariant,
         styleVariant: ButtonStyleVariant,
+        fullWidth: boolean;
     },
 ) => {
-    const { colorVariant, styleVariant } = options;
+    const { colorVariant, styleVariant, fullWidth } = options;
 
     const variantColor = theme[VARIANT_COLOR[colorVariant]] as string;
 
@@ -64,16 +65,13 @@ const createStyles = (
     return StyleSheet.create({
         buttonLayout: {
             flexDirection: 'row',
-            borderWidth: 2,
-            borderColor,
-            borderRadius: 6,
-            width: '100%',
-            backgroundColor,
+            width: fullWidth ? '100%' : undefined,
         },
         text: {
             fontWeight: styleVariant === 'block' ? 'normal' : 'bold',
-            textTransform: 'capitalize',
+            textTransform: styleVariant !== 'underline' ? 'capitalize' : undefined,
             color: textColor,
+            textDecorationLine: styleVariant === 'underline' ? 'underline' : undefined,
         },
         icon: {
             color: textColor,
@@ -81,7 +79,11 @@ const createStyles = (
             width: 14,
         },
         touchable: {
-            width: '100%',
+            width: fullWidth ? '100%' : undefined,
+            borderWidth: styleVariant === 'underline' ? undefined : 2,
+            borderColor,
+            borderRadius: 6,
+            backgroundColor,
         },
         disabled: {
             opacity: 0.4,
@@ -96,7 +98,9 @@ export interface ButtonLayoutProps extends Omit<InlineLayoutProps, 'withPadding'
     disabled?: boolean;
     iconName?: IconName;
     title?: string;
+    fullWidth?: boolean;
     onPress?: () => void;
+    children?: React.ReactNode;
 }
 
 function ButtonLayout(props: ButtonLayoutProps) {
@@ -110,6 +114,8 @@ function ButtonLayout(props: ButtonLayoutProps) {
         title,
         onPress,
         spacing = 'sm',
+        fullWidth = true,
+        children,
         ...inlineLayoutProps
     } = props;
 
@@ -118,6 +124,7 @@ function ButtonLayout(props: ButtonLayoutProps) {
         {
             colorVariant,
             styleVariant,
+            fullWidth,
         },
     );
 
@@ -132,7 +139,7 @@ function ButtonLayout(props: ButtonLayoutProps) {
             ]}
         >
             <InlineListView
-                withPadding={!withoutPadding}
+                withPadding={styleVariant === 'underline' ? false : !withoutPadding}
                 spacingOffset={spacingOffset}
                 style={[
                     styles.buttonLayout,
@@ -148,9 +155,12 @@ function ButtonLayout(props: ButtonLayoutProps) {
                         name={iconName}
                     />
                 )}
-                <Text style={styles.text}>
-                    {title}
-                </Text>
+                {title && (
+                    <Text style={styles.text}>
+                        {title}
+                    </Text>
+                )}
+                {children}
             </InlineListView>
         </TouchableOpacity>
     );
