@@ -15,6 +15,7 @@ import Link from '@/components/Link';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
 import TextInput from '@/components/TextInput';
+import { showAlert } from '@/components/Toast';
 import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
@@ -53,7 +54,26 @@ function Login() {
                 setPending(false);
                 router.replace('/');
             } catch (ex) {
+                const error = ex as { code: string };
+                let errorMessage = '';
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'No account found for this email';
+                        break;
+                    case 'auth/wrong-password':
+                    case 'auth/invalid-email':
+                        errorMessage = 'Invalid email or password';
+                        break;
+                    default:
+                        errorMessage = 'Problem logging in';
+                }
+
                 setPending(false);
+                showAlert({
+                    title: 'Failed to Login',
+                    message: errorMessage,
+                    alertType: 'error',
+                });
                 // eslint-disable-next-line no-console
                 console.info(ex);
             }

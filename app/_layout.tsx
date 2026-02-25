@@ -9,6 +9,11 @@ import {
     ActivityIndicator,
     View,
 } from 'react-native';
+import Toast, {
+    BaseToast,
+    ErrorToast,
+    type ToastProps,
+} from 'react-native-toast-message';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { isDefined } from '@togglecorp/fujs';
@@ -23,6 +28,46 @@ export {
     // Catch any errors thrown by the Layout component.
     ErrorBoundary,
 } from 'expo-router';
+
+export const toastConfig = {
+    success: (props: ToastProps) => (
+        <BaseToast
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+            style={{ borderLeftColor: 'green' }}
+            contentContainerStyle={{ paddingHorizontal: 15 }}
+            text1Style={{ fontSize: 16, fontWeight: 'bold' }}
+            text2Style={{ fontSize: 14 }}
+        />
+    ),
+    warning: (props: ToastProps) => (
+        <BaseToast
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+            style={{ borderLeftColor: '#f4c542' }}
+            contentContainerStyle={{ paddingHorizontal: 15 }}
+            text1Style={{ fontSize: 16, fontWeight: 'bold' }}
+            text2Style={{ fontSize: 14 }}
+        />
+    ),
+    error: (props: ToastProps) => (
+        <ErrorToast
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+            text1Style={{ fontSize: 16, fontWeight: 'bold' }}
+            text2Style={{ fontSize: 14 }}
+        />
+    ),
+    info: (props: ToastProps) => (
+        <BaseToast
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+            style={{ borderLeftColor: 'blue' }}
+            text1Style={{ fontSize: 16, fontWeight: 'bold' }}
+            text2Style={{ fontSize: 14 }}
+        />
+    ),
+};
 
 export default function AppLayout() {
     const [user, setUser] = useState<User | null | undefined>();
@@ -92,6 +137,7 @@ export default function AppLayout() {
                     <Stack.Screen name="(auth)" />
                 </Stack.Protected>
             </Stack>
+            <Toast config={toastConfig} />
         </AuthContext.Provider>
     );
 }
