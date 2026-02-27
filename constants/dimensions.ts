@@ -1,3 +1,5 @@
+import { Dimensions } from 'react-native';
+
 export const SPACING_NONE = 0;
 export const SPACING_4XS = 4;
 export const SPACING_3XS = 8;
@@ -28,3 +30,7 @@ export const BORDER_RADIUS_SM = 10;
 export const BORDER_RADIUS_MD = 20;
 export const BORDER_RADIUS_LG = 30;
 export const BORDER_RADIUS_XL = 40;
+
+// FIXME: check the old calculation to include status bar and soft menu
+export const SCREEN_WIDTH: number = Dimensions.get('window').width;
+export const SCREEN_HEIGHT: number = Dimensions.get('window').height;

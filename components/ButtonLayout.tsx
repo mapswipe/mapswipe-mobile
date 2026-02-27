@@ -12,7 +12,7 @@ import Icon, { type IconName } from './Icon';
 import InlineListView, { type Props as InlineLayoutProps } from './InlineListView';
 
 export type ButtonColorVariant = 'primaryBlue' | 'primaryGreen' | 'primaryRed' | 'success' | 'danger';
-export type ButtonStyleVariant = 'outline' | 'filled' | 'transparent' | 'block' | 'underline';
+export type ButtonStyleVariant = 'outline' | 'filled' | 'transparent' | 'block' | 'underline' | 'action';
 
 const VARIANT_COLOR: Record<ButtonColorVariant, keyof AppTheme> = {
     primaryBlue: 'primaryBlue',
@@ -54,6 +54,11 @@ const createStyles = (
             borderColor = 'transparent';
             textColor = variantColor;
             break;
+        case 'action':
+            backgroundColor = 'transparent';
+            borderColor = 'transparent';
+            textColor = variantColor;
+            break;
         case 'outline':
         default:
             backgroundColor = 'transparent';
@@ -80,7 +85,7 @@ const createStyles = (
         },
         touchable: {
             width: fullWidth ? '100%' : undefined,
-            borderWidth: styleVariant === 'underline' ? undefined : 2,
+            borderWidth: (styleVariant === 'underline' || styleVariant === 'action') ? undefined : 2,
             borderColor,
             borderRadius: 6,
             backgroundColor,

@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
 interface Props {
     children: React.ReactNode;
     spacing?: SpacingType;
-    style?: ViewStyle;
+    style?: ViewStyle | ViewStyle[];
     withPadding?: boolean;
     withCenteredContent?: boolean;
 }
@@ -44,7 +44,7 @@ function BlockListView(props: Props) {
             style={[
                 spacingStyle,
                 withCenteredContent && styles.withCenteredContent,
-                style,
+                ...(Array.isArray(style) ? style : [style]),
             ]}
         >
             {children}
