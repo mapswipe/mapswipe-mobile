@@ -5,7 +5,7 @@ function ProjectItemLayout() {
     return (
         <>
             <StatusBar style="auto" />
-            <Stack screenOptions={{ headerShown: true }} />
+            <Stack screenOptions={{ headerShown: false }} />
         </>
     );
 }

@@ -24,7 +24,6 @@ import Text from '@/components/Text';
 import { SUPPORTED_PROJECT_TYPES } from '@/constants/common';
 import {
     FONT_SIZE_XS,
-    ICON_SIZE_XL,
     SCREEN_WIDTH,
 } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
