@@ -4,11 +4,12 @@ import {
     TextInputProps,
 } from 'react-native';
 
-import InputContainerLayout from '@/components/InputContainerLayout';
+import InputContainerLayout, {
+    type Props as InputContainerLayoutProps,
+    type StyleVariant,
+} from '@/components/InputContainerLayout';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
-
-type StyleVariant = 'normal' | 'brand';
 
 const createStyles = (theme: AppTheme, { variant } : { variant: StyleVariant }) => (
     StyleSheet.create({
@@ -18,19 +19,25 @@ const createStyles = (theme: AppTheme, { variant } : { variant: StyleVariant }) 
     })
 );
 
-interface Props extends TextInputProps {
-    variant?: StyleVariant;
+interface Props extends TextInputProps, Omit<InputContainerLayoutProps, 'input'> {
 }
 
 function TextInput(props: Props) {
     const {
         variant = 'brand',
+        errorText,
+        labelText,
+        hintText,
         ...otherProps
     } = props;
     const styles = useThemedStyles(createStyles, { variant });
 
     return (
         <InputContainerLayout
+            errorText={errorText}
+            labelText={labelText}
+            hintText={hintText}
+            variant={variant}
             input={(
                 <RawTextInput
                     autoCapitalize="none"

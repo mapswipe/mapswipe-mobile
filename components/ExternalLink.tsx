@@ -3,8 +3,7 @@ import { Platform } from 'react-native';
 import { Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
-// eslint-disable-next-line import/prefer-default-export
-export function ExternalLink(
+export default function ExternalLink(
     props: Omit<React.ComponentProps<typeof Link>, 'href'> & { href: string },
 ) {
     const {

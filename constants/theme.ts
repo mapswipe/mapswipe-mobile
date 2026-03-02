@@ -8,6 +8,7 @@ export type AppTheme = {
     background: string;
     backgroundBrand: string;
     backgroundMuted: string;
+    inputBrandBackground: string;
     card: string;
     border: string;
     divider: string;
@@ -47,6 +48,7 @@ export const lightTheme: AppTheme = {
     background: '#F8FAFC',
     backgroundBrand: '#0D1949',
     backgroundMuted: '#F1F5F9',
+    inputBrandBackground: '#3e466d',
     card: '#FFFFFF',
     border: '#E2E8F0',
     divider: '#E2E8F0',
@@ -83,6 +85,7 @@ export const darkTheme: AppTheme = {
     background: '#020617',
     backgroundBrand: '#0D1949',
     backgroundMuted: '#1E293B',
+    inputBrandBackground: '#3e466d',
     card: '#0F172A',
     border: '#1E293B',
     divider: '#1E293B',

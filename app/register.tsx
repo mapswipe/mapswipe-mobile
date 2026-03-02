@@ -3,6 +3,7 @@ import {
     useState,
 } from 'react';
 import { StyleSheet } from 'react-native';
+import { Checkbox } from 'expo-checkbox';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { isTruthyString } from '@togglecorp/fujs';
@@ -11,6 +12,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
+import ExternalLink from '@/components/ExternalLink';
+import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
@@ -39,11 +42,18 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         color: theme.textOnBrand,
         fontSize: FONT_SIZE_XS,
     },
+    privacyLink: {
+        color: theme.textOnBrand,
+        fontSize: FONT_SIZE_XS,
+        textDecorationLine: 'underline',
+    },
 });
 
-function Login() {
+function Register() {
+    const [username, setUsername] = useState<string>();
     const [email, setEmail] = useState<string>();
     const [password, setPassword] = useState<string>();
+    const [agreeToPrivacy, setAgreeToPrivacy] = useState<boolean>(false);
     const [pending, setPending] = useState<boolean>(false);
 
     const handleLoginPress = useCallback(async () => {
@@ -101,6 +111,17 @@ function Login() {
                     withPadding
                 >
                     <TextInput
+                        variant="brand"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        placeholder="Choose your username"
+                        hintText="Your username will be publicly visible"
+                        value={username}
+                        onChangeText={setUsername}
+                        readOnly={pending}
+                    />
+                    <TextInput
+                        variant="brand"
                         autoCapitalize="none"
                         autoCorrect={false}
                         autoComplete="email"
@@ -111,14 +132,37 @@ function Login() {
                         readOnly={pending}
                     />
                     <TextInput
+                        variant="brand"
                         autoCapitalize="none"
                         autoCorrect={false}
-                        placeholder="Enter your password"
+                        placeholder="Choose your password"
                         value={password}
                         onChangeText={setPassword}
                         readOnly={pending}
                         secureTextEntry
                     />
+                    <InlineListView
+                        spacing="3xs"
+                    >
+                        <Checkbox
+                            value={agreeToPrivacy}
+                            onValueChange={setAgreeToPrivacy}
+                            color={agreeToPrivacy ? '#4630EB' : undefined}
+                            disabled={pending}
+                        />
+                        <Text
+                            variant="label"
+                            style={styles.text}
+                        >
+                            I agree to the
+                        </Text>
+                        <ExternalLink
+                            href="https://mapswipe.org/privacy"
+                            style={styles.privacyLink}
+                        >
+                            Privacy Notice
+                        </ExternalLink>
+                    </InlineListView>
                 </BlockListView>
                 <BlockListView
                     withPadding
@@ -132,7 +176,7 @@ function Login() {
                     <Button
                         name={undefined}
                         onPress={handleLoginPress}
-                        title="login"
+                        title="Sign up"
                         disabled={pending}
                         colorVariant="primaryRed"
                         styleVariant="filled"
@@ -141,17 +185,17 @@ function Login() {
                         <Link
                             spacing="xs"
                             href={{
-                                // FIXME: Create forgot password page
-                                pathname: '/project',
+                                pathname: '/login',
                             }}
-                            title="Forgot your password?"
+                            title="Log in to an existing account"
                         />
                         <Link
                             spacing="xs"
                             href={{
-                                pathname: '/register',
+                                // FIXME: Add proper redirect
+                                pathname: '/project',
                             }}
-                            title="Create New Account"
+                            title="Login with OpenStreetMap"
                         />
                     </BlockListView>
                 </BlockListView>
@@ -160,4 +204,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default Register;
