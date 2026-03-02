@@ -13,7 +13,6 @@ import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
-import Text from '@/components/Text';
 import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
 import { FONT_SIZE_XS } from '@/constants/dimensions';
@@ -35,50 +34,15 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     page: {
         paddingTop: 96,
     },
-    text: {
-        color: theme.textOnBrand,
-        fontSize: FONT_SIZE_XS,
-    },
 });
 
 function Login() {
     const [email, setEmail] = useState<string>();
-    const [password, setPassword] = useState<string>();
     const [pending, setPending] = useState<boolean>(false);
 
-    const handleLoginPress = useCallback(async () => {
-        if (isTruthyString(email) && isTruthyString(password)) {
-            try {
-                setPending(true);
-                await signInWithEmailAndPassword(firebaseAuth, email, password);
-                setPending(false);
-                router.replace('/');
-            } catch (ex) {
-                const error = ex as { code: string };
-                let errorMessage = '';
-                switch (error.code) {
-                    case 'auth/user-not-found':
-                        errorMessage = 'No account found for this email';
-                        break;
-                    case 'auth/wrong-password':
-                    case 'auth/invalid-email':
-                        errorMessage = 'Invalid email or password';
-                        break;
-                    default:
-                        errorMessage = 'Problem logging in';
-                }
-
-                setPending(false);
-                showAlert({
-                    title: 'Failed to Login',
-                    message: errorMessage,
-                    alertType: 'error',
-                });
-                // eslint-disable-next-line no-console
-                console.info(ex);
-            }
-        }
-    }, [email, password]);
+    const handleResetPress = useCallback(async () => {
+        // TODO: Handle forgot password logic
+    }, [email]);
 
     const styles = useThemedStyles(createStyles);
 
@@ -106,33 +70,19 @@ function Login() {
                         autoComplete="email"
                         keyboardType="email-address"
                         placeholder="Enter your email"
+                        hintText="* We will send you and email to reset your password"
                         value={email}
                         onChangeText={setEmail}
                         readOnly={pending}
-                    />
-                    <TextInput
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        placeholder="Enter your password"
-                        value={password}
-                        onChangeText={setPassword}
-                        readOnly={pending}
-                        secureTextEntry
                     />
                 </BlockListView>
                 <BlockListView
                     withPadding
                 >
-                    <Text
-                        variant="label"
-                        style={styles.text}
-                    >
-                        {disclaimer}
-                    </Text>
                     <Button
                         name={undefined}
-                        onPress={handleLoginPress}
-                        title="login"
+                        onPress={handleResetPress}
+                        title="Send reset email"
                         disabled={pending}
                         colorVariant="primaryRed"
                         styleVariant="filled"
@@ -141,16 +91,9 @@ function Login() {
                         <Link
                             spacing="xs"
                             href={{
-                                pathname: '/forgotPassword',
+                                pathname: '/login',
                             }}
-                            title="Forgot your password?"
-                        />
-                        <Link
-                            spacing="xs"
-                            href={{
-                                pathname: '/register',
-                            }}
-                            title="Create New Account"
+                            title="Back to login"
                         />
                     </BlockListView>
                 </BlockListView>
