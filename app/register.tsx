@@ -6,8 +6,19 @@ import { StyleSheet } from 'react-native';
 import { Checkbox } from 'expo-checkbox';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { isTruthyString } from '@togglecorp/fujs';
+import {
+    isDefined,
+    isNotDefined,
+    isTruthyString,
+} from '@togglecorp/fujs';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import {
+    equalTo,
+    get,
+    orderByChild,
+    query,
+    ref,
+} from 'firebase/database';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
@@ -22,9 +33,35 @@ import { showAlert } from '@/components/Toast';
 import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
-import { firebaseAuth } from '@/utils/firebase';
+import { validateUserName } from '@/utils/common';
+import { firebaseDatabase } from '@/utils/firebase';
 
 const disclaimer = '* All the data you contribute to MapSwipe is open and available to anyone. Your username is public, but your email and password will never be shared with anyone.';
+const usernameErrorText = 'Username must be at least 4 characters long and cannot contain space and uppercase';
+
+async function usernameExists(username: string) {
+    try {
+        const q = query(
+            ref(firebaseDatabase, 'v2/users'),
+            orderByChild('usernameKey'),
+            equalTo(username),
+        );
+
+        const snap = await get(q);
+        return snap.exists();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+        // eslint-disable-next-line no-console
+        console.error('Error checking username:', error);
+
+        showAlert({
+            title: 'Error',
+            message: error?.message || 'Failed to check username',
+            alertType: 'error',
+        });
+        throw error;
+    }
+}
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
     mainContent: {
@@ -54,17 +91,74 @@ function Register() {
     const [email, setEmail] = useState<string>();
     const [password, setPassword] = useState<string>();
     const [agreeToPrivacy, setAgreeToPrivacy] = useState<boolean>(false);
+    const [usernameError, setUsernameError] = useState<string>();
+    const [passwordError, setPasswordError] = useState<string>();
     const [pending, setPending] = useState<boolean>(false);
 
-    const handleLoginPress = useCallback(async () => {
-        // TODO: Handle register logic
+    const handleUsernameChange = useCallback((newUsername: string) => {
+        setUsername(newUsername);
+        const isValid = validateUserName(newUsername);
+        setUsernameError(
+            !isValid ? usernameErrorText : undefined,
+        );
     }, []);
+
+    const handlePasswordChange = useCallback((newPassword: string) => {
+        setPassword(newPassword);
+        setPasswordError(
+            newPassword.length < 6 ? 'Password must be longer than 6 characters.' : undefined,
+        );
+    }, []);
+
+    const handleSignUpPress = useCallback(async () => {
+        const isValid = validateUserName(username);
+        if (isNotDefined(username)) {
+            return;
+        }
+        if (!isValid) {
+            showAlert({
+                title: 'Failed to Register',
+                message: usernameErrorText,
+                alertType: 'error',
+            });
+            return;
+        }
+        if (isDefined(username) && username?.indexOf('@') !== -1) {
+            showAlert({
+                title: 'Failed to Register',
+                message: 'Your username can not be an email',
+                alertType: 'error',
+                shouldHideAfterDelay: false,
+            });
+            return;
+        }
+        setPending(true);
+        try {
+            const userNameAlreadyExist = await usernameExists(username);
+
+            if (userNameAlreadyExist) {
+                showAlert({
+                    title: 'Failed to Register',
+                    message: 'Username already exist, Please choose another username',
+                    alertType: 'error',
+                    shouldHideAfterDelay: false,
+                });
+                setPending(false);
+            }
+        } catch (_: unknown) {
+            setPending(false);
+            return;
+        }
+        console.log('handle register here');
+    }, [
+        username,
+    ]);
 
     const styles = useThemedStyles(createStyles);
 
     return (
         <Page
-            title="Login"
+            title="Register"
             variant="brand"
             style={styles.page}
         >
@@ -87,7 +181,8 @@ function Register() {
                         placeholder="Choose your username"
                         hintText="Your username will be publicly visible"
                         value={username}
-                        onChangeText={setUsername}
+                        errorText={usernameError}
+                        onChangeText={handleUsernameChange}
                         readOnly={pending}
                     />
                     <TextInput
@@ -107,7 +202,8 @@ function Register() {
                         autoCorrect={false}
                         placeholder="Choose your password"
                         value={password}
-                        onChangeText={setPassword}
+                        onChangeText={handlePasswordChange}
+                        errorText={passwordError}
                         readOnly={pending}
                         secureTextEntry
                     />
@@ -145,7 +241,7 @@ function Register() {
                     </Text>
                     <Button
                         name={undefined}
-                        onPress={handleLoginPress}
+                        onPress={handleSignUpPress}
                         title="Sign up"
                         disabled={pending}
                         colorVariant="primaryRed"
@@ -162,8 +258,7 @@ function Register() {
                         <Link
                             spacing="xs"
                             href={{
-                                // FIXME: Add proper redirect
-                                pathname: '/project',
+                                pathname: '/loginWithOsm',
                             }}
                             title="Login with OpenStreetMap"
                         />
