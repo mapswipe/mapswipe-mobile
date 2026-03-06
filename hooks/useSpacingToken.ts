@@ -1,7 +1,18 @@
-import { getAdditionalInlineCompensatedSpacingValue, getOpticallyCorrectedSpacingValue, getSpacingValue, paddingSpacings, SpacingMode, SpacingType } from "@/utils/styles";
-import { isNotDefined, listToMap } from "@togglecorp/fujs";
-import { useMemo } from "react";
-import { ViewStyle } from "react-native";
+import { useMemo } from 'react';
+import { ViewStyle } from 'react-native';
+import {
+    isNotDefined,
+    listToMap,
+} from '@togglecorp/fujs';
+
+import {
+    getAdditionalInlineCompensatedSpacingValue,
+    getOpticallyCorrectedSpacingValue,
+    getSpacingValue,
+    paddingSpacings,
+    SpacingMode,
+    SpacingType,
+} from '@/utils/styles';
 
 interface Props {
     spacing?: SpacingType;
@@ -31,11 +42,15 @@ function useSpacingToken(props: Props) {
             modes,
             (mode) => mode,
             (mode) => {
-                const compensatedValue = getAdditionalInlineCompensatedSpacingValue(spacingValue, mode, !!withAdditionalInlinePadding);
+                const compensatedValue = getAdditionalInlineCompensatedSpacingValue(
+                    spacingValue,
+                    mode,
+                    !!withAdditionalInlinePadding,
+                );
                 return withoutOpticalCorrection
                     ? compensatedValue
                     : getOpticallyCorrectedSpacingValue(compensatedValue, mode);
-            }
+            },
         );
     }, [spacing, modes, offset, withoutOpticalCorrection, withAdditionalInlinePadding]);
 

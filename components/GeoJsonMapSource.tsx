@@ -1,5 +1,8 @@
-import { View } from "react-native";
-import Text from "@/components/Text";
+// FIXME: Use everything
+/* eslint-disable react/no-unused-prop-types */
+import { View } from 'react-native';
+
+import Text from '@/components/Text';
 
 interface Props {
     geoJson: (

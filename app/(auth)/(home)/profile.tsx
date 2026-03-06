@@ -1,18 +1,39 @@
-import BlockListView from "@/components/BlockListView";
-import Button from "@/components/Button";
-import Page from "@/components/Page";
-import Text from "@/components/Text";
-import useAuth from "@/hooks/useAuth";
-import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
-import { firebaseAuth, firebaseRef } from "@/utils/firebase";
-import { FbUserUpdateInput } from "@/utils/types";
-import { isDefined } from "@togglecorp/fujs";
-import { Image } from "expo-image";
-import { useMemo } from "react";
-import { View } from "react-native";
+import {
+    useCallback,
+    useMemo,
+} from 'react';
+import {
+    StyleSheet,
+    View,
+} from 'react-native';
+import { Image } from 'expo-image';
+import { isDefined } from '@togglecorp/fujs';
+
+import BlockListView from '@/components/BlockListView';
+import Button from '@/components/Button';
+import Page from '@/components/Page';
+import Text from '@/components/Text';
+import { FbUser } from '@/firebaseGenerated/extended_models';
+import useAuth from '@/hooks/useAuth';
+import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import useThemedStyles from '@/hooks/useThemedStyles';
+import {
+    firebaseAuth,
+    firebaseRef,
+} from '@/utils/firebase';
+
+const createStyles = () => StyleSheet.create({
+    displayPicture: {
+        width: 100,
+        aspectRatio: 1,
+        borderRadius: 50,
+        backgroundColor: '#c0c0c0',
+    },
+});
 
 function Profile() {
     const { user } = useAuth();
+    const styles = useThemedStyles(createStyles);
 
     const userDetailQuery = useMemo(() => (
         isDefined(user)
@@ -20,24 +41,23 @@ function Profile() {
             : undefined
     ), [user]);
 
-    const { data: userDetails } = useFirebaseDatabase<FbUserUpdateInput>({ query: userDetailQuery });
+    const { data: userDetails } = useFirebaseDatabase<FbUser>(
+        { query: userDetailQuery },
+    );
+
+    const handleLogout = useCallback(() => {
+        firebaseAuth.signOut();
+    }, []);
 
     return (
         <Page title="Profile">
             <BlockListView withPadding>
-                <BlockListView
-                    style={{ alignItems: 'center' }}
-                >
+                <BlockListView withCenteredContent>
                     <Image
                         source={user?.photoURL}
-                        style={{
-                            width: 100,
-                            aspectRatio: 1,
-                            borderRadius: 50,
-                            backgroundColor: '#c0c0c0',
-                        }}
+                        style={styles.displayPicture}
                     />
-                    <Text style={{ fontSize: 24, fontWeight: 'bold' }}>
+                    <Text variant="title">
                         {user?.displayName}
                     </Text>
                     <BlockListView spacing="2xs">
@@ -52,7 +72,8 @@ function Profile() {
                 <View />
                 <View />
                 <Button
-                    onPress={firebaseAuth.signOut}
+                    name={undefined}
+                    onPress={handleLogout}
                     title="Logout"
                 />
             </BlockListView>
@@ -61,4 +82,3 @@ function Profile() {
 }
 
 export default Profile;
-

@@ -1,13 +1,27 @@
-import BlockListView from "@/components/BlockListView";
-import Page from "@/components/Page";
-import Text from "@/components/Text";
-import useFirebaseDatabaseList from "@/hooks/useFirebaseDatabaseList";
-import { firebaseRef } from "@/utils/firebase";
-import { isDefined, isNotDefined } from "@togglecorp/fujs";
-import { router, useLocalSearchParams } from "expo-router";
-import { limitToLast, orderByChild, query } from "firebase/database";
-import { useEffect, useMemo } from "react";
-import { ActivityIndicator } from "react-native";
+import {
+    useEffect,
+    useMemo,
+} from 'react';
+import { ActivityIndicator } from 'react-native';
+import {
+    router,
+    useLocalSearchParams,
+} from 'expo-router';
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
+import {
+    limitToLast,
+    orderByChild,
+    query,
+} from 'firebase/database';
+
+import BlockListView from '@/components/BlockListView';
+import Page from '@/components/Page';
+import Text from '@/components/Text';
+import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
+import { firebaseRef } from '@/utils/firebase';
 
 function MapProjectIndex() {
     const {
@@ -18,12 +32,13 @@ function MapProjectIndex() {
         taskGroupId: string;
     }>();
 
-    const leastMappedGroupQuery = useMemo(() => query(
-            firebaseRef( `v2/groups/${projectId}`),
+    const leastMappedGroupQuery = useMemo(
+        () => query(
+            firebaseRef(`v2/groups/${projectId}`),
             orderByChild('requiredCount'),
             limitToLast(1),
         ),
-        [projectId]
+        [projectId],
     );
 
     const {
@@ -43,7 +58,7 @@ function MapProjectIndex() {
                 params: {
                     id: projectId,
                     taskGroupId: leastMappedTaskGroupId,
-                }
+                },
             });
         }
     }, [projectId, taskGroupId, leastMappedTaskGroupId]);

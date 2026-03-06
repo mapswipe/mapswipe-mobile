@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect } from 'react';
+import { router } from 'expo-router';
 
 function AuthIndex() {
     useEffect(() => {

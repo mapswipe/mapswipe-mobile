@@ -5,32 +5,32 @@ import {
     FindProject,
     PROJECT_TYPE_COMPLETENESS,
     TileTask,
-} from "./types"
+} from './types';
 
 const getQuadKeyFromCoordsAndZoom = (x: number, y: number, zoom: number) => {
     // Create a quadkey for use with certain tileservers that use them, e.g. Bing
-    let quadKey = ''
+    let quadKey = '';
     for (let i = zoom; i > 0; i -= 1) {
-        let digit = 0
+        let digit = 0;
         /* eslint-disable no-bitwise */
-        const mask = 1 << (i - 1)
+        const mask = 1 << (i - 1);
         if ((x & mask) !== 0) {
-            digit += 1
+            digit += 1;
         }
         if ((y & mask) !== 0) {
-            digit += 2
+            digit += 2;
         }
         /* eslint-enable no-bitwise */
-        quadKey += digit.toString()
+        quadKey += digit.toString();
     }
-    return quadKey
-}
+    return quadKey;
+};
 
 const arrayFromMinMax = (min: number | string, max: number | string) => {
-    const minValue = parseInt(String(min));
-    const maxValue = parseInt(String(max));
-    return Array.from({ length: maxValue - minValue + 1 }, (_, i) => i + minValue)
-}
+    const minValue = parseInt(String(min), 10);
+    const maxValue = parseInt(String(max), 10);
+    return Array.from({ length: maxValue - minValue + 1 }, (_, i) => i + minValue);
+};
 
 const formatXYZoomKey = (
     urlTemplate: string,
@@ -38,30 +38,35 @@ const formatXYZoomKey = (
     y: number,
     zoom: number,
     apiKey: string = '',
-    wmtsLayerName = ''
+    wmtsLayerName = '',
 ) => {
     const url = urlTemplate
-    .replace('{x}', x.toString())
-    .replace('{y}', y.toString())
-    .replace('{z}', zoom.toString())
-    .replace(/({apiKey})|({key})/, apiKey)
-    .replace(/({layer})|({name})/, wmtsLayerName)
-    return url
-}
+        .replace('{x}', x.toString())
+        .replace('{y}', y.toString())
+        .replace('{z}', zoom.toString())
+        .replace(/({apiKey})|({key})/, apiKey)
+        .replace(/({layer})|({name})/, wmtsLayerName);
+    return url;
+};
 
 const getBingURLFromQuadKey = (urlTemplate: string, quadKey: string, apiKey: string = '') => {
     const bingUrl = urlTemplate
-    .replace(/({quadKey})|({quad_key})/, quadKey)
-    .replace(/({apiKey})|({key})/, apiKey)
-    return bingUrl
-}
+        .replace(/({quadKey})|({quad_key})/, quadKey)
+        .replace(/({apiKey})|({key})/, apiKey);
+    return bingUrl;
+};
 
-export const getTileUrlFromCoordsAndTileserver = (x: number, y: number, zoom: number, tileServer: FbObjRasterTileServer) => {
+export const getTileUrlFromCoordsAndTileserver = (
+    x: number,
+    y: number,
+    zoom: number,
+    tileServer: FbObjRasterTileServer,
+) => {
     // based on https://github.com/mapswipe/mapswipe/blob/master/src/shared/common/tile_functions.js
     const urlTemplate = tileServer.url;
-    const apiKey = tileServer.apiKey;
+    const { apiKey } = tileServer;
     const tileServerName = tileServer.name;
-    const wmtsLayerName = tileServer.wmtsLayerName;
+    const { wmtsLayerName } = tileServer;
     let url = '';
     if (tileServerName === 'bing') {
         const quadKey = getQuadKeyFromCoordsAndZoom(x, y, zoom);
@@ -78,16 +83,18 @@ export const getTileUrlFromCoordsAndTileserver = (x: number, y: number, zoom: nu
     }
 
     return url;
-}
+};
 
 export const buildTasks = (
     project: FindProject | CompletenessProject,
-    group: FbMappingGroupTileMapServiceCreateOnlyInput
+    group: FbMappingGroupTileMapServiceCreateOnlyInput,
 ) => {
-    const xArray = arrayFromMinMax(group.xMin, group.xMax)
-    const yArray = arrayFromMinMax(group.yMin, group.yMax)
+    const xArray = arrayFromMinMax(group.xMin, group.xMax);
+    const yArray = arrayFromMinMax(group.yMin, group.yMax);
     const tasks: TileTask[] = [];
+    // eslint-disable-next-line no-restricted-syntax
     for (const x of xArray) {
+        // eslint-disable-next-line no-restricted-syntax
         for (const y of yArray) {
             const task: TileTask = {
                 groupId: String(group.groupId),
@@ -97,17 +104,22 @@ export const buildTasks = (
                 taskZ: Number(project.zoomLevel),
                 taskId: `${project.zoomLevel}-${x}-${y}`,
                 url: getTileUrlFromCoordsAndTileserver(x, y, project.zoomLevel, project.tileServer),
-            }
+            };
 
             if (project.projectType === PROJECT_TYPE_COMPLETENESS) {
                 if (project.tileServerB) {
-                    task.urlB = getTileUrlFromCoordsAndTileserver(x, y, project.zoomLevel, project.tileServerB)
+                    task.urlB = getTileUrlFromCoordsAndTileserver(
+                        x,
+                        y,
+                        project.zoomLevel,
+                        project.tileServerB,
+                    );
                 }
             }
 
-            tasks.push(task)
+            tasks.push(task);
         }
     }
 
-    return tasks
-}
+    return tasks;
+};

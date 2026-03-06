@@ -18,22 +18,22 @@ import {
 import { FeatureGeoJson } from '@/utils/types';
 
 const MapBoundsLazy = lazy(async () => {
-    const mod = await import("@togglecorp/re-map");
+    const mod = await import('@togglecorp/re-map');
     return { default: mod.MapBounds };
 });
 
 const MapCenterLazy = lazy(async () => {
-    const mod = await import("@togglecorp/re-map");
+    const mod = await import('@togglecorp/re-map');
     return { default: mod.MapCenter };
 });
 
 const MapLayerLazy = lazy(async () => {
-    const mod = await import("@togglecorp/re-map");
+    const mod = await import('@togglecorp/re-map');
     return { default: mod.MapLayer };
 });
 
 const MapSourceLazy = lazy(async () => {
-    const mod = await import("@togglecorp/re-map");
+    const mod = await import('@togglecorp/re-map');
     return { default: mod.MapSource };
 });
 
@@ -194,4 +194,3 @@ function GeoJsonMapSource(props: Props) {
 }
 
 export default GeoJsonMapSource;
-

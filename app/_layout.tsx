@@ -1,19 +1,73 @@
-import { useEffect, useMemo, useState } from 'react';
-import { isDefined } from '@togglecorp/fujs';
 import 'react-native-reanimated';
-import { User } from 'firebase/auth';
-import { StatusBar } from 'expo-status-bar';
-import { firebaseAuth } from '@/utils/firebase';
-import AuthContext, { AuthContextProps } from '@/contexts/auth';
+
+import {
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
+import {
+    ActivityIndicator,
+    View,
+} from 'react-native';
+import Toast, {
+    BaseToast,
+    ErrorToast,
+    type ToastProps,
+} from 'react-native-toast-message';
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { isDefined } from '@togglecorp/fujs';
+import { User } from 'firebase/auth';
+
 import Page from '@/components/Page';
-import { ActivityIndicator, View } from 'react-native';
 import Text from '@/components/Text';
+import AuthContext, { AuthContextProps } from '@/contexts/auth';
+import { firebaseAuth } from '@/utils/firebase';
 
 export {
     // Catch any errors thrown by the Layout component.
     ErrorBoundary,
 } from 'expo-router';
+
+export const toastConfig = {
+    success: (props: ToastProps) => (
+        <BaseToast
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+            style={{ borderLeftColor: 'green' }}
+            contentContainerStyle={{ paddingHorizontal: 15 }}
+            text1Style={{ fontSize: 16, fontWeight: 'bold' }}
+            text2Style={{ fontSize: 14 }}
+        />
+    ),
+    warning: (props: ToastProps) => (
+        <BaseToast
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+            style={{ borderLeftColor: '#f4c542' }}
+            contentContainerStyle={{ paddingHorizontal: 15 }}
+            text1Style={{ fontSize: 16, fontWeight: 'bold' }}
+            text2Style={{ fontSize: 14 }}
+        />
+    ),
+    error: (props: ToastProps) => (
+        <ErrorToast
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+            text1Style={{ fontSize: 16, fontWeight: 'bold' }}
+            text2Style={{ fontSize: 14 }}
+        />
+    ),
+    info: (props: ToastProps) => (
+        <BaseToast
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+            style={{ borderLeftColor: 'blue' }}
+            text1Style={{ fontSize: 16, fontWeight: 'bold' }}
+            text2Style={{ fontSize: 14 }}
+        />
+    ),
+};
 
 export default function AppLayout() {
     const [user, setUser] = useState<User | null | undefined>();
@@ -32,7 +86,7 @@ export default function AppLayout() {
                 authPending: true,
                 isLoggedIn: false,
                 user,
-            }
+            };
         }
 
         if (user === null) {
@@ -40,14 +94,14 @@ export default function AppLayout() {
                 authPending: false,
                 isLoggedIn: false,
                 user,
-            }
+            };
         }
 
         return {
             authPending: false,
             isLoggedIn: true,
             user,
-        }
+        };
     }, [user]);
 
     if (user === undefined) {
@@ -83,7 +137,7 @@ export default function AppLayout() {
                     <Stack.Screen name="(auth)" />
                 </Stack.Protected>
             </Stack>
+            <Toast config={toastConfig} />
         </AuthContext.Provider>
     );
-
 }

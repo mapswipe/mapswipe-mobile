@@ -1,9 +1,13 @@
-import { useMemo, useState } from "react";
-import { firebaseRef } from "@/utils/firebase";
-import { CompareProject } from "@/utils/types";
-import BlockListView from "@/components/BlockListView";
-import Text from "@/components/Text";
-import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
+import {
+    useMemo,
+    useState,
+} from 'react';
+
+import BlockListView from '@/components/BlockListView';
+import Text from '@/components/Text';
+import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import { firebaseRef } from '@/utils/firebase';
+import { CompareProject } from '@/utils/types';
 
 interface Props {
     taskGroupId: string;

@@ -1,6 +1,15 @@
-import useSpacingToken from "@/hooks/useSpacingToken";
-import { fullSpacings, gapSpacings, SpacingType } from "@/utils/styles";
-import { StyleSheet, View, ViewStyle } from "react-native";
+import {
+    StyleSheet,
+    View,
+    ViewStyle,
+} from 'react-native';
+
+import useSpacingToken from '@/hooks/useSpacingToken';
+import {
+    fullSpacings,
+    gapSpacings,
+    SpacingType,
+} from '@/utils/styles';
 
 const styles = StyleSheet.create({
     withCenteredContent: {
@@ -11,7 +20,7 @@ const styles = StyleSheet.create({
 interface Props {
     children: React.ReactNode;
     spacing?: SpacingType;
-    style?: ViewStyle;
+    style?: ViewStyle | ViewStyle[];
     withPadding?: boolean;
     withCenteredContent?: boolean;
 }
@@ -35,7 +44,7 @@ function BlockListView(props: Props) {
             style={[
                 spacingStyle,
                 withCenteredContent && styles.withCenteredContent,
-                style,
+                ...(Array.isArray(style) ? style : [style]),
             ]}
         >
             {children}

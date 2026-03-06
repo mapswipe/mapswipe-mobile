@@ -1,4 +1,10 @@
 import {
+    TextStyle,
+    ViewStyle,
+} from 'react-native';
+import { bound } from '@togglecorp/fujs';
+
+import {
     SPACING_2XL,
     SPACING_2XS,
     SPACING_3XL,
@@ -11,9 +17,7 @@ import {
     SPACING_SM,
     SPACING_XL,
     SPACING_XS,
-} from "@/constants/dimensions";
-import { bound } from "@togglecorp/fujs";
-import { TextStyle, ViewStyle } from "react-native";
+} from '@/constants/dimensions';
 
 export type SpacingType = 'none' | '4xs' | '3xs' | '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
 export type SpacingMode = 'rowGap' | 'columnGap' | 'paddingInline' | 'paddingBlock';
@@ -29,7 +33,11 @@ export const fullSpacings: SpacingMode[] = [
 const BASE_FONT_SIZE = 16;
 const OPTICAL_CORRECTION_FACTOR = 1.25;
 
-export function getAdditionalInlineCompensatedSpacingValue(value: number, mode: SpacingMode, use: boolean) {
+export function getAdditionalInlineCompensatedSpacingValue(
+    value: number,
+    mode: SpacingMode,
+    use: boolean,
+) {
     if (!use) {
         return value;
     }
@@ -79,7 +87,7 @@ const spacingTypeToStartIndexMap: Record<SpacingType, number> = {
     '2xl': 9,
     '3xl': 10,
     '4xl': 11,
-}
+};
 
 export function getSpacingValue(spacingType: SpacingType = 'md', offset = 0) {
     const index = bound(
@@ -91,7 +99,9 @@ export function getSpacingValue(spacingType: SpacingType = 'md', offset = 0) {
     return spacingValues[index];
 }
 
-export function joinStyles<STYLE extends ViewStyle | TextStyle>(...params: (STYLE | undefined | false)[]) {
+export function joinStyles<
+    STYLE extends ViewStyle | TextStyle
+>(...params: (STYLE | undefined | false)[]) {
     return params.filter(Boolean).reduce((acc, style) => {
         const newAcc = {
             ...acc,

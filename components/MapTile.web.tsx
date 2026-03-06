@@ -1,12 +1,19 @@
-import { lazy } from "react";
-import { View } from "react-native";
+import { lazy } from 'react';
+import {
+    useWindowDimensions,
+    View,
+} from 'react-native';
 
-import BaseMap from "./BaseMap";
-import GeoJsonMapSource from "./GeoJsonMapSource";
-import { FbObjRasterTileServer, FeatureGeoJson } from "@/utils/types";
+import {
+    FbObjRasterTileServer,
+    FeatureGeoJson,
+} from '@/utils/types';
+
+import BaseMap from './BaseMap';
+import GeoJsonMapSource from './GeoJsonMapSource';
 
 const MapContainerLazy = lazy(async () => {
-    const mod = await import("@togglecorp/re-map");
+    const mod = await import('@togglecorp/re-map');
     return { default: mod.MapContainer };
 });
 
@@ -20,12 +27,13 @@ function MapTile(props: Props) {
         geoJson,
         tileServer,
     } = props;
+    const { height } = useWindowDimensions();
 
     return (
         <View
             style={{
                 width: '100%',
-                height: '60vh',
+                height: height * 0.6,
             }}
         >
             <BaseMap baseTileServer={tileServer}>
@@ -43,7 +51,6 @@ function MapTile(props: Props) {
             </BaseMap>
         </View>
     );
-
 }
 
 export default MapTile;

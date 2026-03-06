@@ -1,0 +1,49 @@
+{
+    "$schema": "https://unpkg.com/knip@5/schema.json",
+    "ignoreDependencies": [
+        // TODO: We should be able to remove these once we
+        // completely migrate to new configuration
+        // https://github.com/airbnb/javascript/issues/2961
+        "eslint-config-airbnb",
+        "eslint-plugin-import-newlines",
+        "eslint-plugin-jsx-a11y",
+        "eslint-plugin-react",
+        "eslint-plugin-react-hooks",
+        "eslint-plugin-react-native",
+        "eslint-plugin-simple-import-sort",
+        // FIXME: Remove this after type fixes are made
+        "firebase-admin",
+        // FIXME: Remove this after type fixes are made
+        "expo-splash-screen",
+        "@typescript-eslint/eslint-plugin"
+    ],
+    "ignoreExportsUsedInFile": true,
+    "entry": [
+        "app/**/*.{js,ts,tsx,web.ts,web.tsx,native.ts,native.tsx,ios.ts,ios.tsx,android.ts,android.tsx}!",
+        "components/**/*.{js,ts,tsx,web.ts,web.tsx,native.ts,native.tsx,ios.ts,ios.tsx,android.ts,android.tsx}!",
+        "contexts/**/*.{ts,tsx}!",
+        "hooks/**/*.{ts,tsx}!",
+        "utils/**/*.{ts,tsx}!",
+        "constants/**/*.{ts,tsx}!"
+    ],
+    "project": [
+        "app/**/*.{ts,tsx,web.ts,web.tsx,native.ts,native.tsx,ios.ts,ios.tsx,android.ts,android.tsx}",
+        "components/**/*.{ts,tsx,web.ts,web.tsx,native.ts,native.tsx,ios.ts,ios.tsx,android.ts,android.tsx}",
+        "contexts/**/*.{ts,tsx}",
+        "hooks/**/*.{ts,tsx}",
+        "utils/**/*.{ts,tsx}",
+        "constants/**/*.{ts,tsx}"
+    ],
+    "ignore": [
+        ".expo/**",
+        "android/**",
+        "ios/**",
+        "node_modules/**",
+        "patches/**",
+        "app.json",
+        "expo-router/**"
+    ],
+    "expo": {
+        "entry": ["app/_layout.tsx"]
+    }
+}

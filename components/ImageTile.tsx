@@ -1,7 +1,44 @@
-import { Pressable, View } from "react-native";
-import { Image } from "expo-image";
-import useTheme from "@/hooks/useTheme";
-import { useCallback } from "react";
+import { useCallback } from 'react';
+import {
+    Pressable,
+    StyleSheet,
+    View,
+} from 'react-native';
+import { Image } from 'expo-image';
+
+import { type AppTheme } from '@/constants/theme';
+import useThemedStyles from '@/hooks/useThemedStyles';
+
+const createStyles = (
+    theme: AppTheme,
+    {
+        width,
+        tintColor,
+    }: {
+        tintColor?: string,
+        width: number,
+    },
+) => StyleSheet.create({
+    imageTile: {
+        position: 'relative',
+        userSelect: 'none',
+    },
+    image: {
+        width,
+        aspectRatio: 1,
+        borderColor: theme.mapBoundary,
+        borderWidth: 1,
+    },
+    view: {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: tintColor,
+        opacity: 0.2,
+    },
+});
 
 interface Props<TASK_ID> {
     taskId: TASK_ID;
@@ -20,39 +57,23 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
         tintColor,
     } = props;
 
-    const theme = useTheme();
+    const styles = useThemedStyles(createStyles, { width, tintColor });
 
     const handlePress = useCallback(() => {
         onPress(taskId);
-    }, [taskId]);
+    }, [taskId, onPress]);
 
     return (
         <Pressable
             onPress={handlePress}
-            style={{
-                position: 'relative',
-                userSelect: 'none',
-            }}
+            style={styles.imageTile}
         >
             <Image
                 source={url}
-                style={{
-                    width,
-                    aspectRatio: 1,
-                    borderColor: theme.mapBoundary,
-                    borderWidth: 1,
-                }}
+                style={styles.image}
             />
             <View
-                style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: tintColor,
-                    opacity: 0.2,
-                }}
+                style={styles.view}
             />
         </Pressable>
     );

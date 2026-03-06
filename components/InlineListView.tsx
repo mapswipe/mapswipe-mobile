@@ -1,6 +1,15 @@
-import useSpacingToken from "@/hooks/useSpacingToken";
-import { fullSpacings, gapSpacings, SpacingType } from "@/utils/styles";
-import { StyleSheet, View, ViewStyle } from "react-native";
+import {
+    StyleSheet,
+    View,
+    ViewStyle,
+} from 'react-native';
+
+import useSpacingToken from '@/hooks/useSpacingToken';
+import {
+    fullSpacings,
+    gapSpacings,
+    SpacingType,
+} from '@/utils/styles';
 
 const styles = StyleSheet.create({
     inlineListView: {
@@ -18,10 +27,10 @@ const styles = StyleSheet.create({
     },
 });
 
-interface Props {
+export interface Props {
     children: React.ReactNode;
     spacing?: SpacingType;
-    style?: ViewStyle;
+    style?: ViewStyle | ViewStyle[];
     withPadding?: boolean;
     withCenteredContent?: boolean;
     withoutWrap?: boolean;
@@ -63,7 +72,7 @@ function InlineListView(props: Props) {
                 withCenteredContent && styles.withCenteredContent,
                 withSpaceBetweenContents && styles.withSpaceBetweenContents,
                 !withoutWrap && styles.withWrap,
-                style,
+                ...(Array.isArray(style) ? style : [style]),
             ]}
         >
             {children}

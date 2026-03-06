@@ -1,8 +1,17 @@
-import { FONT_SIZE_3XL, FONT_SIZE_LG, FONT_SIZE_MD, FONT_SIZE_SM } from '@/constants/dimensions';
-import useTheme from '@/hooks/useTheme';
 import { useMemo } from 'react';
-import { Text as NativeText, StyleSheet } from 'react-native';
-import { TextStyle } from 'react-native';
+import {
+    StyleSheet,
+    Text as NativeText,
+    TextStyle,
+} from 'react-native';
+
+import {
+    FONT_SIZE_3XL,
+    FONT_SIZE_LG,
+    FONT_SIZE_MD,
+    FONT_SIZE_SM,
+} from '@/constants/dimensions';
+import useTheme from '@/hooks/useTheme';
 
 interface Props {
     children: string | null | undefined;
@@ -40,18 +49,18 @@ function Text(props: Props) {
                 fontSize: FONT_SIZE_MD,
                 fontWeight: 'regular',
                 color: theme.textSecondary,
-            }
+            },
         })
     ), [theme]);
 
     return (
         <NativeText
             style={[
-                style,
                 variant === 'heading' && styles.heading,
                 variant === 'title' && styles.title,
                 variant === 'label' && styles.label,
                 variant === 'description' && styles.description,
+                style,
             ]}
         >
             {children}

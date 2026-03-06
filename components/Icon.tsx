@@ -1,13 +1,36 @@
-import { isNotDefined } from "@togglecorp/fujs";
+import { isNotDefined } from '@togglecorp/fujs';
 import {
+    ArrowClockwiseIcon,
+    ArrowLeftIcon,
     CheckIcon,
-    MinusIcon,
-    XIcon,
-    type IconProps,
+    CircleIcon,
+    CubeIcon,
+    CursorClickIcon,
+    EggIcon,
+    FlagIcon,
+    HandIcon,
+    HeartIcon,
     type Icon as PhosphorIcon,
-} from "phosphor-react-native";
+    type IconProps,
+    InfoIcon,
+    MagnifyingGlassIcon,
+    MinusIcon,
+    PlusIcon,
+    ProhibitIcon,
+    ShapesIcon,
+    SmileyIcon,
+    SmileySadIcon,
+    SquareIcon,
+    StarIcon,
+    ThumbsDownIcon,
+    ThumbsUpIcon,
+    TriangleIcon,
+    WarningIcon,
+    XIcon,
+} from 'phosphor-react-native';
 
-type IconName = 'add-outline'
+export type IconName =
+| 'add-outline'
 | 'alert-outline'
 | 'ban-outline'
 | 'check'
@@ -41,13 +64,42 @@ type IconName = 'add-outline'
 | 'warning-outline';
 
 const iconMap: Record<IconName, PhosphorIcon> = {
+    'add-outline': PlusIcon,
+    'alert-outline': WarningIcon,
+    'ban-outline': ProhibitIcon,
+    check: CheckIcon,
     'checkmark-outline': CheckIcon,
     'close-outline': XIcon,
+    'egg-outline': EggIcon,
+    'ellipse-outline': CircleIcon,
+    'flag-outline': FlagIcon,
+    'general-tap': CursorClickIcon,
+    'hand-left-outline': HandIcon,
+    'hand-right-outline': HandIcon,
+    'happy-outline': SmileyIcon,
+    'heart-outline': HeartIcon,
+    'information-outline': InfoIcon,
+    'prism-outline': CubeIcon,
+    'refresh-outline': ArrowClockwiseIcon,
     'remove-outline': MinusIcon,
-}
+    'sad-outline': SmileySadIcon,
+    'search-outline': MagnifyingGlassIcon,
+    'shapes-outline': ShapesIcon,
+    'square-outline': SquareIcon,
+    'star-outline': StarIcon,
+    'swipe-left': ArrowLeftIcon,
+    tap: CursorClickIcon,
+    'tap-1': CursorClickIcon,
+    'tap-2': CursorClickIcon,
+    'tap-3': CursorClickIcon,
+    'thumbs-down-outline': ThumbsDownIcon,
+    'thumbs-up-outline': ThumbsUpIcon,
+    'triangle-outline': TriangleIcon,
+    'warning-outline': WarningIcon,
+};
 
 interface Props extends IconProps {
-    name: string;
+    name: IconName;
 }
 
 function Icon(props: Props) {
@@ -56,7 +108,7 @@ function Icon(props: Props) {
         ...phosphorIconProps
     } = props;
 
-    const name = nameFromProps as IconName;
+    const name = nameFromProps;
 
     const IconComponent = iconMap[name];
 
@@ -64,6 +116,7 @@ function Icon(props: Props) {
         return null;
     }
 
+    // eslint-disable-next-line react/jsx-props-no-spreading
     return <IconComponent {...phosphorIconProps} />;
 }
 

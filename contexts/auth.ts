@@ -1,5 +1,5 @@
-import { type User } from 'firebase/auth';
 import { createContext } from 'react';
+import { type User } from 'firebase/auth';
 
 export type AuthContextProps = {
     authPending: true;

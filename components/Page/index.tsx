@@ -1,30 +1,49 @@
-import { Text, View, StyleSheet } from "react-native";
-import BlockListView from "../BlockListView";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+    ScrollView,
+    StyleSheet,
+    ViewStyle,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const styles = StyleSheet.create({
+import { type AppTheme } from '@/constants/theme';
+import useThemedStyles from '@/hooks/useThemedStyles';
+
+type Variant = 'normal' | 'brand';
+
+const createStyles = (theme: AppTheme, { variant }: { variant: Variant }) => StyleSheet.create({
     page: {
         flex: 1,
-        backgroundColor: '#f4f4f6',
+        backgroundColor: variant === 'brand' ? theme.backgroundBrand : theme.background,
     },
 });
 
 interface Props {
     title: string;
+    style?: ViewStyle,
     children: React.ReactNode;
-    withFullWidthContent?: boolean;
+    variant?: 'normal' | 'brand';
 }
 
 function Page(props: Props) {
     const {
         title,
         children,
-        withFullWidthContent,
+        style,
+        variant = 'normal',
     } = props;
 
+    const styles = useThemedStyles(createStyles, { variant });
+
     return (
-        <SafeAreaView style={styles.page}>
-            {children}
+        <SafeAreaView
+            style={[
+                styles.page,
+                style,
+            ]}
+        >
+            <ScrollView>
+                {children}
+            </ScrollView>
         </SafeAreaView>
     );
 }

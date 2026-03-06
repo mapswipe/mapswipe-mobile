@@ -1,18 +1,40 @@
 {
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true,
-    "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
-    }
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+    "extends": "expo/tsconfig.base",
+    "compilerOptions": {
+        "strict": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./*"
+            ],
+            "@/assets/*": ["assets/*"],
+            "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"],
+            "@/firebaseGenerated/*": ["./firebase/functions/generated/tsfirebase/*"]
+        }
+    },
+    "include": [
+        "types/**/*.d.ts",
+        "app/**/*.ts",
+        "app/**/*.tsx",
+        "components/**/*.ts",
+        "components/**/*.tsx",
+        "contexts/**/*.ts",
+        "contexts/**/*.tsx",
+        "hooks/**/*.ts",
+        "hooks/**/*.tsx",
+        "utils/**/*.ts",
+        "utils/**/*.tsx",
+        "constants/**/*.ts",
+        "constants/**/*.tsx",
+        ".expo/types/**/*.ts",
+        "expo-env.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "android",
+        "ios",
+        "coverage",
+        ".expo",
+        "firebase/**"
+    ]
 }

@@ -1,24 +1,62 @@
-import { useMemo } from "react";
-import { View, StyleSheet, FlatList } from "react-native";
+import { useMemo } from 'react';
+import {
+    FlatList,
+    StyleSheet,
+    View,
+} from 'react-native';
 import { Image } from 'expo-image';
-import { equalTo, limitToFirst, orderByChild, query } from "firebase/database";
-import { ArrowRightIcon } from "phosphor-react-native";
-import { isDefined, isNotDefined } from "@togglecorp/fujs";
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
+import {
+    equalTo,
+    limitToFirst,
+    orderByChild,
+    query,
+} from 'firebase/database';
 
-import BlockListView from "@/components/BlockListView";
-import Text from "@/components/Text";
-import Link from "@/components/Link";
-import InlineListView from "@/components/InlineListView";
-import useFirebaseDatabaseList from "@/hooks/useFirebaseDatabaseList";
-import useTheme from "@/hooks/useTheme";
-import { firebaseRef } from "@/utils/firebase";
-import { FbProject } from "@/utils/types";
-import { ICON_SIZE_XL } from "@/constants/dimensions";
+import heartIcon from '@/assets/images/custom/heart_icon.png';
+import BlockListView from '@/components/BlockListView';
+import InlineListView from '@/components/InlineListView';
+import Link from '@/components/Link';
+import Text from '@/components/Text';
+import { SUPPORTED_PROJECT_TYPES } from '@/constants/common';
+import {
+    FONT_SIZE_XS,
+    SCREEN_WIDTH,
+} from '@/constants/dimensions';
+import { type AppTheme } from '@/constants/theme';
+import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
+import useTheme from '@/hooks/useTheme';
+import useThemedStyles from '@/hooks/useThemedStyles';
+import { getProjectProgressForDisplay } from '@/utils/common';
+import { firebaseRef } from '@/utils/firebase';
+import {
+    FbProject,
+    PROJECT_TYPE_COMPLETENESS,
+} from '@/utils/types';
 
-const styles = StyleSheet.create({
+const PROJECT_CARD_HEIGHT = 220;
+const PROJECT_CARD_WIDTH = SCREEN_WIDTH / 2 - 15;
+
+const createStyles = (theme: AppTheme) => (StyleSheet.create({
+    projects: {
+        flex: 1,
+        padding: 10,
+        backgroundColor: theme.background,
+    },
+    projectsContent: {
+        flex: 1,
+        alignItems: 'stretch',
+        flexWrap: 'wrap',
+        flexDirection: 'row',
+        gap: 10,
+    },
     projectItem: {
+        flex: 1,
         backgroundColor: '#ffffff',
-        borderRadius: 20,
+        width: PROJECT_CARD_WIDTH,
         boxShadow: [{
             offsetX: 0,
             offsetY: 0,
@@ -27,20 +65,58 @@ const styles = StyleSheet.create({
             color: 'rgba(0, 0, 0, .1)',
         }],
     },
+    fullWidthProject: {
+        width: SCREEN_WIDTH - 20,
+    },
     projectImage: {
-        height: ICON_SIZE_XL,
+        height: 220,
         aspectRatio: 1,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+    },
+    overlay: {
+        top: 0,
+        left: 0,
+        position: 'absolute',
+        width: PROJECT_CARD_WIDTH,
+        height: 220,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+    },
+    overlayContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        position: 'absolute',
+        gap: 4,
+        top: 0,
+        left: 0,
+        width: PROJECT_CARD_WIDTH,
+        padding: 10,
+        height: 220,
+    },
+    projectDetailsText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    horizontalBar: {
+        borderWidth: 0.5,
+        borderBottomWidth: 0,
+        borderColor: '#fff',
+    },
+    heartIcon: {
+        height: 12,
+        width: 12,
+    },
+    contributionText: {
+        color: '#fff',
+        fontSize: FONT_SIZE_XS,
+    },
+    inline: {
+        alignItems: 'center',
+        flexGrow: 0,
     },
     projectImagePlaceholder: {
-        height: ICON_SIZE_XL,
+        height: PROJECT_CARD_HEIGHT,
         aspectRatio: 1,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
     },
-});
-
+}));
 
 function Projects() {
     const projectsQuery = useMemo(() => (
@@ -54,61 +130,120 @@ function Projects() {
 
     const { list: projectList } = useFirebaseDatabaseList<FbProject>({ query: projectsQuery });
 
+    const filteredProjects = useMemo(() => {
+        const sortedProjects = [...projectList]
+            .filter((project) => {
+                if (!project.projectType) {
+                    return false;
+                }
+                if (
+                    !['active', 'private_active'].includes(
+                        project.status,
+                    )
+                ) {
+                    // only show "active" and "private_active" projects
+                    // (this is only useful for private ones)
+                    return false;
+                }
+                if (
+                    !SUPPORTED_PROJECT_TYPES.includes(
+                        project.projectType,
+                    )
+                ) {
+                    return false;
+                }
+                if (
+                    project.projectType === PROJECT_TYPE_COMPLETENESS
+                ) {
+                    if (
+                        project.overlayTileServer?.type
+                            === 'raster'
+                    ) {
+                        return true;
+                    }
+                    if (
+                        isNotDefined(
+                            project.overlayTileServer?.type,
+                        )
+                    ) {
+                        return true;
+                    }
+                    return false;
+                }
+                return true;
+            });
+        sortedProjects.sort((a, b) => +b.isFeatured - +a.isFeatured);
+
+        return sortedProjects;
+    }, [projectList]);
+
+    const styles = useThemedStyles(createStyles);
+
     const theme = useTheme();
 
     return (
         <FlatList
-            style={{
-                backgroundColor: theme.background,
-                padding: 20,
-            }}
-            data={projectList}
+            style={styles.projects}
+            data={filteredProjects}
             keyExtractor={(project) => project.projectId}
-            ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+            contentContainerStyle={styles.projectsContent}
             renderItem={({ item: project }) => (
-                <BlockListView
-                    key={project.projectId}
-                    spacing="none"
-                    style={styles.projectItem}
+                <Link
+                    href={{
+                        pathname: '/(auth)/project/[id]',
+                        params: {
+                            id: project.projectId,
+                        },
+                    }}
+                    styleVariant="action"
+                    withoutPadding
                 >
-                    {isDefined(project.image) && (
-                        <Image
-                            style={styles.projectImage}
-                            source={project.image}
-                        />
-                    )}
-                    {isNotDefined(project.image) && (
-                        <View
-                            style={[
-                                styles.projectImagePlaceholder,
-                                { backgroundColor: theme.primaryLight },
-                            ]}
-                        />
-                    )}
-                    <InlineListView
-                        spacing="sm"
-                        withPadding
-                        withSpaceBetweenContents
-                        style={{ alignItems: 'center' }}
-                        withoutWrap
+                    <BlockListView
+                        key={project.projectId}
+                        spacing="none"
+                        style={[
+                            styles.projectItem,
+                            project.isFeatured ? styles.fullWidthProject : undefined,
+                        ].filter(isDefined)}
                     >
-                        <Text>
-                            {project.projectTopic}
-                        </Text>
-                        <Link
-                            href={{
-                                pathname: '/(auth)/project/[id]',
-                                params: {
-                                    id: project.projectId,
-                                },
-                            }}
-                            withoutAdditionalPaddding
-                            spacing="sm"
-                        >
-                            <ArrowRightIcon style={{ color: theme.textOnPrimary }} />
-                        </Link>
-                    </InlineListView>
-                </BlockListView>
+                        {isDefined(project.image) && (
+                            <Image
+                                style={styles.projectImage}
+                                source={project.image}
+                            />
+                        )}
+                        {isNotDefined(project.image) && (
+                            <View
+                                style={[
+                                    styles.projectImagePlaceholder,
+                                    { backgroundColor: theme.backgroundMuted },
+                                ]}
+                            />
+                        )}
+                        <View style={styles.overlay} />
+                        <View style={styles.overlayContainer}>
+                            <Text style={styles.projectDetailsText}>
+                                {project.projectTopic}
+                            </Text>
+                            <View style={styles.horizontalBar} />
+                            <InlineListView
+                                style={styles.inline}
+                                spacing="3xs"
+                            >
+                                <Image
+                                    style={styles.heartIcon}
+                                    source={heartIcon}
+                                />
+                                <Text
+                                    style={styles.contributionText}
+                                    variant="label"
+                                >
+                                    {`${getProjectProgressForDisplay(project.progress)}% by ${project.contributorCount ?? 0} mappers`}
+                                </Text>
+                            </InlineListView>
+                        </View>
+                    </BlockListView>
+                </Link>
             )}
         />
     );

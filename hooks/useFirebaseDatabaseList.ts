@@ -1,7 +1,8 @@
-import { type Query } from 'firebase/database';
-import useFirebaseDatabase from './useFirebaseDatabase';
-import { isNotDefined } from '@togglecorp/fujs';
 import { useMemo } from 'react';
+import { isNotDefined } from '@togglecorp/fujs';
+import { type Query } from 'firebase/database';
+
+import useFirebaseDatabase from './useFirebaseDatabase';
 
 interface Props {
     query: Query;

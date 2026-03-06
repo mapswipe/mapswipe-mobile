@@ -1,17 +1,36 @@
 import {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+} from 'react';
+import {
+    FlatList,
+    useWindowDimensions,
+    View,
+} from 'react-native';
+import {
+    compareNumber,
+    isDefined,
+    isNotDefined,
+    listToGroupList,
+    listToMap,
+    mapToList,
+} from '@togglecorp/fujs';
+
+import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import { firebaseRef } from '@/utils/firebase';
+import { buildTasks } from '@/utils/task';
+import {
     CompletenessProject,
     FbMappingGroupTileMapServiceCreateOnlyInput,
     FindProject,
-    Results,
     ResultOption,
-} from "@/utils/types";
-import { compareNumber, isDefined, isNotDefined, listToGroupList, listToMap, mapToList } from "@togglecorp/fujs";
-import { FlatList, useWindowDimensions, View } from "react-native";
-import useFirebaseDatabase from "@/hooks/useFirebaseDatabase";
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo } from "react";
-import { firebaseRef } from "@/utils/firebase";
-import { buildTasks } from "@/utils/task";
-import ImageTile from "./ImageTile";
+    Results,
+} from '@/utils/types';
+
+import ImageTile from './ImageTile';
 
 interface Props {
     taskGroupId: string;
@@ -34,10 +53,12 @@ function TileGridMappingSession(props: Props) {
     } = useWindowDimensions();
 
     const taskGroupQuery = useMemo(() => (
-        firebaseRef( `v2/groups/${projectDetails.projectId}/${taskGroupId}`)
-    ), [taskGroupId]);
+        firebaseRef(`v2/groups/${projectDetails.projectId}/${taskGroupId}`)
+    ), [taskGroupId, projectDetails.projectId]);
 
-    const { data: groupDetails } = useFirebaseDatabase<FbMappingGroupTileMapServiceCreateOnlyInput>({
+    const { data: groupDetails } = useFirebaseDatabase<
+        FbMappingGroupTileMapServiceCreateOnlyInput
+    >({
         query: taskGroupQuery,
     });
 
@@ -48,14 +69,13 @@ function TileGridMappingSession(props: Props) {
         { value: 3, label: 'Bad Imagery', color: 'red' },
     ]), []);
 
-
     const getNextValue = useCallback((value: number | undefined) => {
         if (isNotDefined(value)) {
             return options[0].value;
         }
 
         const optionIndex = options.findIndex(
-            ({ value: optionValue }) => value === optionValue
+            ({ value: optionValue }) => value === optionValue,
         );
 
         const nextIndex = optionIndex + 1;
@@ -76,8 +96,7 @@ function TileGridMappingSession(props: Props) {
         }
 
         return buildTasks(projectDetails, groupDetails);
-
-    }, []);
+    }, [groupDetails, projectDetails]);
 
     useEffect(() => {
         if (isNotDefined(tasks) || tasks.length === 0) {
@@ -89,10 +108,9 @@ function TileGridMappingSession(props: Props) {
                 tasks,
                 ({ taskId }) => taskId,
                 () => options[0].value,
-            )
+            ),
         );
-    }, [tasks, options]);
-
+    }, [tasks, options, onResultsChange]);
 
     const groupedTasks = useMemo(() => {
         if (isNotDefined(tasks) || tasks.length === 0) {
@@ -100,8 +118,7 @@ function TileGridMappingSession(props: Props) {
         }
 
         const sortedTasks = [...tasks].sort(
-            (a, b) => compareNumber(a.taskX, b.taskX)
-                | compareNumber(a.taskY, b.taskY),
+            (a, b) => (compareNumber(a.taskX, b.taskX) || compareNumber(a.taskY, b.taskY)),
         ).map((task) => {
             const {
                 taskX,
@@ -117,7 +134,7 @@ function TileGridMappingSession(props: Props) {
                 ...otherProps,
                 taskX,
                 taskY,
-            }
+            };
         }).filter(isDefined);
 
         return mapToList(
@@ -128,9 +145,9 @@ function TileGridMappingSession(props: Props) {
             (columnList, key) => ({
                 taskX: key,
                 taskList: columnList,
-            })
+            }),
         );
-    }, [projectDetails, groupDetails]);
+    }, [tasks]);
 
     const tileWidth = Math.min(pageWidth / 2, pageHeight / 4);
 
@@ -139,16 +156,16 @@ function TileGridMappingSession(props: Props) {
             ...prevResults,
             [taskId]: getNextValue(prevResults[taskId]),
         }));
-    }, [getNextValue]);
+    }, [getNextValue, onResultsChange]);
 
     return (
         <FlatList
             key={groupedTasks.length}
             data={groupedTasks}
-            keyExtractor={(groupedTasks) => groupedTasks.taskX}
-            renderItem={({ item: groupedTasks }) => (
+            keyExtractor={(groupedTaskItem) => groupedTaskItem.taskX}
+            renderItem={({ item: groupedTasksFromRenderer }) => (
                 <View>
-                    {groupedTasks.taskList.map((task) => {
+                    {groupedTasksFromRenderer.taskList.map((task) => {
                         const result = results[task.taskId];
                         const selectedOption = isDefined(result)
                             ? optionsByValue[result]
