@@ -41,82 +41,167 @@ const PROJECT_CARD_HEIGHT = 220;
 const PROJECT_CARD_WIDTH = SCREEN_WIDTH / 2 - 15;
 
 const createStyles = (theme: AppTheme) => (StyleSheet.create({
+    columnWrapper: {
+        gap: 10,
+    },
     projects: {
         flex: 1,
         padding: 10,
+        paddingBottom: 10,
         backgroundColor: theme.background,
     },
     projectsContent: {
         flex: 1,
-        alignItems: 'stretch',
-        flexWrap: 'wrap',
-        flexDirection: 'row',
         gap: 10,
     },
-    projectItem: {
+    featuredProjectsContent: {
         flex: 1,
-        backgroundColor: '#ffffff',
-        width: PROJECT_CARD_WIDTH,
-        boxShadow: [{
-            offsetX: 0,
-            offsetY: 0,
-            spreadDistance: 2,
-            blurRadius: 3,
-            color: 'rgba(0, 0, 0, .1)',
-        }],
+        gap: 10,
     },
-    fullWidthProject: {
-        width: SCREEN_WIDTH - 20,
-    },
-    projectImage: {
-        height: 220,
-        aspectRatio: 1,
-    },
-    overlay: {
-        top: 0,
-        left: 0,
-        position: 'absolute',
-        width: PROJECT_CARD_WIDTH,
-        height: 220,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-    },
-    overlayContainer: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        position: 'absolute',
-        gap: 4,
-        top: 0,
-        left: 0,
-        width: PROJECT_CARD_WIDTH,
-        padding: 10,
-        height: 220,
-    },
-    projectDetailsText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-    horizontalBar: {
-        borderWidth: 0.5,
-        borderBottomWidth: 0,
-        borderColor: '#fff',
-    },
-    heartIcon: {
-        height: 12,
-        width: 12,
-    },
-    contributionText: {
-        color: '#fff',
-        fontSize: FONT_SIZE_XS,
-    },
-    inline: {
-        alignItems: 'center',
-        flexGrow: 0,
-    },
-    projectImagePlaceholder: {
-        height: PROJECT_CARD_HEIGHT,
-        aspectRatio: 1,
+    separatorItem: {
+        height: 10,
     },
 }));
+
+const createProjectStyles = (_: AppTheme, { featured }: { featured: boolean }) => {
+    const width = featured ? (SCREEN_WIDTH - 20) : PROJECT_CARD_WIDTH;
+
+    return (
+        StyleSheet.create({
+            projectItem: {
+                flex: 1,
+                backgroundColor: '#ffffff',
+                width,
+                boxShadow: [{
+                    offsetX: 0,
+                    offsetY: 0,
+                    spreadDistance: 2,
+                    blurRadius: 3,
+                    color: 'rgba(0, 0, 0, .1)',
+                }],
+            },
+            projectImage: {
+                height: 220,
+                aspectRatio: 1,
+            },
+            overlay: {
+                top: 0,
+                left: 0,
+                position: 'absolute',
+                width,
+                height: 220,
+                backgroundColor: 'rgba(0,0,0,0.4)',
+            },
+            overlayContainer: {
+                flex: 1,
+                justifyContent: 'flex-end',
+                position: 'absolute',
+                gap: 4,
+                top: 0,
+                left: 0,
+                width,
+                padding: 10,
+                height: 220,
+            },
+            projectDetailsText: {
+                color: '#fff',
+                fontWeight: 'bold',
+            },
+            horizontalBar: {
+                borderWidth: 0.5,
+                borderBottomWidth: 0,
+                borderColor: '#fff',
+            },
+            heartIcon: {
+                height: 12,
+                width: 12,
+            },
+            contributionText: {
+                color: '#fff',
+                fontSize: FONT_SIZE_XS,
+            },
+            inline: {
+                alignItems: 'center',
+                flexGrow: 0,
+            },
+            projectImagePlaceholder: {
+                height: PROJECT_CARD_HEIGHT,
+                aspectRatio: 1,
+            },
+        })
+    );
+};
+
+interface ProjectItemProps {
+    project: FbProject;
+    featured: boolean;
+}
+
+function ProjectItem(props: ProjectItemProps) {
+    const {
+        project,
+        featured,
+    } = props;
+
+    const styles = useThemedStyles(createProjectStyles, { featured });
+    const theme = useTheme();
+
+    return (
+        <Link
+            href={{
+                pathname: '/(auth)/project/[id]',
+                params: {
+                    id: project.projectId,
+                },
+            }}
+            styleVariant="action"
+            withoutPadding
+        >
+            <BlockListView
+                key={project.projectId}
+                spacing="none"
+                style={styles.projectItem}
+            >
+                {isDefined(project.image) && (
+                    <Image
+                        style={styles.projectImage}
+                        source={project.image}
+                    />
+                )}
+                {isNotDefined(project.image) && (
+                    <View
+                        style={[
+                            styles.projectImagePlaceholder,
+                            { backgroundColor: theme.backgroundMuted },
+                        ]}
+                    />
+                )}
+                <View style={styles.overlay} />
+                <View style={styles.overlayContainer}>
+                    <Text style={styles.projectDetailsText}>
+                        {project.projectTopic}
+                    </Text>
+                    <View style={styles.horizontalBar} />
+                    <InlineListView
+                        style={styles.inline}
+                        spacing="3xs"
+                    >
+                        <Image
+                            style={styles.heartIcon}
+                            source={heartIcon}
+                        />
+                        <Text
+                            style={styles.contributionText}
+                            variant="label"
+                        >
+                            {`${getProjectProgressForDisplay(project.progress)}% by ${project.contributorCount ?? 0} mappers`}
+                        </Text>
+                    </InlineListView>
+                </View>
+            </BlockListView>
+        </Link>
+    );
+}
 
 function Projects() {
     const projectsQuery = useMemo(() => (
@@ -177,73 +262,47 @@ function Projects() {
         return sortedProjects;
     }, [projectList]);
 
-    const styles = useThemedStyles(createStyles);
+    const featuredProjects = useMemo(() => (
+        filteredProjects?.filter((item) => item.isFeatured)
+    ), [filteredProjects]);
 
-    const theme = useTheme();
+    const nonFeaturedProjects = useMemo(() => (
+        filteredProjects?.filter((item) => !item.isFeatured)
+    ), [filteredProjects]);
+
+    const styles = useThemedStyles(createStyles);
 
     return (
         <FlatList
             style={styles.projects}
-            data={filteredProjects}
+            data={nonFeaturedProjects}
+            numColumns={2}
             keyExtractor={(project) => project.projectId}
+            columnWrapperStyle={styles.columnWrapper}
             contentContainerStyle={styles.projectsContent}
+            ListHeaderComponent={(
+                <FlatList
+                    data={featuredProjects}
+                    scrollEnabled={false}
+                    keyExtractor={(project) => project.projectId}
+                    contentContainerStyle={styles.featuredProjectsContent}
+                    // eslint-disable-next-line react/no-unstable-nested-components
+                    ItemSeparatorComponent={() => <View style={styles.separatorItem} />}
+                    renderItem={({ item: project }) => (
+                        <ProjectItem
+                            key={project.projectId}
+                            project={project}
+                            featured
+                        />
+                    )}
+                />
+            )}
             renderItem={({ item: project }) => (
-                <Link
-                    href={{
-                        pathname: '/(auth)/project/[id]',
-                        params: {
-                            id: project.projectId,
-                        },
-                    }}
-                    styleVariant="action"
-                    withoutPadding
-                >
-                    <BlockListView
-                        key={project.projectId}
-                        spacing="none"
-                        style={[
-                            styles.projectItem,
-                            project.isFeatured ? styles.fullWidthProject : undefined,
-                        ].filter(isDefined)}
-                    >
-                        {isDefined(project.image) && (
-                            <Image
-                                style={styles.projectImage}
-                                source={project.image}
-                            />
-                        )}
-                        {isNotDefined(project.image) && (
-                            <View
-                                style={[
-                                    styles.projectImagePlaceholder,
-                                    { backgroundColor: theme.backgroundMuted },
-                                ]}
-                            />
-                        )}
-                        <View style={styles.overlay} />
-                        <View style={styles.overlayContainer}>
-                            <Text style={styles.projectDetailsText}>
-                                {project.projectTopic}
-                            </Text>
-                            <View style={styles.horizontalBar} />
-                            <InlineListView
-                                style={styles.inline}
-                                spacing="3xs"
-                            >
-                                <Image
-                                    style={styles.heartIcon}
-                                    source={heartIcon}
-                                />
-                                <Text
-                                    style={styles.contributionText}
-                                    variant="label"
-                                >
-                                    {`${getProjectProgressForDisplay(project.progress)}% by ${project.contributorCount ?? 0} mappers`}
-                                </Text>
-                            </InlineListView>
-                        </View>
-                    </BlockListView>
-                </Link>
+                <ProjectItem
+                    key={project.projectId}
+                    project={project}
+                    featured={false}
+                />
             )}
         />
     );
