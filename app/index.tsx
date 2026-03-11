@@ -1,23 +1,10 @@
 import { useEffect } from 'react';
-import {
-    ActivityIndicator,
-    StyleSheet,
-    View,
-} from 'react-native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import LoadingComponent from '@/components/Loader';
 import Page from '@/components/Page';
-import Text from '@/components/Text';
 import useAuth from '@/hooks/useAuth';
-
-const styles = StyleSheet.create({
-    mainView: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 10,
-    },
-});
 
 function AppIndex() {
     const {
@@ -26,23 +13,30 @@ function AppIndex() {
     } = useAuth();
 
     useEffect(() => {
-        if (!authPending && isLoggedIn) {
-            router.push('/projects');
-        }
+        const checkNavigation = async () => {
+            if (authPending) return;
 
-        if (!authPending && !isLoggedIn) {
-            router.push('/login');
-        }
+            if (isLoggedIn) {
+                router.push('/projects');
+            }
+            try {
+                const hasSeen = await AsyncStorage.getItem('@hasSeenOnboarding');
+                if (hasSeen && !isLoggedIn) {
+                    router.replace('/login');
+                } else {
+                    router.replace('/onboarding');
+                }
+            } catch {
+                router.replace('/onboarding');
+            }
+        };
+
+        checkNavigation();
     }, [authPending, isLoggedIn]);
 
     return (
         <Page title="MapSwipe">
-            <View style={styles.mainView}>
-                <ActivityIndicator size="large" />
-                <Text>
-                    Checking user session...
-                </Text>
-            </View>
+            <LoadingComponent label="Getting things ready..." />
         </Page>
     );
 }

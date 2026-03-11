@@ -6,10 +6,7 @@ import {
     useMemo,
     useState,
 } from 'react';
-import {
-    ActivityIndicator,
-    View,
-} from 'react-native';
+import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast, {
     BaseToast,
@@ -22,8 +19,8 @@ import { isDefined } from '@togglecorp/fujs';
 import { User } from 'firebase/auth';
 import { Provider as UrqlProvider } from 'urql';
 
+import LoadingComponent from '@/components/Loader';
 import Page from '@/components/Page';
-import Text from '@/components/Text';
 import AuthContext, { AuthContextProps } from '@/contexts/auth';
 import useTheme from '@/hooks/useTheme';
 import { fetchCsrfToken } from '@/utils/csrfToken';
@@ -130,10 +127,7 @@ export default function AppLayout() {
                         gap: 10,
                     }}
                 >
-                    <ActivityIndicator size="large" />
-                    <Text>
-                        Getting things ready...
-                    </Text>
+                    <LoadingComponent label="Getting things ready..." />
                 </View>
             </Page>
         );
@@ -151,6 +145,9 @@ export default function AppLayout() {
                     style="light"
                 />
                     <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Protected guard={!isAuthenticated}>
+                        <Stack.Screen name="onboarding" />
+                    </Stack.Protected>
                         <Stack.Protected guard={!isAuthenticated}>
                             <Stack.Screen name="login" />
                         </Stack.Protected>

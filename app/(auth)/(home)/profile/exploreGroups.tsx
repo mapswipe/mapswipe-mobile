@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
 });
 
 export interface UserGroupWithKey {
-    key: string;
+    nameKey: string;
     name?: string;
     archivedAt?: string;
     archivedBy?: string;
@@ -95,7 +95,7 @@ function ExploreGroups() {
                     {filteredGroups.length > 0 ? (
                         filteredGroups.map((group) => (
                             <ClickableListItem
-                                key={group.key}
+                                key={group.nameKey}
                                 name={group.key}
                                 title={group.name ?? ''}
                                 onPress={onHandleItemClick}
