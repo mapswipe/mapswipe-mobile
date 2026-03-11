@@ -53,7 +53,7 @@ function Login() {
                 setPending(true);
                 await signInWithEmailAndPassword(firebaseAuth, email, password);
                 setPending(false);
-                router.replace('/');
+                router.push('/');
             } catch (ex) {
                 const error = ex as { code: string };
                 let errorMessage = '';

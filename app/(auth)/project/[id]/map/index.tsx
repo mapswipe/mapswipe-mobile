@@ -59,7 +59,7 @@ function MapProjectIndex() {
 
     useEffect(() => {
         if (isNotDefined(taskGroupId) && isDefined(leastMappedTaskGroupId)) {
-            router.replace({
+            router.push({
                 pathname: '/project/[id]/map/[taskGroupId]',
                 params: {
                     id: projectId,

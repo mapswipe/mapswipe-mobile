@@ -12,13 +12,6 @@ import {
     isTruthyString,
 } from '@togglecorp/fujs';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import {
-    equalTo,
-    get,
-    orderByChild,
-    query,
-    ref,
-} from 'firebase/database';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
@@ -33,35 +26,13 @@ import { showAlert } from '@/components/Toast';
 import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
-import { validateUserName } from '@/utils/common';
-import { firebaseDatabase } from '@/utils/firebase';
+import {
+    usernameExists,
+    validateUserName,
+} from '@/utils/common';
 
 const disclaimer = '* All the data you contribute to MapSwipe is open and available to anyone. Your username is public, but your email and password will never be shared with anyone.';
 const usernameErrorText = 'Username must be at least 4 characters long and cannot contain space and uppercase';
-
-async function usernameExists(username: string) {
-    try {
-        const q = query(
-            ref(firebaseDatabase, 'v2/users'),
-            orderByChild('usernameKey'),
-            equalTo(username),
-        );
-
-        const snap = await get(q);
-        return snap.exists();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        // eslint-disable-next-line no-console
-        console.error('Error checking username:', error);
-
-        showAlert({
-            title: 'Error',
-            message: error?.message || 'Failed to check username',
-            alertType: 'error',
-        });
-        throw error;
-    }
-}
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
     mainContent: {

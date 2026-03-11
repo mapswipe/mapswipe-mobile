@@ -1,3 +1,20 @@
+import {
+    caseInsensitiveSubmatch,
+    compareStringSearch,
+    isFalsyString,
+} from '@togglecorp/fujs';
+import {
+    equalTo,
+    get,
+    orderByChild,
+    query,
+    ref,
+} from 'firebase/database';
+
+import { showAlert } from '@/components/Toast';
+
+import { firebaseDatabase } from './firebase';
+
 export const MIN_USERNAME_LENGTH = 4;
 
 export function getProjectProgressForDisplay(progress: number): string {
@@ -24,4 +41,42 @@ export function validateUserName(name: string | undefined) {
     const newUserName = removeUserNameSpace.toLowerCase();
 
     return newUserName === name;
+}
+
+export function rankedSearchOnList<T>(
+    list: T[],
+    searchString: string,
+    labelSelector: (item: T) => string,
+): T[] {
+    if (isFalsyString(searchString)) {
+        return list;
+    }
+
+    return list
+        .filter((option) => caseInsensitiveSubmatch(labelSelector(option), searchString))
+        .sort((a, b) => compareStringSearch(labelSelector(a), labelSelector(b), searchString));
+}
+
+export async function usernameExists(username: string) {
+    try {
+        const q = query(
+            ref(firebaseDatabase, 'v2/users'),
+            orderByChild('usernameKey'),
+            equalTo(username),
+        );
+
+        const snap = await get(q);
+        return snap.exists();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+        // eslint-disable-next-line no-console
+        console.error('Error checking username:', error);
+
+        showAlert({
+            title: 'Error',
+            message: error?.message || 'Failed to check username',
+            alertType: 'error',
+        });
+        throw error;
+    }
 }

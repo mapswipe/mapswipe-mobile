@@ -27,11 +27,11 @@ function AppIndex() {
 
     useEffect(() => {
         if (!authPending && isLoggedIn) {
-            router.replace('/projects');
+            router.push('/projects');
         }
 
         if (!authPending && !isLoggedIn) {
-            router.replace('/login');
+            router.push('/login');
         }
     }, [authPending, isLoggedIn]);
 

@@ -261,7 +261,7 @@ function Projects() {
                 ) {
                     if (
                         project.overlayTileServer?.type
-                            === 'raster'
+                        === 'raster'
                     ) {
                         return true;
                     }

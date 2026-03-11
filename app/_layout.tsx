@@ -20,11 +20,15 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { isDefined } from '@togglecorp/fujs';
 import { User } from 'firebase/auth';
+import { Provider as UrqlProvider } from 'urql';
 
 import Page from '@/components/Page';
 import Text from '@/components/Text';
 import AuthContext, { AuthContextProps } from '@/contexts/auth';
+import useTheme from '@/hooks/useTheme';
+import { fetchCsrfToken } from '@/utils/csrfToken';
 import { firebaseAuth } from '@/utils/firebase';
+import client from '@/utils/urqlClient';
 
 export {
     // Catch any errors thrown by the Layout component.
@@ -72,14 +76,18 @@ export const toastConfig = {
 };
 
 export default function AppLayout() {
+    const theme = useTheme();
     const [user, setUser] = useState<User | null | undefined>();
 
     useEffect(() => {
         const unSubscribe = firebaseAuth.onAuthStateChanged((authUser) => {
             setUser(authUser);
         });
-
         return unSubscribe;
+    }, []);
+
+    useEffect(() => {
+        fetchCsrfToken();
     }, []);
 
     const authContextValue = useMemo<AuthContextProps>(() => {
@@ -88,6 +96,8 @@ export default function AppLayout() {
                 authPending: true,
                 isLoggedIn: false,
                 user,
+                setUser,
+
             };
         }
 
@@ -96,6 +106,8 @@ export default function AppLayout() {
                 authPending: false,
                 isLoggedIn: false,
                 user,
+                setUser,
+
             };
         }
 
@@ -103,6 +115,7 @@ export default function AppLayout() {
             authPending: false,
             isLoggedIn: true,
             user,
+            setUser,
         };
     }, [user]);
 
@@ -130,18 +143,24 @@ export default function AppLayout() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
+            <UrqlProvider value={client}>
             <AuthContext.Provider value={authContextValue}>
-                <StatusBar style="auto" />
-                <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Protected guard={!isAuthenticated}>
-                        <Stack.Screen name="login" />
-                    </Stack.Protected>
-                    <Stack.Protected guard={isAuthenticated}>
-                        <Stack.Screen name="(auth)" />
-                    </Stack.Protected>
-                </Stack>
-                <Toast config={toastConfig} />
-            </AuthContext.Provider>
+                    <StatusBar
+                    backgroundColor={theme.primaryBlue}
+                    translucent={false}
+                    style="light"
+                />
+                    <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Protected guard={!isAuthenticated}>
+                            <Stack.Screen name="login" />
+                        </Stack.Protected>
+                        <Stack.Protected guard={isAuthenticated}>
+                            <Stack.Screen name="(auth)" />
+                        </Stack.Protected>
+                    </Stack>
+                    <Toast config={toastConfig} />
+                </AuthContext.Provider>
+        </UrqlProvider>
         </GestureHandlerRootView>
     );
 }

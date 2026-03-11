@@ -4,6 +4,7 @@ import {
     ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Stack } from 'expo-router';
 
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
@@ -22,7 +23,7 @@ interface Props {
     style?: ViewStyle,
     children: React.ReactNode;
     variant?: 'normal' | 'brand';
-    maxHeight?: boolean;
+    isScrollable?: boolean
 }
 
 function Page(props: Props) {
@@ -31,7 +32,7 @@ function Page(props: Props) {
         children,
         style,
         variant = 'normal',
-        maxHeight,
+        isScrollable = true,
     } = props;
 
     const styles = useThemedStyles(createStyles, { variant });
@@ -43,13 +44,8 @@ function Page(props: Props) {
                 style,
             ]}
         >
-            {maxHeight ? (
-                children
-            ) : (
-                <ScrollView>
-                    {children}
-                </ScrollView>
-            )}
+            <Stack.Screen options={{ title }} />
+            {isScrollable ? <ScrollView>{children}</ScrollView> : children}
         </SafeAreaView>
     );
 }

@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 
 function HomeIndex() {
     useEffect(() => {
-        router.replace('/projects');
+        router.push('/projects');
     }, []);
 
     return null;

@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import {
-    Pressable,
     StatusBar as NativeStatusBar,
     StyleSheet,
     View,
@@ -14,8 +13,8 @@ import { StatusBar } from 'expo-status-bar';
 
 import heartIcon from '@/assets/images/custom/heart_icon.png';
 import mmwhiteLogo from '@/assets/images/custom/mmwhite.png';
+import BackButton from '@/components/BackButton';
 import BlockListView from '@/components/BlockListView';
-import Icon from '@/components/Icon';
 import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
@@ -117,7 +116,6 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
 
 export default function ProjectDetail() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
-    const router = useRouter();
 
     const projectQuery = useMemo(() => (
         firebaseRef(`v2/projects/${projectId}`)
@@ -142,11 +140,7 @@ export default function ProjectDetail() {
                     <View style={styles.overlay} />
                     <View style={styles.overlayContainer}>
                         <View style={styles.backButtonContainer}>
-                            <Pressable
-                                onPress={() => router.replace('/')}
-                            >
-                                <Icon style={styles.backButton} name="swipe-left" />
-                            </Pressable>
+                            <BackButton />
                         </View>
                         <Text
                             variant="heading"

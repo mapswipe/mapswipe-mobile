@@ -78,6 +78,18 @@ function HomeLayout() {
                 options={{ href: null }}
             />
             <Tabs.Screen
+                name="profile/changeUsername"
+                options={{ href: null }}
+            />
+            <Tabs.Screen
+                name="profile/language"
+                options={{ href: null }}
+            />
+            <Tabs.Screen
+                name="profile/exploreGroups"
+                options={{ href: null }}
+            />
+            <Tabs.Screen
                 name="projects"
                 options={{
                     title: 'Projects',
@@ -91,7 +103,7 @@ function HomeLayout() {
                 }}
             />
             <Tabs.Screen
-                name="profile"
+                name="profile/index"
                 options={{
                     title: 'Profile',
                     // eslint-disable-next-line react/no-unstable-nested-components
