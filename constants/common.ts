@@ -16,7 +16,7 @@ export const SUPPORTED_PROJECT_TYPES = [
 
 export const publicDashboardUrl = 'https://community-stage.mapswipe.org';
 
-export const gqlEndpoint = 'https://backend-2.mapswipe.dev.togglecorp.com/graphql/';
+export const gqlEndpoint = `${process.env.EXPO_PUBLIC_GRAPHQL_ENDPOINT}/graphql/`;
 
 export const healthCheckEndpoint = gqlEndpoint.replace(
     /graphql\/?$/,

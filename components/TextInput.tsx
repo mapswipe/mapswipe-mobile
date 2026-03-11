@@ -44,7 +44,7 @@ function TextInput(props: Props) {
                 <RawTextInput
                     autoCapitalize="none"
                     autoCorrect={false}
-                    placeholderTextColor={variant === 'brand' ? theme.backgroundBrand : theme.textMuted}
+                    placeholderTextColor={variant === 'brand' ? '#fff' : theme.textMuted}
                     style={styles.textInput}
                     // eslint-disable-next-line react/jsx-props-no-spreading
                     {...otherProps}
