@@ -6,6 +6,7 @@ import {
 import {
     Alert,
     Linking,
+    RefreshControl,
     ScrollView,
     StyleSheet,
     Switch,
@@ -25,11 +26,12 @@ import BlockListView from '@/components/BlockListView';
 import ClickableListItem, { ClickableListItemProps } from '@/components/ClickableListItems';
 import HeatMap from '@/components/HeatMap';
 import Icon from '@/components/Icon';
-import InfoCard from '@/components/InfoCard';
+import InfoCard, { StatsInfo } from '@/components/InfoCard';
 import InlineListView from '@/components/InlineListView';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
+import { publicDashboardUrl } from '@/constants/common';
 import {
     FONT_SIZE_SM,
     SPACING_MD,
@@ -40,6 +42,7 @@ import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import { getTimeSegments } from '@/utils/common';
 import {
     firebaseAuth,
     firebaseRef,
@@ -127,10 +130,75 @@ function Profile() {
             : undefined
     ), [user]);
 
-    const [result] = useQuery({
+    const [{ data: userStatsData, fetching: loadingUserStats }, refetchUserStats] = useQuery({
         query: USER_STATS,
         variables: { firebaseId: user ? user.uid : '' },
     });
+
+    const refreshPage = useCallback(() => {
+        refetchUserStats();
+    }, [refetchUserStats]);
+
+    const userStats: StatsInfo[] = useMemo(() => {
+        const stats = userStatsData?.communityUserStats?.stats ?? {};
+        const {
+            totalAreaSwiped,
+            totalMappingProjects,
+            totalOrganization,
+            totalSwipeTime,
+            totalSwipes,
+        } = stats;
+
+        const totalUserGroups = userStatsData?.communityUserStats?.statsLatest?.totalUserGroups;
+
+        // FIXME: Add Language Selected
+        const formatter = new Intl.NumberFormat('en');
+        const formatNumber = formatter.format;
+
+        const totalSwipesFormatted = formatNumber(totalSwipes ?? 0);
+        const totalMappingProjectsFormatted = formatNumber(
+            totalMappingProjects ?? 0,
+        );
+
+        const totalSwipeTimeSegments = getTimeSegments(totalSwipeTime ?? 0).map(
+            (segment) => ({
+                value: String(segment.value),
+                unit: segment.unit,
+            }),
+        );
+        const totalSwipeAreaFormatted = formatNumber(
+            Math.round(totalAreaSwiped ?? 0),
+        );
+        const totalOrganizationFormatted = formatNumber(totalOrganization ?? 0);
+        const totalUserGroupsFormatted = formatNumber(totalUserGroups ?? 0);
+
+        return [
+            {
+                title: ('Total swipes'),
+                value: totalSwipesFormatted,
+            },
+            {
+                title: ('Total time spent swiping'),
+                value: totalSwipeTimeSegments,
+            },
+            {
+                title: ('Total area swiped (sq.km)'),
+                value: totalSwipeAreaFormatted,
+            },
+            {
+                title: ('Total projects'),
+                value: totalMappingProjectsFormatted,
+            },
+            {
+                title: ('Organizations supported'),
+                value: totalOrganizationFormatted,
+            },
+            {
+                title: ('User groups joined'),
+                value: totalUserGroupsFormatted,
+            },
+        ];
+    }, [userStatsData]);
 
     const { data: userDetails } = useFirebaseDatabase<FbUser>(
         { query: userDetailQuery },
@@ -202,6 +270,48 @@ function Profile() {
         );
     }, []);
 
+    const handleResetPasswordClick = useCallback(() => {
+        Alert.alert(
+            ('Reset Password'),
+            'An email will be sent to your account with the reset link. Are you sure you want to continue?',
+            [
+                {
+                    text: ('Cancel'),
+                    style: 'cancel',
+                },
+                {
+                    text: ('OK'),
+                    onPress: () => {
+                        // auth().sendPasswordResetEmail(auth().currentUser.email);
+                    },
+                },
+            ],
+        );
+    }, []);
+
+    const handleMoreStatsClick = useCallback(() => {
+        if (user?.uid) {
+            Linking.openURL(`${publicDashboardUrl}/user/${user?.uid}/`);
+        }
+    }, [user]);
+
+    const calendarHeatmapData = useMemo(() => {
+        const contributionStats = userStatsData?.communityUserStats?.filteredStats?.swipeByDate;
+
+        if (!contributionStats) {
+            return {};
+        }
+
+        const contributionStatsMap = contributionStats
+            .reduce((acc: Record<string, number>, val:
+                { taskDate: string | number; totalSwipes: number; }) => {
+                acc[val.taskDate] = val.totalSwipes;
+                return acc;
+            }, {});
+
+        return contributionStatsMap;
+    }, [userStatsData?.communityUserStats?.filteredStats?.swipeByDate]);
+
     const settingItems: ClickableListItemProps<string>[] = [
         {
             title: 'Change Username',
@@ -209,7 +319,7 @@ function Profile() {
         },
         {
             title: 'Reset Password',
-            onPress: handleLogout,
+            onPress: handleResetPasswordClick,
         },
         {
             title: 'Language',
@@ -275,13 +385,6 @@ function Profile() {
         },
 
     ];
-    const data = Array.from({ length: 6 }).map((_, i) => ({
-        id: i.toString(),
-        title: `Card ${i + 1}`,
-        value: `Card ${i + 1}`,
-        unit: 'hr',
-    }));
-
     return (
         <Page
             title="Profile"
@@ -322,7 +425,14 @@ function Profile() {
                     </Text>
                 </BlockListView>
             </InlineListView>
-            <ScrollView>
+            <ScrollView
+                refreshControl={(
+                    <RefreshControl
+                        refreshing={loadingUserStats}
+                        onRefresh={refreshPage}
+                    />
+                )}
+            >
                 <BlockListView
                     withPadding
                     spacing="xs"
@@ -331,12 +441,11 @@ function Profile() {
                         All the stats are only updated once a day
                     </Text>
                     <View style={styles.infoCardContainer}>
-                        {data.map((item) => (
+                        {userStats.map((item) => (
                             <InfoCard
-                                key={item.id}
+                                key={item.title}
                                 title={item.title}
                                 value={item.value}
-                                unit={item.unit}
                                 style={styles.infoCard}
                             />
                         ))}
@@ -349,10 +458,10 @@ function Profile() {
                     <Text variant="title">
                         Contribution Heatmap (Last 30 days)
                     </Text>
-                    <HeatMap />
+                    <HeatMap activityData={calendarHeatmapData} />
                     <ClickableListItem
                         title="More Stats"
-                        onPress={onHandleExploreGroups}
+                        onPress={handleMoreStatsClick}
                         after={(
                             <Icon
                                 name="sign-out"

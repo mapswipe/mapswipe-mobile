@@ -3,29 +3,67 @@ import React, {
     useMemo,
 } from 'react';
 import {
+    Alert,
     Linking,
+    Platform,
+    RefreshControl,
     ScrollView,
     StyleSheet,
     View,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router/build/hooks';
-import { query } from 'firebase/database';
+import {
+    useLocalSearchParams,
+    useRouter,
+} from 'expo-router/build/hooks';
+import {
+    push,
+    query,
+    update,
+} from 'firebase/database';
+import {
+    gql,
+    useQuery,
+} from 'urql';
 
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import ClickableListItem from '@/components/ClickableListItems';
 import HeatMap from '@/components/HeatMap';
 import Icon from '@/components/Icon';
-import InfoCard from '@/components/InfoCard';
+import InfoCard, { StatsInfo } from '@/components/InfoCard';
 import InlineListView from '@/components/InlineListView';
 import Page from '@/components/Page';
 import PageHeader from '@/components/PageHeader';
 import Text from '@/components/Text';
+import { showAlert } from '@/components/Toast';
 import { publicDashboardUrl } from '@/constants/common';
+import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import { getTimeSegments } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
+
+const USER_GROUP_STATS = gql`
+    query UserGroupStats($userGroupId: ID!) {
+        communityUserGroupStats(userGroupId: { firebaseId: $userGroupId }) {
+            stats {
+                totalContributors
+                totalMappingProjects
+                totalSwipes
+                totalAreaSwiped
+                totalSwipeTime
+                totalOrganization
+            }
+            filteredStats {
+                swipeByDate {
+                    taskDate
+                    totalSwipes
+                }
+            }
+        }
+    }
+`;
 
 interface userGroup {
     createdAt: number;
@@ -52,8 +90,11 @@ const createStyles = () => StyleSheet.create({
 
 function ExploreGroup() {
     const { id: userGroupId } = useLocalSearchParams<{ id: string }>();
+    const { user } = useAuth();
+    const userId = user?.uid;
     const styles = useThemedStyles(createStyles);
     const theme = useTheme();
+    const router = useRouter();
 
     const userGroupsQuery = useMemo(() => (
         query(
@@ -61,16 +102,80 @@ function ExploreGroup() {
         )
     ), [userGroupId]);
 
-    const { data: userGroupData, pending } = useFirebaseDatabase<userGroup>({
+    const {
+        data: userGroupData,
+        pending: userGroupDetailPending,
+    } = useFirebaseDatabase<userGroup>({
         query: userGroupsQuery,
     });
 
-    const data = Array.from({ length: 6 }).map((_, i) => ({
-        id: i.toString(),
-        title: `Card ${i + 1}`,
-        value: `Card ${i + 1}`,
-        unit: 'hr',
-    }));
+    const [{
+        data: communityUserGroupStatsData,
+        fetching: loadingUserGroupStats,
+    }, refetchUserGroupStats] = useQuery({
+        query: USER_GROUP_STATS,
+        variables: { userGroupId },
+    });
+
+    const communityUserGroupStats: StatsInfo[] = useMemo(() => {
+        const stats = communityUserGroupStatsData?.communityUserGroupStats?.stats ?? {};
+        const {
+            totalContributors,
+            totalMappingProjects,
+            totalSwipes,
+            totalAreaSwiped,
+            totalSwipeTime,
+            totalOrganization,
+        } = stats;
+
+        // FIXME: Add Language Selected
+        const formatter = new Intl.NumberFormat('en');
+        const formatNumber = formatter.format;
+
+        const totalSwipesFormatted = formatNumber(totalSwipes ?? 0);
+        const totalMappingProjectsFormatted = formatNumber(
+            totalMappingProjects ?? 0,
+        );
+        const totalSwipeTimeSegments = getTimeSegments(totalSwipeTime ?? 0).map(
+            (segment) => ({
+                value: String(segment.value),
+                unit: segment.unit,
+            }),
+        ); const totalSwipeAreaFormatted = formatNumber(
+            Math.round(totalAreaSwiped ?? 0),
+        );
+        const totalOrganizationFormatted = formatNumber(totalOrganization ?? 0);
+        const totalContributorsFormatted = formatNumber(totalContributors ?? 0);
+
+        return [
+            {
+                title: ('Total swipes'),
+                value: totalSwipesFormatted,
+            },
+            {
+                title: ('Total contributors'),
+                value: totalContributorsFormatted,
+            },
+            {
+                title: ('Total time spent swiping'),
+                value: totalSwipeTimeSegments,
+            },
+            {
+                title: ('Total area swiped (sq.km)'),
+                value: totalSwipeAreaFormatted,
+            },
+            {
+                title: ('Total projects'),
+                value: totalMappingProjectsFormatted,
+            },
+            {
+                title: ('Organizations supported'),
+                value: totalOrganizationFormatted,
+            },
+        ];
+    }, [
+        communityUserGroupStatsData,
+    ]);
 
     const handleMoreStatsClick = useCallback(() => {
         if (userGroupId) {
@@ -78,21 +183,118 @@ function ExploreGroup() {
         }
     }, [userGroupId]);
 
-    const isUserMember = true;
+    type UserGroupAction = 'join' | 'leave';
+
+    const handleUserGroupAction = useCallback(
+        (action: UserGroupAction) => {
+            const isJoin = action === 'join';
+
+            const message = isJoin
+                ? 'Are you sure you want to join this group?'
+                : 'Are you sure you want to leave this group?\n\nAfter you leave, you will still remain on the leaderboard. Contributions made while a member will still count, but contributions after leaving will not.';
+
+            const proceed = async () => {
+                try {
+                    // Create log entry
+                    const logRef = push(firebaseRef('/v2/userGroupMembershipLogs'));
+                    const logKey = logRef.key;
+                    if (!logKey) throw new Error('Cannot generate log key');
+
+                    // Prepare updates
+                    const updates: Record<string, unknown> = {
+                        [`/v2/users/${userId}/userGroups/${userGroupId}`]: isJoin ? true : null,
+                        [`/v2/userGroups/${userGroupId}/users/${userId}`]: isJoin ? true : null,
+                        [`/v2/userGroupMembershipLogs/${logKey}`]: {
+                            userId,
+                            userGroupId,
+                            action,
+                            timestamp: Date.now(),
+                        },
+                    };
+
+                    await update(firebaseRef('/'), updates);
+
+                    // Show success
+                    showAlert({
+                        title: `Usergroup ${isJoin ? 'joined' : 'left'}`,
+                        message: isJoin
+                            ? 'You have successfully joined the group'
+                            : 'You have successfully left the group',
+                        alertType: 'success',
+                    });
+
+                    if (!isJoin) router.back();
+                } catch (error) {
+                    showAlert({
+                        title: `Failed to ${action} Usergroup`,
+                        message: (error as string) || 'An error occurred',
+                        alertType: 'error',
+                    });
+                }
+            };
+
+            // Web: use window.confirm; Native: Alert.alert
+            if (Platform.OS === 'web') {
+                const confirmed = window.confirm(message);
+                if (confirmed) proceed();
+            } else {
+                Alert.alert(
+                    isJoin ? 'Join User Group' : 'Leave User Group',
+                    message,
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'OK', onPress: proceed },
+                    ],
+                );
+            }
+        },
+        [userId, userGroupId, router],
+    );
+
+    const calendarHeatmapData = React.useMemo(() => {
+        const contributionStats = communityUserGroupStatsData
+            ?.communityUserGroupStats?.filteredStats
+            ?.swipeByDate;
+
+        if (!contributionStats) {
+            return {};
+        }
+
+        const contributionStatsMap = contributionStats
+            .reduce((acc: Record<string, number>, val:
+                { taskDate: string | number; totalSwipes: number; }) => {
+                acc[val.taskDate] = val.totalSwipes;
+                return acc;
+            }, {});
+
+        return contributionStatsMap;
+    }, [communityUserGroupStatsData?.communityUserGroupStats?.filteredStats?.swipeByDate]);
 
     return (
         <Page title="Explore Group" isScrollable={false}>
             <PageHeader heading={userGroupData?.name ?? ''} />
-            {isUserMember && (
-                <InlineListView
-                    withPadding
-                    spacing="2xs"
-                >
-
-                    <Button name="Join" title="Join" colorVariant="success" />
-                </InlineListView>
-            )}
-            <ScrollView>
+            <InlineListView
+                withPadding
+                spacing="2xs"
+            >
+                <Button
+                    name="Join"
+                    title="Join"
+                    colorVariant="success"
+                    onPress={() => handleUserGroupAction('join')}
+                />
+            </InlineListView>
+            <ScrollView
+                refreshControl={(
+                    <RefreshControl
+                        refreshing={
+                            userGroupDetailPending
+                            || loadingUserGroupStats
+                        }
+                        onRefresh={refetchUserGroupStats}
+                    />
+                )}
+            >
                 <BlockListView
                     withPadding
                     spacing="xs"
@@ -101,12 +303,11 @@ function ExploreGroup() {
                         All the stats are only updated once a day
                     </Text>
                     <View style={styles.infoCardContainer}>
-                        {data.map((item) => (
+                        {communityUserGroupStats.map((item) => (
                             <InfoCard
-                                key={item.id}
+                                key={item.title}
                                 title={item.title}
                                 value={item.value}
-                                unit={item.unit}
                                 style={styles.infoCard}
                             />
                         ))}
@@ -119,7 +320,7 @@ function ExploreGroup() {
                     <Text variant="title">
                         Contribution Heatmap (Last 30 days)
                     </Text>
-                    <HeatMap />
+                    <HeatMap activityData={calendarHeatmapData} />
                     <ClickableListItem
                         title="More Stats"
                         onPress={handleMoreStatsClick}
@@ -132,21 +333,19 @@ function ExploreGroup() {
                         )}
                     />
                 </BlockListView>
-                {isUserMember && (
-                    <BlockListView
-                        withPadding
-                        spacing="xs"
-                    >
-                        <Text variant="title">
-                            Settings
-                        </Text>
-                        <ClickableListItem
-                            title="Leave Group"
-                            accessibilityLabel="Leave Group"
-                            onPress={handleMoreStatsClick}
-                        />
-                    </BlockListView>
-                )}
+                <BlockListView
+                    withPadding
+                    spacing="xs"
+                >
+                    <Text variant="title">
+                        Settings
+                    </Text>
+                    <ClickableListItem
+                        title="Leave Group"
+                        accessibilityLabel="Leave Group"
+                        onPress={() => handleUserGroupAction('leave')}
+                    />
+                </BlockListView>
             </ScrollView>
         </Page>
     );

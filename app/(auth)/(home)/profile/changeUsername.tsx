@@ -4,10 +4,7 @@ import {
 } from 'react';
 import { useRouter } from 'expo-router';
 import { updateProfile } from 'firebase/auth';
-import {
-    ref,
-    update,
-} from 'firebase/database';
+import { update } from 'firebase/database';
 
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
@@ -22,11 +19,11 @@ import {
     usernameExists,
     validateUserName,
 } from '@/utils/common';
-import { firebaseDatabase } from '@/utils/firebase';
+import { firebaseRef } from '@/utils/firebase';
 
 const usernameErrorText = 'Username must be at least 4 characters long and cannot contain space and uppercase';
-const usernameAlreadyExists = 'Username must be at least 4 characters long and cannot contain space and uppercase';
-const errorTitle = 'Failed to Change s UsernameUsername must be at least 4 characters long and cannot contain space and uppercase';
+const usernameAlreadyExists = 'Username already exists';
+const errorTitle = 'Failed to Change Username!';
 const successTitle = 'Username updated successfully!';
 
 export default function ChangePassword() {
@@ -61,7 +58,7 @@ export default function ChangePassword() {
         mutate(newUserName, async (name) => {
             if (!user) return;
             await updateProfile(user, { displayName: name as string });
-            await update(ref(firebaseDatabase, `users/${user.uid}`), { username: name });
+            await update(firebaseRef(`users/${user.uid}`), { username: name });
             await user.reload();
             setUser({ ...user });
             setNewUserName('');
@@ -109,7 +106,6 @@ export default function ChangePassword() {
                         || (newUserName?.length ?? 0) < MIN_USERNAME_LENGTH
                     }
                     onPress={handleUpdateProfile}
-
                 />
             </BlockListView>
         </Page>

@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import {
     StyleSheet,
     ViewStyle,
@@ -14,6 +15,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     infoCard: {
         backgroundColor: theme.card,
         flexGrow: 1,
+        justifyContent: 'space-between',
     },
     value: {
         alignItems: 'center',
@@ -21,16 +23,18 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
 
 });
 
-type Props = {
+export type StatsInfo = {
     title: string,
-    value: string,
-    unit?: string,
-    style?: ViewStyle,
+    value: string | Array<{ value: string, unit: string }>,
 };
+
+type Props = {
+    style?: ViewStyle;
+} & StatsInfo;
 
 function InfoCard(props: Props) {
     const {
-        title, style, value, unit,
+        title, style, value,
     } = props;
     const styles = useThemedStyles(createStyles);
     return (
@@ -44,17 +48,28 @@ function InfoCard(props: Props) {
             </Text>
             <InlineListView
                 spacing="4xs"
-                style={styles.value}
             >
                 {typeof value === 'string' && (
                     <Text variant="title">
                         {value}
                     </Text>
                 )}
-                {unit && (
-                    <Text variant="label">
-                        {unit}
-                    </Text>
+                {Array.isArray(value) && (
+                    <InlineListView
+                        spacing="4xs"
+                        style={styles.value}
+                    >
+                        {value.map((seg) => (
+                            <Fragment key={seg.unit}>
+                                <Text variant="title">
+                                    {seg.value}
+                                </Text>
+                                <Text variant="label">
+                                    {seg.unit}
+                                </Text>
+                            </Fragment>
+                        ))}
+                    </InlineListView>
                 )}
             </InlineListView>
 

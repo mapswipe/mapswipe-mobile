@@ -69,7 +69,7 @@ export async function usernameExists(username: string) {
         return snap.exists();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console
         console.error('Error checking username:', error);
 
         showAlert({
@@ -79,4 +79,72 @@ export async function usernameExists(username: string) {
         });
         throw error;
     }
+}
+
+type DurationNumeric = 0 | 1 | 2 | 3 | 4 | 5;
+
+const mappings: Record<
+  DurationNumeric,
+  { text: string; shortText: string; value: number }
+> = {
+    0: { text: 'year', shortText: 'yr', value: 365 * 24 * 60 * 60 },
+    1: { text: 'month', shortText: 'mo', value: 30 * 24 * 60 * 60 },
+    2: { text: 'day', shortText: 'day', value: 24 * 60 * 60 },
+    3: { text: 'hour', shortText: 'hr', value: 60 * 60 },
+    4: { text: 'minute', shortText: 'min', value: 60 },
+    5: { text: 'second', shortText: 'sec', value: 1 },
+};
+
+export function getTimeSegments(
+    seconds: number,
+    separator: string = ' ',
+    shorten: boolean = true,
+    stop: number = 2,
+    currentState: DurationNumeric = 0,
+    lastState?: number,
+): { value: number; unit: string }[] {
+    if (lastState !== undefined && currentState >= lastState) {
+        return [];
+    }
+
+    const map = mappings[currentState];
+
+    if (currentState === 5) {
+        return [
+            {
+                value: seconds,
+                unit: shorten ? map.shortText : map.text,
+            },
+        ];
+    }
+
+    const dur = Math.floor(seconds / map.value);
+
+    const nextState = (currentState + 1) as DurationNumeric;
+
+    if (dur >= 1) {
+        return [
+            {
+                value: dur,
+                unit: shorten ? map.shortText : map.text,
+            },
+            ...getTimeSegments(
+                seconds % map.value,
+                separator,
+                shorten,
+                stop,
+                nextState,
+                lastState ?? currentState + stop,
+            ),
+        ];
+    }
+
+    return getTimeSegments(
+        seconds,
+        separator,
+        shorten,
+        stop,
+        nextState,
+        lastState,
+    );
 }
