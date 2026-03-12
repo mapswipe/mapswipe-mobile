@@ -1,0 +1,8 @@
+{
+  "howToContribute": "Kuidas panustada",
+  "squareContainsBuildings": "Kas sellel ruudul paistab mõni hoone? Vastamiseks kasuta nuppe:",
+  "instructionsYes": "Jah: kui ruudul on terve hoone või osa sellest",
+  "instructionsNo": "Ei: kui ruudul ei ole hooneid",
+  "instructionsNotSure": "Pole kindel: kui sa pole kindel, kas see on hoone või mitte",
+  "instructionsBadImagery": "Vigane pildimaterjal: kui seal on pilvkate või muud probleemid pildimaterjaliga"
+}

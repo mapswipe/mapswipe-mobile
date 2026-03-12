@@ -1,0 +1,13 @@
+{
+  "instructions": "Instrukcioj",
+  "yourTask": "Via tasko:",
+  "lookingFor": "Vi serĉas <1>ŝanĝojn en konstruaĵoj</1>. Ĉi tio funkcias kiel klara indikilo por ŝanĝo en la grandeco de la loĝantaro.",
+  "performTask": "Kiel plenumi la taskon:",
+  "noChanges": "Se ne estas ŝanĝoj, simple <1>glitu</1> al la sekvaj fotoj",
+  "seeChanges": "Se vi vidas ŝanĝon en konstruaĵoj, <1>frapu unufoje</1> kaj la kahelo fariĝas verda",
+  "unsure": "Ĉu vi ne certas? <1>Frapu dufoje</1> kaj la kahelo fariĝos flava",
+  "badImagery": "Bilda temo, kiel se unu bildo havas nubojn kovrantajn la vidon? <1>Frapu tri fojojn</1> kaj la kahelo fariĝos ruĝa",
+  "holdZoom": "Se vi bezonas vidi bildon pli detale, frapu kaj tenu la bildon kaj ĝi zumos iom pli.",
+  "hint": "Aludo:",
+  "differentImagery": "Foje malsamaj bildaj fontoj estos uzataj. La bildoj povas esti vicigitaj iomete malsame aŭ povus esti malsama rezolucio. Memoru, vi serĉas <1>difinitajn ŝanĝojn en kompromisoj kaj konstruaĵoj</1>, do se ĝi aspektas kiel la samaj konstruaĵoj estas tie, sed eble estas nova tegmento, tiam ĉi tio estus \"neniu ŝanĝo\" scenaro kaj vi simple glitus al la sekva bildo."
+}

@@ -1,0 +1,17 @@
+{
+  "incomplete": "INCOMPLETO",
+  "maybe": "FORSE",
+  "instructions1": "Come contribuire",
+  "instructions2": "TOCCA PER SELEZIONARE",
+  "instructions3": "Cerca gli elementi elencati nella descrizione della tua missione. Tocca ogni mattonella dove trovi quello che stai cercando. Tocca una volta per <1>Sì</1>, due volte per <3>{{twoTaps}}</3> e tre volte per <5>IMMAGINI ERRATE</5> (ad esempio con nuvole).",
+  "instructions4": "SCORRI PER NAVIGARE",
+  "instructions5": "Quando hai finito con quella parte della mappa, scorri verso la prossima.",
+  "instructions6": "TIENI PREMUTO PER INGRANDIRE",
+  "instructions7": "Tieni premuto una mattonella per ingrandirla.",
+  "instructions8": "Crediti",
+  "tutorial1": "Benvenuti nel tutorial!",
+  "tutorial2": "Dovrebbe farti diventare un mago di MapSipe in pochi minuti.",
+  "tutorial3": "Basta che segui le istruzioni sullo schermo, scorri a sinistra per continuare.",
+  "tutorial4": "Se le istruzioni ti bloccano la visuale, tocca la casella del messaggio per spostarla.",
+  "tutorial5": "Ho capito"
+}

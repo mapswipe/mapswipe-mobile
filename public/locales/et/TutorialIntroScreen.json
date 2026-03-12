@@ -1,0 +1,13 @@
+{
+  "thisTutoWillTeachYou": "Selles juhendis õpetatakse MapSwipe'i kasutama. Siin on põhisammud:",
+  "noChanges": "Kui piltidel ei ole midagi asjakohast, lihtsalt <1>tõmba sõrmega vasakule</1> järgmisele ekraanile liikumiseks",
+  "seeChanges": "Kui märkad mõnel pildil midagi asjakohast, <1>puuduta korra, et muuta ruut roheliseks</1>.",
+  "unsure": "Pole nähtavas kindel? <1>Puuduta kaks korda, et muuta ruut kollaseks</1>",
+  "badImagery": "Kui on probleem pildimaterjaliga, <1>puuduta kolm korda, et muuta ruut punaseks</1>",
+  "tapAgain": "Puuduta veel korra, et taastada ruudu algne olek.",
+  "WhatToLookFor": "Mida otsida",
+  "YouAreLookingFor": "Otsid {{lookFor}}",
+  "FromTheGround": "Maapinnal paistab see selliselt:",
+  "ImagesFromAbove": "Aga sulle kuvatavatel piltidel paistab see ülaltvaates selline:",
+  "SwipeToContinue": "Tõmba sõrmega jätkamiseks"
+}

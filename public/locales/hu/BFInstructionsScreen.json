@@ -1,0 +1,9 @@
+{
+  "doesShapeOutlineABuilding": "Az alakzat egy épület körvonalait mutatja?",
+  "howToContribute": "Hogyan működhetsz közre?",
+  "squareContainsBuildings": "Látsz-e a négyzetben épületet? Válaszolj a gombokkal:",
+  "instructionsYes": "Igen: a négyzetben van épület (vagy épületrész)",
+  "instructionsNo": "Nem: a négyzetben nincs épület",
+  "instructionsNotSure": "Bizonytalan: nem tudod egyértelműen eldönteni, hogy épületet látsz-e",
+  "instructionsBadImagery": "Rossz műholdkép: felhős vagy más probléma miatt nem látható a földfelszín"
+}

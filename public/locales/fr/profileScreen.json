@@ -1,0 +1,16 @@
+{
+  "levelX": "Niveau {{level}}",
+  "youveCompletedXTasks": "Vous avez complété {{contributions}} tâches!",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} tâches ({{swipes}} écrans) jusqu'au niveau supérieur",
+  "yourTeam": "Votre équipe: {{teamName}}",
+  "changeLanguage": "Choisir la langue",
+  "mapswipeWebsite": "Site web de MapSwipe",
+  "missingmapsWebsite": "Site web de Missing Maps",
+  "emailUs": "Nous écrire",
+  "signOut": "Se déconnecter",
+  "deleteMyAccount": "Supprimer mon compte",
+  "deleteAccountQuestion": "Supprimer votre compte ?",
+  "deleteAccountWarning": "Vous allez perdre tous vos progrès et vos badges. Vos contributions resteront publiques mais ne seront plus liées à votre compte. \nVoulez-vous continuer ?",
+  "noKeepMyAccount": "Non, garder mon compte",
+  "yesDeleteIt": "Oui, supprimez-le!"
+}

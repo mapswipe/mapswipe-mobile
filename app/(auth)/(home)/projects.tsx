@@ -45,21 +45,22 @@ const createStyles = (theme: AppTheme) => (StyleSheet.create({
         gap: 10,
     },
     projects: {
-        flex: 1,
         padding: 10,
         paddingBottom: 10,
         backgroundColor: theme.background,
     },
     projectsContent: {
-        flex: 1,
         gap: 10,
     },
     featuredProjectsContent: {
-        flex: 1,
         gap: 10,
     },
     separatorItem: {
         height: 10,
+    },
+    projectItemContainer: {
+        flex: 1,
+        maxWidth: PROJECT_CARD_WIDTH,
     },
 }));
 
@@ -70,6 +71,7 @@ const createProjectStyles = (_: AppTheme, { featured }: { featured: boolean }) =
         StyleSheet.create({
             projectItem: {
                 flex: 1,
+                maxWidth: width,
                 backgroundColor: '#ffffff',
                 width,
                 boxShadow: [{
@@ -281,28 +283,24 @@ function Projects() {
             columnWrapperStyle={styles.columnWrapper}
             contentContainerStyle={styles.projectsContent}
             ListHeaderComponent={(
-                <FlatList
-                    data={featuredProjects}
-                    scrollEnabled={false}
-                    keyExtractor={(project) => project.projectId}
-                    contentContainerStyle={styles.featuredProjectsContent}
-                    // eslint-disable-next-line react/no-unstable-nested-components
-                    ItemSeparatorComponent={() => <View style={styles.separatorItem} />}
-                    renderItem={({ item: project }) => (
+                <View style={styles.featuredProjectsContent}>
+                    {featuredProjects.map((project) => (
                         <ProjectItem
                             key={project.projectId}
                             project={project}
                             featured
                         />
-                    )}
-                />
+                    ))}
+                </View>
             )}
             renderItem={({ item: project }) => (
-                <ProjectItem
-                    key={project.projectId}
-                    project={project}
-                    featured={false}
-                />
+                <View style={styles.projectItemContainer}>
+                    <ProjectItem
+                        key={project.projectId}
+                        project={project}
+                        featured={false}
+                    />
+                </View>
             )}
         />
     );

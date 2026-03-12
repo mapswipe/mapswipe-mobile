@@ -1,0 +1,13 @@
+{
+  "thisTutoWillTeachYou": "Denne vejledning vil lære dig at bruge MapSwipe. Her er de grundlæggende trin:  ",
+  "noChanges": "Hvis der ikke er noget relevant på billedet skal du blot  <1>swipe</1> til de næste billeder",
+  "seeChanges": "Hvis du ser noget på et af billederne,  <1>tap en gang, for at gøre feltet grønt </1>.",
+  "unsure": "Er du ikke sikker på hvad du ser? <1>Tap to gange for at gøre feltet gult </1>",
+  "badImagery": "Hvis der er problemer med billederne, <1>tap tre gange, for at gøre feltet rødt </1>",
+  "tapAgain": "Tap igen, for at bringe feltet tilbage til sit udgangspunkt.",
+  "WhatToLookFor": "Hvad skal du kigge efter",
+  "YouAreLookingFor": "Du skal kigge efter {{lookFor}}",
+  "FromTheGround": "Ved jorden, ser det sådan her ud: ",
+  "ImagesFromAbove": "Men billederne som du kigger på, viser tingene fra oven, og derfor ser det sådan her ud: ",
+  "SwipeToContinue": "Swipe for at fortsætte"
+}

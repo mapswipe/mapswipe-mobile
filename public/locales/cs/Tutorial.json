@@ -1,0 +1,17 @@
+{
+  "incomplete": "NEÚPLNÉ",
+  "maybe": "MOŽNÁ",
+  "instructions1": "Jak přispět",
+  "instructions2": "POKLEPNUTÍM VYBERTE",
+  "instructions3": "Podívejte se v rychlosti na funkce uvedené ve vaší misi. Klepněte na každou dlaždici, kde najdete to, co hledáte. Klepněte jednou na <1>ANO</1>, dvakrát na <3>{{twoTaps}}</3> a třikrát na <5>ŠPATNÉ ZOBRAZENÍ</5> (například mraky).",
+  "instructions4": "PŘEJETÍM PRSTEM PROHLÍŽEJTE",
+  "instructions5": "Když skončíte s částí mapy, přejeďte prstem na další.",
+  "instructions6": "PŘIDRŽENÍM PRSTEM PŘIBLÍŽIT",
+  "instructions7": "Podržením dlaždice přiblížíte dlaždici.",
+  "instructions8": "Zásluhy",
+  "tutorial1": "Vítejte v návodu!",
+  "tutorial2": "Ten by vás měl během několika minut provést aplikací MapSwipe.",
+  "tutorial3": "Postupujte podle pokynů na obrazovce a pokračujte přejetím doleva.",
+  "tutorial4": "Pokud vám pokyny překáží v práci, stačí je přesunout klepnutím na okno se zprávou.",
+  "tutorial5": "Rozumím"
+}

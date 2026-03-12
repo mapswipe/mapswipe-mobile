@@ -1,0 +1,13 @@
+{
+  "instructions": "Anleitung",
+  "yourTask": "Deine Aufgabe:",
+  "lookingFor": "Du suchst nach{' '} <1>Gebäudeänderungen</1>. Dies ist ein Indikator für Änderungen in der Bevölkerungsgröße.",
+  "performTask": "So erledigst du die Aufgabe:",
+  "noChanges": "Wenn sich nichts geändert hat,{' '} <1>wische</1> einfach zu den nächsten Fotos",
+  "seeChanges": "Wenn du eine Veränderung an den Gebäuden siehst,{' '} <1>tippe einmal</1>{' '} und die Kachel wird grün",
+  "unsure": "Unsicher?{' '} <1>Tippe zweimal</1>{' '} und die Kachel wird gelb",
+  "badImagery": "Ein Problem mit dem Bildmaterial wie z.B. Wolken die im Weg sind?{' '} <1>Tippe dreimal</1>{' '} und die Kachel wird rot",
+  "holdZoom": "Wenn du ein Bild näher betrachten willst, tippe und halte das Bild und wir zoomen noch ein wenig rein.",
+  "hint": "Hinweis:",
+  "differentImagery": "Manchmal wurden unterschiedliche Bildquellen verwendet. Diese Bilder können leicht unterschiedlich angepasst oder in unterschiedlichen Auflösungen sein. Denke daran, du suchst nach{' '}<1> eindeutigen Änderungen in Siedlungen oder Gebäuden</1>{' '}. Wenn es also so aussieht als wäre dort ein Gebäude, das nur ein neues Dach bekommen hat, dann ist dies keine Änderung und die kannst wischen um fortzufahren."
+}

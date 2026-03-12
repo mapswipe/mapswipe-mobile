@@ -1,0 +1,15 @@
+{
+  "useTheButtonsToAnswer": "K odpovědi použijte tlačítka:",
+  "doesTheShapeOutlineABuilding": "Obkresluje tvar budovu?",
+  "everyTimeYouSelectAnOption": "Při každém výběru možnosti se zobrazí nový tvar a obrázek.",
+  "tapGreenText": "Ano - tvar na obrázku obkresluje budovu.",
+  "tapRedText": "Ne - tvar neodpovídá budově na obrázku.",
+  "tapGrayText": "Nejste si jisti - pokud si nejste jisti nebo je zataženo / špatné snímky",
+  "hideIconText": "Podržením tlačítka skrýt odstraníte tvar z obrázku.",
+  "letsLearnHowToMap": "Naučme se, jak mapovat na několika příkladech",
+  "youllSeeASquare": "Na obrázku se zobrazí tvar. Pomocí tlačítek odpovězte:",
+  "squareContainsBuildings": "Obsahuje čtverec nějaké budovy?",
+  "squareWillMove": "Čtverec se bude pohybovat kolem obrázku, jak budete postupovat, podle následující mřížky:",
+  "swipeToGetStarted": "Začněte přejetím prstem",
+  "swipeToContinue": "Přejetím prstu pokračujte"
+}

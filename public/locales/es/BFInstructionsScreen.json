@@ -1,0 +1,9 @@
+{
+  "doesShapeOutlineABuilding": "¿La forma dibuja el contorno de un edificio?",
+  "howToContribute": "Cómo contribuir",
+  "squareContainsBuildings": "¿El cuadrado contiene algún edificio? Usa los botones para responder:",
+  "instructionsYes": "Si: Cuando hay un edificio o parte de un edificio en el cuadrado",
+  "instructionsNo": "No: cuando no hay edificios en el cuadrado",
+  "instructionsNotSure": "No estoy segura(o): cuando no está segura(o) de si es un edificio o no",
+  "instructionsBadImagery": "Mala imagen: cuando hay nubes cubriendo o problemas con las imágenes "
+}

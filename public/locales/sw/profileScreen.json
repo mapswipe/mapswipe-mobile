@@ -1,0 +1,15 @@
+{
+  "levelX": "Level {{level}}",
+  "youveCompletedXTasks": "You've completed {{contributions}} tasks!",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} tasks ({{swipes}} swipes) until the next level",
+  "changeLanguage": "Change Language",
+  "mapswipeWebsite": "MapSwipe website",
+  "missingmapsWebsite": "Missing Maps website",
+  "emailUs": "Email us",
+  "signOut": "Sign out",
+  "deleteMyAccount": "Delete my account",
+  "deleteAccountQuestion": "Delete account?",
+  "deleteAccountWarning": "You will lose all of your progress and badges. Your contributions will remain public but no longer tied to your account.\nWould you like to continue?",
+  "noKeepMyAccount": "No, keep my account",
+  "yesDeleteIt": "Yes, delete it!"
+}

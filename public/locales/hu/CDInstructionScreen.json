@@ -1,0 +1,13 @@
+{
+  "instructions": "Utasítások",
+  "yourTask": "Feladataid:",
+  "lookingFor": "<1>Épületek változásait</1> kell keresned. Ez egyértelműen jelzi a népességszám változását.",
+  "performTask": "Hogyan végezd el a feladatot?",
+  "noChanges": "Ha nincs változás, egyszerűen <1>húzd el</1> a képernyőt a következő fényképhez",
+  "seeChanges": "Ha azt látod, hogy az épületek módosultak, <1>koppints egyszer</1> a csempére, ami ki fog zöldülni.",
+  "unsure": "Bizonytalan vagy? <1>Koppints kétszer</1>, s a csempe sárga lesz.",
+  "badImagery": "Baj van a képpel? (Például valamelyik képen felhők takarják el a földfelszínt.) <1>Koppints háromszor</1>, és a csempe vörös lesz.",
+  "holdZoom": "Ha közelebbről szeretnél megnézni egy felvételt, koppints rá és tartsd rajta az ujjad egy kicsi, így megjelenik róla egy nagyítás.",
+  "hint": "Tanács:",
+  "differentImagery": "Néha különböző légi felvételek jelennek meg. Lehet, hogy a képek ezért kissé más elrendezésűek, vagy más a felbontásuk. Ne feledd, hogy <1>határozott változásokat keresel a településeken és épületekben</1>. Ha tehát úgy néz ki, hogy a képen ugyanazok az épületek vannak, de mintha lecserélték volna a tetőjüket, akkor ez egy „nincs változás” forgatókönyv. Ilyenkor egyszerűen húzd be a következő képet."
+}

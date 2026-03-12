@@ -1,0 +1,13 @@
+{
+  "thisTutoWillTeachYou": "Tento kurz vás naučí, jak používat MapSwipe. Tady jsou základní kroky:",
+  "noChanges": "Pokud na obrázcích není nic relevantního, jednoduše <1>přejeďte prstem</1> na další obrazovku",
+  "seeChanges": "Pokud na jednom z obrázků něco vidíte, <1>jedním klepnutím změníte čtvereček na zelenou.</1>",
+  "unsure": "Nejste si jisti tím, co vidíte? <1>Dvojitým klepnutím čtvereček zbarvíte žlutě</1>",
+  "badImagery": "Pokud je se snímky problém, <1>klepněte třikrát, aby se čtverec změnil na červenou</1>",
+  "tapAgain": "Opětovným klepnutím vrátíte čtverec do původního stavu.",
+  "WhatToLookFor": "Co hledat",
+  "YouAreLookingFor": "Hledáte {{lookFor}}",
+  "FromTheGround": "Ze země to vypadá takto:",
+  "ImagesFromAbove": "Ale obrázky, které uvidíte, to ukáží shora a vypadá to takto:",
+  "SwipeToContinue": "Pokračujte přejetím prstem"
+}

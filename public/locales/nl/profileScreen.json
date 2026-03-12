@@ -1,0 +1,16 @@
+{
+  "levelX": "Niveau {{level}}",
+  "youveCompletedXTasks": "U heeft {{contributions}} taken afgerond!",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} taken ({{swipes}} swipes) tot het volgende niveau",
+  "yourTeam": "Uw team: {{teamName}}",
+  "changeLanguage": "Taal aanpassen",
+  "mapswipeWebsite": "MapSwipe website",
+  "missingmapsWebsite": "Missing Maps website",
+  "emailUs": "Email ons",
+  "signOut": "Afmelden",
+  "deleteMyAccount": "Verwijder mijn account",
+  "deleteAccountQuestion": "Account verwijderen?",
+  "deleteAccountWarning": "U zal al uw vooruitgang en badges verliezen. Uw bijdragen blijven publiek, maar niet langer gekoppeld aan uw account.\nWilt u doorgaan?",
+  "noKeepMyAccount": "Nee, bewaar mijn account",
+  "yesDeleteIt": "Ja, verwijder mijn account"
+}

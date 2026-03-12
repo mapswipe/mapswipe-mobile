@@ -1,0 +1,8 @@
+{
+  "howToContribute": "Como Contribuir",
+  "squareContainsBuildings": "O quadrado contém algum edifício? Utilize os botões para responder:",
+  "instructionsYes": "Sim: quando existe um edifício ou parte dele num quadrado",
+  "instructionsNo": "Não: quando não existem edifícios num quadrado",
+  "instructionsNotSure": "Não tenho a certeza: Quando não temos a certeza se existe ou não um edifício",
+  "instructionsBadImagery": "Má imagem: Quando existem nuvens ou problemas com a imagem"
+}

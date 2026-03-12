@@ -1,0 +1,13 @@
+{
+  "thisTutoWillTeachYou": "Questo tutorial ti insegnerà a usare MapSwipe. Ecco le prime cose da sapere:",
+  "noChanges": "Se non c’è niente di rilevante nelle immagini, <1>scorri</1> semplicemente verso la prossima schermata",
+  "seeChanges": "Se vedi qualcosa in una delle immagini, <1>tocca una volta per rendere verde un quadrato</1>.",
+  "unsure": "Non sei sicuro di quello che vedi? <1>Tocca due volte per rendere giallo il quadrato</1>",
+  "badImagery": "Se vi sono problemi con le immagini, <1>tocca tre volte per rendere rosso il quadrato</1>",
+  "tapAgain": "Tocca di nuovo per far ritornare il quadrato al suo stato iniziale.",
+  "WhatToLookFor": "Cosa cercare",
+  "YouAreLookingFor": "Stai cercando {{lookFor}}",
+  "FromTheGround": "Da terra, sembra così:",
+  "ImagesFromAbove": "Ma dalle immagini che ti verranno mostrate li vedrai dall’alto e appariranno così:",
+  "SwipeToContinue": "Scorri per continuare"
+}

@@ -1,0 +1,13 @@
+{
+  "thisTutoWillTeachYou": "Ĉi tiu lernilo instruos vin kiel uzi MapSwipe. Jen la bazaj paŝoj:",
+  "noChanges": "Se estas nenio grava en la bildoj, simple <1>glitu</1> al la sekva ekrano",
+  "seeChanges": "Se vi vidas ion en unu el la bildoj, <1>frapu unufoje por turni la kvadraton verdan</1>.",
+  "unsure": "Ĉu vi ne certas pri tio, kion vi vidas? <1>Frapu dufoje por turni la kvadraton flavan</1>",
+  "badImagery": "Se estas problemo kun la bildoj, <1>frapu tri fojojn por turni la kvadraton ruĝan</1>",
+  "tapAgain": "Frapetu denove por redoni la kvadraton al ĝia originala stato.",
+  "WhatToLookFor": "Kion serĉi",
+  "YouAreLookingFor": "Vi serĉas: {{lookFor}}",
+  "FromTheGround": "De la tero, ĝi aspektas tiel:",
+  "ImagesFromAbove": "Sed la bildoj, kiujn vi vidos, montros ĝin de supre, kaj aspektas jene:",
+  "SwipeToContinue": "Glitu por daŭrigi"
+}

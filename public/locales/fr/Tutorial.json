@@ -1,0 +1,17 @@
+{
+  "incomplete": "INCOMPLET",
+  "maybe": "PEUT ÊTRE",
+  "instructions1": "Comment contribuer",
+  "instructions2": "TAPE POUR SELECTIONNER",
+  "instructions3": "Vous cherchez les éléments indiqués dans les instructions en haut de l'écran. Tapez chaque image où vous en voyez. Tapez une fois pour <1>OUI</1>, deux fois pour <3>{{twoTaps}}</3>, et trois fois pour <5>MAUVAISE IMAGERIE</5> (par exemple s'il y'a des nuages).",
+  "instructions4": "NAVIGUEZ EN FAISANT GLISSER L'ÉCRAN",
+  "instructions5": "Quand vous avez fini un écran, faites glisser vers la gauche pour continuer.",
+  "instructions6": "GARDEZ APPUYÉ POUR ZOOMER",
+  "instructions7": "Un appui long sur une image permet de zoomer.",
+  "instructions8": "Crédits",
+  "tutorial1": "Bienvenue dans le tutoriel!",
+  "tutorial2": "Vous devriez être un pro de MapSwipe en quelques minutes.",
+  "tutorial3": "Suivez les instructions à l'écran, et faites glisser vers la gauche pour continuer.",
+  "tutorial4": "Si ce message bloque la vue, tapez dessus pour le déplacer.",
+  "tutorial5": "J'ai compris"
+}

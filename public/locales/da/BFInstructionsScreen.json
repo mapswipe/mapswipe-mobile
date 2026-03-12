@@ -1,0 +1,8 @@
+{
+  "howToContribute": "Sådan bidrager du",
+  "squareContainsBuildings": "Indeholder feltet nogle bygninger? Brug knapperne for at svare:",
+  "instructionsYes": "Ja: når der er en bygning eller dele af en bygning i feltet.",
+  "instructionsNo": "Nej: når der ikke er bygninger i feltet",
+  "instructionsNotSure": "Ikke sikker: når du ikke er sikker på om der er en bygning eller ej",
+  "instructionsBadImagery": "Dårligt billede: hvis der er skyer der dækker, eller hvis der er problemer med billedet"
+}

@@ -1,0 +1,16 @@
+{
+  "levelX": "Level {{level}}",
+  "youveCompletedXTasks": "Du har klaret {{contributions}} opgaver!",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} opgaver ({{swipes}} swipes) inden du når næste level",
+  "yourTeam": "Dit hold: {{teamName}}",
+  "changeLanguage": "Skift sprog",
+  "mapswipeWebsite": "MapSwipes hjemmeside",
+  "missingmapsWebsite": "Missing Maps hjemmeside",
+  "emailUs": "Email os",
+  "signOut": "Log ud",
+  "deleteMyAccount": "Slet min konto",
+  "deleteAccountQuestion": "Slet konto?",
+  "deleteAccountWarning": "Du vil miste alle dine resultater og mærkater. Dine bidrag vil fortsat være tilgængelige som public domain, men de vil ikke længere være knyttet til din konto \nØnsker du at fortsætte?",
+  "noKeepMyAccount": "Nej, behold min konto.",
+  "yesDeleteIt": "Ja, slet min konto."
+}

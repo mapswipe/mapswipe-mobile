@@ -1,0 +1,16 @@
+{
+  "levelX": "等級{{等級}}",
+  "youveCompletedXTasks": "您已完成{{contributions}}任務！",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}}任務（{{swipes}}滑動）直到下一個等級",
+  "yourTeam": "您的隊伍：{{隊伍名稱}}",
+  "changeLanguage": "改變語言",
+  "mapswipeWebsite": "MapSwipe網站",
+  "missingmapsWebsite": "Missing Maps網站",
+  "emailUs": "給我們發電子郵件",
+  "signOut": "登出",
+  "deleteMyAccount": "刪除我的賬戶",
+  "deleteAccountQuestion": "刪除帳戶？",
+  "deleteAccountWarning": "你將失去所有的進度和徽章。 你的貢獻將保持公開狀態，但不再與你的帳戶綁定。你要繼續嗎？",
+  "noKeepMyAccount": "不，保留我的帳戶",
+  "yesDeleteIt": "是的，刪除它！"
+}

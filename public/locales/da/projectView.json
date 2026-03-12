@@ -1,0 +1,8 @@
+{
+  "xPcGlobalProgressByNMappers": "{{projectProgress}}% GLOBALT RESULTAT AF  {{contributorCount}} MAPPERE SOM DIG.",
+  "userProgressForProject": "{{userProgress}}% for dette projekt",
+  "quotaReachedWarning": "Vælg et andet projekt fra oversigten med missioner",
+  "mapNow": "Map nu",
+  "chooseAnotherProject": "Vælg et andet projekt",
+  "tutorial": "Vejledning"
+}

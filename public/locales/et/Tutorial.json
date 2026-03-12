@@ -1,0 +1,17 @@
+{
+  "incomplete": "POOLELI",
+  "maybe": "VÕIB-OLLA",
+  "instructions1": "Kuidas panustada",
+  "instructions2": "PUUDUTA VALIMISEKS",
+  "instructions3": "Otsi ülesande iseloomustuses kirjeldatud objekte. Puuduta igat ruutu, millel leiad otsitava. Puuduta ühe korra kui <1>JAH</1>, kaks korda kui <3>{{twoTaps}}</3> ja kolm korda kui <5>HALB PILDIMATERJAL</5> (näiteks pilved).",
+  "instructions4": "SIRVI NAVIGEERIMISEKS",
+  "instructions5": "Kui oled mõne kaardi osaga valmis, liigu sõrmega tõmmates järgmisele.",
+  "instructions6": "HOIA SUURENDAMISEKS",
+  "instructions7": "Ruudu suurendamiseks puuduta seda ja hoia.",
+  "instructions8": "Tiitrid",
+  "tutorial1": "Tere tulemast juhendmaterjali!",
+  "tutorial2": "See peaks sinust mõne minutiga MapSwipe meistri tegema.",
+  "tutorial3": "Järgi lihtsalt ekraanil kuvatavaid juhiseid ja jätkamiseks tõmba sõrmega ekraanil paremalt vasakule.",
+  "tutorial4": "Kui juhised segavad vaadet, lihtsalt puuduta teadet selle teisaldamiseks.",
+  "tutorial5": "Saan aru"
+}

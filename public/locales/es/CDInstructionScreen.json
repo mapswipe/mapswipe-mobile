@@ -1,0 +1,13 @@
+{
+  "instructions": "Instrucciones",
+  "yourTask": "Tu tarea:",
+  "lookingFor": "Está buscando <1> cambios en edificios </1>. Esto actúa como un claro indicador de un cambio en el tamaño de la población.",
+  "performTask": "Como desempeñar la tarea:",
+  "noChanges": "Si no hay cambios, simplemente <1> pase </1> a las siguientes fotos",
+  "seeChanges": "Si observa un cambio en los edificios, <1> pulse una vez </1> y la baldosa se volverá verde",
+  "unsure": "¿No está seguro? <1> Pulse dos veces </1> y la baldosa se volverá amarilla",
+  "badImagery": "¿Problemas con las imágenes, por ejemplo, si alguna de las imágenes tiene nubes que cubren la vista? <1> Pulse tres veces </1> y la baldosa se volverá roja",
+  "holdZoom": "Si necesita ver una imagen mas cerca, presione y mantenga la imagen, esta se enfocará mas cerca",
+  "hint": "Sugerencia",
+  "differentImagery": "A veces se habrán utilizado diferentes fuentes de imágenes. Las imágenes pueden estar alineadas de forma ligeramente distinta o tener una resolución diferente. Recuerde que lo que busca son <1> cambios definidos en los asentamientos y edificios </1>, de modo que si parece que los edificios son los mismos, pero hay un tejado nuevo, se trataría de una situación de \"sin cambios\" y simplemente pasaría a la siguiente imagen."
+}

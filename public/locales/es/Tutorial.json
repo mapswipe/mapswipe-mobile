@@ -1,0 +1,17 @@
+{
+  "incomplete": "INCOMPLETO",
+  "maybe": "Quizás",
+  "instructions1": "Como colaborar",
+  "instructions2": "Presione para seleccionar",
+  "instructions3": "Busque las características listadas en la descripción de la misión. Presione cada cuadrícula donde Ud encuentre lo que está buscando. Presione una vez para <1> SI </1>, dos veces para <3> {{twoTaps}}</3> ,tres veces para <5> MALA IMAGEN </5> (por ejemplo nubes).",
+  "instructions4": "DESLICE PARA NAVEGAR",
+  "instructions5": "Cuando finalizaste una parte del mapa, avanza al siguiente deslizando",
+  "instructions6": "PRESIONAR PARA ACERCAR",
+  "instructions7": "Presiona la cuadrícula para acercarla.",
+  "instructions8": "Creditos",
+  "tutorial1": "Bienvenido al tutorial!",
+  "tutorial2": "Esto debería hacer un asistente de MapSwipe en unos pocos minutos ",
+  "tutorial3": "Solo siga las instrucciones y deslice a la izquierda para continuar",
+  "tutorial4": "Si las instrucciones te molestan presiona la casilla de mensaje para moverla",
+  "tutorial5": "Entiendo"
+}

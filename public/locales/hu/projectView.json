@@ -1,0 +1,8 @@
+{
+  "xPcGlobalProgressByNMappers": "{{contributorCount}} HOZZÁD HASONLÓ TÉRKÉPEZŐ ELVÉGZETT GLOBÁLISAN {{projectProgress}}%-OT",
+  "userProgressForProject": "A projekt készültsége {{userProgress}}%",
+  "quotaReachedWarning": "Másik projekt kiválasztása a küldetések képernyőn",
+  "mapNow": "Térképezés most",
+  "chooseAnotherProject": "Másik projekt kiválasztása",
+  "tutorial": "Oktatóanyag"
+}

@@ -1,0 +1,17 @@
+{
+  "incomplete": "未完成",
+  "maybe": "可能",
+  "instructions1": "如何貢獻",
+  "instructions2": "點擊選擇",
+  "instructions3": "查找任務簡介中列出的功能。 點按你在尋找的每個圖塊。 輕觸一次以表示<1>YES</1>，輕按兩次以<3>{{twoTaps}} </3>，然後輕擊3次以表示<5>無效影像</5>（例如雲）。",
+  "instructions4": "滑動以導航",
+  "instructions5": "當你完成一張地圖後，滑動即可滾動到下一張地圖。",
+  "instructions6": "長按以放大",
+  "instructions7": "長按圖塊以放大圖塊。",
+  "instructions8": "歸功",
+  "tutorial1": "歡迎使用本教學！",
+  "tutorial2": "這將使你在幾分鐘內成為MapSwipe的能手。",
+  "tutorial3": "只需按照屏幕上的指示操作，然後向左滑動即可繼續。",
+  "tutorial4": "如果指示阻礙你進行操作，只需點擊消息框就可將其移動。",
+  "tutorial5": "我明白"
+}

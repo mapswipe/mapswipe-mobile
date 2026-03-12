@@ -1,0 +1,16 @@
+{
+  "levelX": "Nivelo {{level}}",
+  "youveCompletedXTasks": "Vi kompletigis {{contributions}} taskoj!",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} taskoj ({{swipes}} glitoj) ĝis la sekva nivelo",
+  "yourTeam": "Via teamo: {{teamName}}",
+  "changeLanguage": "Ŝanĝi Lingvon",
+  "mapswipeWebsite": "Retejo de Mapswipe",
+  "missingmapsWebsite": "Retejo de Missing Maps",
+  "emailUs": "Retpoŝti nin",
+  "signOut": "Elsaluti",
+  "deleteMyAccount": "Forigi mian konton",
+  "deleteAccountQuestion": "Ĉu forigi konton?",
+  "deleteAccountWarning": "Vi perdos ĉiujn viajn progresojn kaj insignojn. Viaj kontribuoj restos publikaj sed ne plu ligitaj al via konto.\nĈu vi ŝatus daŭrigi?",
+  "noKeepMyAccount": "Ne, konservu mian konton",
+  "yesDeleteIt": "Jes, forigu ĝin!"
+}

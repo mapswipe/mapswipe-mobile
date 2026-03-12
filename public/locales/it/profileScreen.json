@@ -1,0 +1,16 @@
+{
+  "levelX": "Livello {{level}}",
+  "youveCompletedXTasks": "Hai completato {{contributions}} compiti!",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} compiti ({{swipes}} scorrimenti) per il prossimo livello",
+  "yourTeam": "La tua squadra: {{teamName}}",
+  "changeLanguage": "Cambia lingua",
+  "mapswipeWebsite": "Sito web MapSwipe",
+  "missingmapsWebsite": "Sito web Missing Maps",
+  "emailUs": "Inviaci una e-mail",
+  "signOut": "Esci",
+  "deleteMyAccount": "Cancella la mia utenza",
+  "deleteAccountQuestion": "Cancellare l’utenza?",
+  "deleteAccountWarning": "Perderai tutti i progressi fatti finora e le tue medaglie. Le tue contribuzioni rimarranno pubbliche ma non saranno più associate alla tua utenza.\nVuoi continuare?",
+  "noKeepMyAccount": "No, tieni la mia utenza",
+  "yesDeleteIt": "Sì, cancellala!"
+}
