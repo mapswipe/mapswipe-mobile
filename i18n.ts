@@ -1,6 +1,28 @@
 import i18n from 'i18next';
 import resourcesToBackend from 'i18next-resources-to-backend';
 import { initReactI18next } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const LANGUAGE_KEY = 'appLanguage';
+
+const languageDetector = {
+    type: 'languageDetector' as const,
+    async: true,
+    detect: async (callback: (lang: string) => void) => {
+        // Skip during SSR — no window/storage available in Node.js
+        if (typeof window === 'undefined') {
+            callback('en');
+            return;
+        }
+        const saved = await AsyncStorage.getItem(LANGUAGE_KEY);
+        callback(saved ?? 'en');
+    },
+    init: () => {},
+    cacheUserLanguage: async (language: string) => {
+        if (typeof window === 'undefined') return;
+        await AsyncStorage.setItem(LANGUAGE_KEY, language);
+    },
+};
 
 const resources: Record<string, Record<string, () => Promise<unknown>>> = {
     cs: {
@@ -654,6 +676,7 @@ const resources: Record<string, Record<string, () => Promise<unknown>>> = {
 };
 
 i18n
+    .use(languageDetector)
     .use(resourcesToBackend((language: string, namespace: string) =>
         resources[language]?.[namespace]?.()
     ))
