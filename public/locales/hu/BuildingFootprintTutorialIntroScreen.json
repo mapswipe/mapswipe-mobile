@@ -1,0 +1,15 @@
+{
+  "useTheButtonsToAnswer": "Használd a gombokat a válaszhoz:",
+  "doesTheShapeOutlineABuilding": "Az alakzat egy épület körvonalait mutatja?",
+  "everyTimeYouSelectAnOption": "Minden alkalommal, amikor kiválasztasz egy lehetőséget, egy új alakzat és kép jelenik meg.",
+  "tapGreenText": "Igen – a képen az alakzat egy épület körvonalait jeleníti meg",
+  "tapRedText": "Nem – a képen az alakzat nem olyan, mint egy épület körvonala",
+  "tapGrayText": "Nem vagyok benne biztos – ha bizonytalan vagy vagy ha a kép felhős / rossz minőségű",
+  "hideIconText": "Az alakzat képről való eltávolításához tartsd lenyomva az elrejtés gombot",
+  "letsLearnHowToMap": "Lássunk néhány példát!",
+  "youllSeeASquare": "Egy képen egy alakzatot fogsz látni. A válaszhoz használd a gombokat:",
+  "squareContainsBuildings": "Van-e a négyzetben épület?",
+  "squareWillMove": "Ahogy haladsz, a négyzet egy hálót követve mozogni fog a kép körül, így:",
+  "swipeToGetStarted": "Húzd el a kezdéshez",
+  "swipeToContinue": "Húzd el a folytatáshoz"
+}

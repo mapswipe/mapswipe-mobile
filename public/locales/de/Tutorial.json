@@ -1,0 +1,17 @@
+{
+  "incomplete": "UNVOLLSTÄNDIG",
+  "maybe": "VIELLEICHT",
+  "instructions1": "Wie du beiträgst",
+  "instructions2": "TIPPE ZUM AUSWÄHLEN",
+  "instructions3": "Schaue nach den Merkmalen die in der Missionsbeschreibung stehen. Tippe jede Kachel an, auf der du findest was du suchst. Tipp einmal für <1>JA</1>, zweimal für <3>{{twoTaps}}</3>, und dreimal <5>SCHLECHTES BILD</5> (z.B. Wolken).",
+  "instructions4": "WISCHEN ZUM NAVIGIEREN",
+  "instructions5": "Wenn du mit einem Teil der Karte fertig bist, wische zum Nächsten.",
+  "instructions6": "HALTEN ZUM ZOOMEN",
+  "instructions7": "Halte eine Kachel um zu zoomen.",
+  "instructions8": "Nachweis",
+  "tutorial1": "Willkommen zur Anleitung!",
+  "tutorial2": "Diese sollte dich in wenigen Minuten zu einem Experten in MapSwipe machen.",
+  "tutorial3": "Folge einfach den Anweisungen und wische nach links um fortzufahren.",
+  "tutorial4": "Wenn dir die Anweisungen im Weg sind, klicke einfach auf die Anweisung um sie zu verschieben.",
+  "tutorial5": "Verstanden"
+}

@@ -2,6 +2,7 @@ import {
     useCallback,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -20,8 +21,6 @@ import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseAuth } from '@/utils/firebase';
-
-const disclaimer = '* All the data you contribute to MapSwipe is open and available to anyone. Your username is public, but your email and password will never be shared with anyone.';
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
     mainContent: {
@@ -45,6 +44,8 @@ function Login() {
     const [email, setEmail] = useState<string>();
     const [password, setPassword] = useState<string>();
     const [pending, setPending] = useState<boolean>(false);
+
+    const { t } = useTranslation('signup');
 
     const handleLoginPress = useCallback(async () => {
         if (isTruthyString(email) && isTruthyString(password)) {
@@ -105,7 +106,7 @@ function Login() {
                         autoCorrect={false}
                         autoComplete="email"
                         keyboardType="email-address"
-                        placeholder="Enter your email"
+                        placeholder={t('enterYourEmail')}
                         value={email}
                         onChangeText={setEmail}
                         readOnly={pending}
@@ -113,7 +114,7 @@ function Login() {
                     <TextInput
                         autoCapitalize="none"
                         autoCorrect={false}
-                        placeholder="Enter your password"
+                        placeholder={t('enterYourPassword')}
                         value={password}
                         onChangeText={setPassword}
                         readOnly={pending}
@@ -127,12 +128,12 @@ function Login() {
                         variant="label"
                         style={styles.text}
                     >
-                        {disclaimer}
+                        {t('contributionWarningOnSignup')}
                     </Text>
                     <Button
                         name={undefined}
                         onPress={handleLoginPress}
-                        title="login"
+                        title={t('login')}
                         disabled={pending}
                         colorVariant="primaryRed"
                         styleVariant="filled"
@@ -143,14 +144,14 @@ function Login() {
                             href={{
                                 pathname: '/forgotPassword',
                             }}
-                            title="Forgot your password?"
+                            title={t('forgotPassword')}
                         />
                         <Link
                             spacing="xs"
                             href={{
                                 pathname: '/register',
                             }}
-                            title="Create New Account"
+                            title={t('createdNewAccount')}
                         />
                     </BlockListView>
                 </BlockListView>

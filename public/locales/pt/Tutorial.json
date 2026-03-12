@@ -1,0 +1,17 @@
+{
+  "incomplete": "INCOMPLETO",
+  "maybe": "TALVEZ",
+  "instructions1": "Como contribuir",
+  "instructions2": "TOCAR PARA ESCOLHER",
+  "instructions3": "Procure os recursos listados no seu resumo de tarefa. Toque em cada ladrilho que encontra o que procura. Toque uma vez para <1>SIM</1>, duas para <3>{{twoTaps}}</3>, e três vezes para <5>MÁ IMAGEM</5> (por exemplo nuvens).",
+  "instructions4": "DESLIZAR PARA NAVEGAR",
+  "instructions5": "Quando completar com uma parte do mapa, avance para o próximo deslizando.",
+  "instructions6": "MANTENHA PRESSIONADO PARA APROXIMAR",
+  "instructions7": "Mantenha um ladrilho pressionado para aproximar esse ladrilho.",
+  "instructions8": "Créditos",
+  "tutorial1": "Bem-vindo ao tutorial!",
+  "tutorial2": "Isto deve torná-lo num entendido de MapSwipe em alguns minutos",
+  "tutorial3": "Apenas siga as instruções no ecrã e deslize para a esquerda para continuar.",
+  "tutorial4": "Se as instruções estão a obstruir, apenas toque na caixa de mensagem para as mover",
+  "tutorial5": "Eu entendi"
+}

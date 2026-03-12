@@ -1,0 +1,9 @@
+{
+  "doesShapeOutlineABuilding": "Obkresluje tvar budovu?",
+  "howToContribute": "Jak přispět",
+  "squareContainsBuildings": "Obsahuje čtverec nějaké budovy? Pomocí tlačítek odpovězte:",
+  "instructionsYes": "Ano: když je na čtverci budova nebo její část",
+  "instructionsNo": "Ne: když ve čtverci nejsou žádné budovy",
+  "instructionsNotSure": "Nejste si jisti: když si nejste jisti, zda je to budova nebo ne",
+  "instructionsBadImagery": "Špatné snímky: když je oblačnost nebo problémy se snímky"
+}

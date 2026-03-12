@@ -1,0 +1,9 @@
+{
+  "doesShapeOutlineABuilding": "Ĉu la formo skizas konstruaĵon?",
+  "howToContribute": "Kiel Kontribui",
+  "squareContainsBuildings": "Ĉu la kvadrato enhavas iujn konstruaĵojn? Uzu la butonojn por respondi:",
+  "instructionsYes": "Jes: Kiam estas konstruaĵo aŭ parto de konstruaĵo en la kvadrato",
+  "instructionsNo": "Ne: Kiam ne estas konstruaĵoj en la kvadrato",
+  "instructionsNotSure": "Ne certas: kiam vi ne certas, ĉu ĝi estas konstruaĵo aŭ ne",
+  "instructionsBadImagery": "Malbonaj bildoj: Kiam estas nuba kovrilo aŭ problemoj kun la bildoj"
+}

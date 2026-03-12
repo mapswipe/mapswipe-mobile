@@ -1,0 +1,8 @@
+{
+  "xPcGlobalProgressByNMappers": "{{projectProgress}}% PROGRESS {{contributorCount}} KAARDISTAJALT NAGU SINA",
+  "userProgressForProject": "{{userProgress}}% selles projektis",
+  "quotaReachedWarning": "Vali ülesannete vaates mõni teine projekt",
+  "mapNow": "Kaardista",
+  "chooseAnotherProject": "Vali projekt",
+  "tutorial": "Õpetus"
+}

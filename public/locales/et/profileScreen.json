@@ -1,0 +1,16 @@
+{
+  "levelX": "Tase {{level}}",
+  "youveCompletedXTasks": "Oled näinud {{contributions}} pilti!",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} pilti ({{swipes}} sirvimist) järgmise tasemeni",
+  "yourTeam": "Sinu meeskond: {{teamName}}",
+  "changeLanguage": "Vaheta keelt",
+  "mapswipeWebsite": "MapSwipe koduleht",
+  "missingmapsWebsite": "Missing Maps koduleht",
+  "emailUs": "Saada meile e-kiri",
+  "signOut": "Logi välja",
+  "deleteMyAccount": "Kustuta konto",
+  "deleteAccountQuestion": "Kustutada konto?",
+  "deleteAccountWarning": "Kaotad kõik oma edusammud ja märgid. Sinu kaastööd jäävad avalikuks, kuid pole enam sinu kontoga seotud.\nKas soovid jätkata?",
+  "noKeepMyAccount": "Ei, säilitan oma konto",
+  "yesDeleteIt": "Jah, kustuta see!"
+}

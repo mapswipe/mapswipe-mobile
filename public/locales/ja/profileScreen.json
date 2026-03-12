@@ -1,0 +1,16 @@
+{
+  "levelX": "レベル {{level}}",
+  "youveCompletedXTasks": "あなたはこれまでに{{contributions}}個のタスクをコンプリートしました！",
+  "xTasks(sSwipes)UntilTheNextLevel": "次のレベルまであと {{sqkm}} タスク ({{swipes}}スワイプ）",
+  "yourTeam": "あなたのチーム: {{teamName}}",
+  "changeLanguage": "言語の変更",
+  "mapswipeWebsite": "マップスワイプのウェブサイト",
+  "missingmapsWebsite": "ミッシングマップのウェブサイト",
+  "emailUs": "メールでご連絡ください",
+  "signOut": "サインアウト",
+  "deleteMyAccount": "自分のアカウントを削除する",
+  "deleteAccountQuestion": "アカウントを削除しますか？",
+  "deleteAccountWarning": "今までの記録やバッチのデータが完全に消去されます。あなたが行った貢献活動は公開され続けますが、活動成果とアカウントが完全に切り離されます。アカウント削除の作業を進めますか？",
+  "noKeepMyAccount": "いいえ、アカウントを残します",
+  "yesDeleteIt": "はい、このアカウントを消します"
+}

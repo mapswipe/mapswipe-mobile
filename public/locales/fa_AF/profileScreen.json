@@ -1,0 +1,16 @@
+{
+  "levelX": "مرحله {{level}}",
+  "youveCompletedXTasks": "شما {{contributions}} وظایف محوله را تکمیل کرده اید",
+  "xTasks(sSwipes)UntilTheNextLevel": "وظایف {{ sqkm}} ({{swipes}} swipes) تا مرحله بعدی",
+  "yourTeam": "تیم شما: {{teamName}}",
+  "changeLanguage": "تغیر زبان",
+  "mapswipeWebsite": "وب سایت MapSwipe",
+  "missingmapsWebsite": "وب سایت نقشه ها وجود ندارد",
+  "emailUs": "به ما ایمیل کنید",
+  "signOut": "خروج از سیستم",
+  "deleteMyAccount": "حساب من را حذف کنید",
+  "deleteAccountQuestion": "حذف حساب کاربری؟",
+  "deleteAccountWarning": "تمام پیشرفت ها و نشان های خود را از دست خواهید داد. کمک های شما برای عموم قابل مشاهده خواهد ماند اما دیگر به حساب شما گره نمیخورد. \nآیا می خواهید ادامه دهید؟",
+  "noKeepMyAccount": "نه، حساب من را نگه دارید",
+  "yesDeleteIt": "بله، آن را حذف کنید!"
+}

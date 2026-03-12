@@ -1,0 +1,8 @@
+{
+  "xPcGlobalProgressByNMappers": "{{projectProgress}}% PROGRESSO GLOBALE DA {{contributorCount}} MAPPATORI COME TE.",
+  "userProgressForProject": "{{userProgress}}% per questo progetto",
+  "quotaReachedWarning": "Scegli un altro progetto dalle schermate delle missioni",
+  "mapNow": "Mappa adesso",
+  "chooseAnotherProject": "Scegli un altro progetto",
+  "tutorial": "Tutorial"
+}

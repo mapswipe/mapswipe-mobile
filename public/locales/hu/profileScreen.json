@@ -1,0 +1,16 @@
+{
+  "levelX": "{{level}}. szint",
+  "youveCompletedXTasks": "Elvégeztél {{contributions}} feladatot!",
+  "xTasks(sSwipes)UntilTheNextLevel": "A következő szintig {{sqkm}} feladat ({{swipes}} pöccintés) van hátra",
+  "yourTeam": "Csapatod: {{teamName}}",
+  "changeLanguage": "Nyelv módosítása",
+  "mapswipeWebsite": "A MapSwipe weboldala",
+  "missingmapsWebsite": "A Missing Maps weboldala",
+  "emailUs": "Írj nekünk",
+  "signOut": "Kijelentkezés",
+  "deleteMyAccount": "Fiókom törlése",
+  "deleteAccountQuestion": "Törlődjék a fiók?",
+  "deleteAccountWarning": "Minden teljesítményed és jelvényed el fog veszni. A szerkesztéseid megmaradnak, de nem fognak többé a fiókodhoz kötődni.\nBiztosan folytatod?",
+  "noKeepMyAccount": "Nem, maradjon meg a fiókom",
+  "yesDeleteIt": "Igen, törlődjön!"
+}

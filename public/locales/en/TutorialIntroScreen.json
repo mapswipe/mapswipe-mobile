@@ -1,0 +1,14 @@
+{
+  "thisTutoWillTeachYou": "This tutorial will teach you how to use MapSwipe. Here are the basic steps:",
+  "noChanges": "If there is nothing relevant in the images, simply <1>swipe</1> to the next screen",
+  "seeChanges": "If you see something in one of the images, <1>tap once to turn the square green</1>.",
+  "unsure": "Not sure about what you see? <1>Tap twice to turn the square yellow</1>",
+  "badImagery": "If there is an issue with the imagery, <1>tap three times to turn the square red</1>",
+  "tapAgain": "Tap again to return the square to its original state.",
+  "WhatToLookFor": "What to look for",
+  "YouAreLookingFor": "You are looking for {{lookFor}}",
+  "FromTheGround": "From the ground, it looks like this:",
+  "ImagesFromAbove": "But the images you will see will show it from above, and it looks like this:",
+  "SwipeToContinue": "Swipe to continue",
+  "hideIcon": "Tap to hide icon."
+}

@@ -1,0 +1,13 @@
+{
+  "thisTutoWillTeachYou": "Ez az oktatóanyag megtanít a MapSwipe használatára. Íme az első lépések:",
+  "noChanges": "Ha a képen nincs semmi lényeges, akkor egyszerűen <1>húzd el</1> a képernyőt a következő megjelenítéséhez.",
+  "seeChanges": "Ha az egyik képen észreveszel valamit, <1>koppints rá egyszer, hogy zöldre váltson</1>.",
+  "unsure": "Nem vagy egészen biztos abban, hogy mit látsz? <1>Koppints rá kétszer, és sárga lesz</1>.",
+  "badImagery": "Ha valami gond van a műholdképpel, <1>koppints rá háromszor, hogy vörös legyen</1>.",
+  "tapAgain": "Ha még egyszer rákoppintasz, visszaváltozik az eredeti állapotára.",
+  "WhatToLookFor": "Mit keress?",
+  "YouAreLookingFor": "Ezt keresed:",
+  "FromTheGround": "A terepen így néz ki:",
+  "ImagesFromAbove": "Az általad látott képek viszont föntről mutatják, ahonnan így fest:",
+  "SwipeToContinue": "Húzd el a folytatáshoz"
+}

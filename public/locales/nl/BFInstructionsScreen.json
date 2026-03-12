@@ -1,0 +1,9 @@
+{
+  "doesShapeOutlineABuilding": "Omlijnt de vorm een gebouw?",
+  "howToContribute": "Hoe bij te dragen",
+  "squareContainsBuildings": "Bevat het vierkant gebouwen? Gebruik de knoppen om te antwoorden:",
+  "instructionsYes": "Ja: wanneer er een gebouw of deel van een gebouw in het vierkant is",
+  "instructionsNo": "Nee: wanneer er geen gebouwen zijn in het vierkant",
+  "instructionsNotSure": "Weet ik niet: wanneer u niet zeker bent of het een gebouw is of niet",
+  "instructionsBadImagery": "Slechte afbeeldingen: wanneer er wolken of problemen met de afbeeldingen zijn"
+}

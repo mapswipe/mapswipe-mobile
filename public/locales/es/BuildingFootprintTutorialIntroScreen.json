@@ -1,0 +1,15 @@
+{
+  "useTheButtonsToAnswer": "Utilice los botones para responder:",
+  "doesTheShapeOutlineABuilding": "¿La forma dibuja el contorno de un edificio?",
+  "everyTimeYouSelectAnOption": "Cada vez que seleccione una opción, se le mostrará una nueva forma e imagen.",
+  "tapGreenText": "Sí - la forma de la imagen es el contorno de un edificio",
+  "tapRedText": "No - la forma no coincide con un edificio en la imagen",
+  "tapGrayText": "No estoy seguro - si no está seguro o hay nubosidad / malas imágenes",
+  "hideIconText": "Mantenga pulsado el botón de ocultar para eliminar la forma de la imagen",
+  "letsLearnHowToMap": "Aprendamos a mapear con algunos ejemplos",
+  "youllSeeASquare": "Verá una forma en una imagen. Utilice los botones para responder:",
+  "squareContainsBuildings": "¿El cuadrado contiene algún edificio?",
+  "squareWillMove": "El cuadrado se moverá alrededor de la imagen a medida que avanza, siguiendo una cuadrícula como esta:",
+  "swipeToGetStarted": "Deslizar para empezar",
+  "swipeToContinue": "Deslizar para continuar"
+}

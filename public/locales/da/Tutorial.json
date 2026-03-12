@@ -1,0 +1,17 @@
+{
+  "incomplete": "UFÆRDIG",
+  "maybe": "MÅSKE",
+  "instructions1": "Sådan bidrager du",
+  "instructions2": "TAP FOR AT VÆLGE",
+  "instructions3": "Se efter de ting, der er beskrevet i missionen. Tap på de felter, hvor du finder det du leder efter. Tap en gang for <1>JA </1>, to gange for <3>{{twoTaps}}</3>, og tre gange  for <5>DÅRLIGT BILLEDE</5> (som fx skyer).",
+  "instructions4": "SWIPE FOR AT NAVIGERE",
+  "instructions5": "Når du er færdig med et stykke af kortet, skal du blot swipe for at få det næste. ",
+  "instructions6": "HOLD FOR AT FORSTØRRE",
+  "instructions7": "Hold fingeren på et felt, for at få det forstørret.",
+  "instructions8": "Kredit",
+  "tutorial1": "Velkommen til denne vejledning!",
+  "tutorial2": "Den gør dig til en troldmand på MapSwipe på et øjeblik.",
+  "tutorial3": "Blot følg instruktionerne på skærmen, og swipe til venstre for at fortsætte.",
+  "tutorial4": "Hvis instruktionerne står i vejen skal du blot tappe på boksen for at flytte den.",
+  "tutorial5": "Jeg forstår."
+}

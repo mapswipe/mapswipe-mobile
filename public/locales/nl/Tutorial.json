@@ -1,0 +1,17 @@
+{
+  "incomplete": "INCOMPLEET",
+  "maybe": "MISSCHIEN",
+  "instructions1": "Hoe u kan bijdragen",
+  "instructions2": "TIK OM TE SELECTEREN",
+  "instructions3": "Zoek naar kenmerken die in uw missie worden vermeld. Tik elke tegel waar u deze kenmerken vindt. Tik eenmaal voor <1>JA</1>, tweemaal voor <3>{{twoTaps}}</3>, en driemaal voor <5>SLECHT BEELD</5> (zoals wolken).",
+  "instructions4": "SWIPE OM TE NAVIGEREN",
+  "instructions5": "Als u klaar bent met een stuk van de kaart, scrol naar de volgende door te swipen.",
+  "instructions6": "HOUD INGEDRUKT OM IN TE ZOOMEN",
+  "instructions7": "Houd een tegel vast om in te zoomen op de tegel.",
+  "instructions8": "Credits",
+  "tutorial1": "Welkom bij de tutorial!",
+  "tutorial2": "Dit zou u binnen een paar minuten een meester in MapSwipe moeten maken.",
+  "tutorial3": "Volg simpelweg de instructies op het scherm en swipe naar links om door te gaan.",
+  "tutorial4": "Als de instructies in de weg staan tikt u gewoon op de melding om deze te verplaatsen.",
+  "tutorial5": "Ik begrijp het"
+}

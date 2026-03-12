@@ -1,0 +1,16 @@
+{
+  "levelX": "Úroveň {{level}}",
+  "youveCompletedXTasks": "Dokončili jste {{contributions}} úkolů!",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} úkolů ({{swipes}} swipe) do další úrovně",
+  "yourTeam": "Váš tým: {{teamName}}",
+  "changeLanguage": "Změnit jazyk",
+  "mapswipeWebsite": "web MapSwipe",
+  "missingmapsWebsite": "web Missing Maps",
+  "emailUs": "Napište nám email",
+  "signOut": "Odhlásit",
+  "deleteMyAccount": "Smazat můj účet",
+  "deleteAccountQuestion": "Smazat účet?",
+  "deleteAccountWarning": "Ztratíte veškeré své dosažené úspěchy a odznaky. Vaše příspěvky zůstanou veřejné, ale nebudou již svázány s vaším účtem.\nChcete pokračovat?",
+  "noKeepMyAccount": "Ne, zachovat si svůj účet",
+  "yesDeleteIt": "Ano, smažte to!"
+}

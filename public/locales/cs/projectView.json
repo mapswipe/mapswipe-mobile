@@ -1,0 +1,8 @@
+{
+  "xPcGlobalProgressByNMappers": "{{projectProgress}}% GLOBÁLNÍHO POKROKU OD {{ContributorCount}} MAPPERŮ JAKO JSTE VY.",
+  "userProgressForProject": "{{userProgress}}% pro tento projekt",
+  "quotaReachedWarning": "Na obrazovkách misí vyberte jiný projekt",
+  "mapNow": "Začněte mapovat",
+  "chooseAnotherProject": "Vyberte jiný projekt",
+  "tutorial": "Tutorial"
+}

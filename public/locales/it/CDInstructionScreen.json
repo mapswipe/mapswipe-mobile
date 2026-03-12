@@ -1,0 +1,13 @@
+{
+  "instructions": "Istruzioni",
+  "yourTask": "Il tuo compito:",
+  "lookingFor": "Stai cercando<1>modifiche agli edifici</1>. Ciò è un chiaro indicatore per un cambiamento demografico.",
+  "performTask": "Come lavorare a questo compito:",
+  "noChanges": "Se non vi sono modifiche, <1>scorri</1> semplicemente verso nel prossime foto",
+  "seeChanges": "Se vedi un cambiamento negli edifici, <1>tocca una volta</1> e la mattonella diventerà verde",
+  "unsure": "Non sei sicuro? <1>Tocca due volte</1> e la mattonella diventerà gialla",
+  "badImagery": "Ci sono problemi con le immagini, come ad esempio delle nuvole che coprono la visuale? <1>Tocca tre volte</1> e la mattonella diverrà rossa.",
+  "holdZoom": "Se necessiti di vedere l’immagina da più vicino, toccala e tieni premuto e la vedrai un po’ più ingrandita.",
+  "hint": "Consiglio:",
+  "differentImagery": "Talvolta saranno utilizzate fonti di immagini differenti. Le immagini potrebbero essere leggermente disallineate o con risoluzione diversa. Ricordati: stai cercando <1>cambiamenti marcati in edifici e insediamenti</1> quindi se ti sembrano gli stessi edifici, ma forse uno ha un tetto nuovo, allora si tratta di un caso di 'nessuna modifica' e dovresti semplicemente scorrere alla prossima immagine."
+}

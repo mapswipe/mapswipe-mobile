@@ -1,0 +1,8 @@
+{
+  "xPcGlobalProgressByNMappers": "{{projectProgress}}% УЖЕ СДЕЛАНО {{contributorCount}} ТАКИМИ ЖЕ УЧАСТНИКАМИ КАК ВЫ",
+  "userProgressForProject": "{{userProgress}}% от этого проекта",
+  "quotaReachedWarning": "Выбрать другой проект на экране со списком миссий",
+  "mapNow": "Начать",
+  "chooseAnotherProject": "Выбрать другой проект",
+  "tutorial": "Руководство"
+}

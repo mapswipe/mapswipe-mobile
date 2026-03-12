@@ -1,0 +1,13 @@
+{
+  "instructions": "Juhised",
+  "yourTask": "Sinu töö:",
+  "lookingFor": "Otsid <1>muudatusi ehitistes</1>. See on selge märk elanikkonna suuruse muudatusest.",
+  "performTask": "Kuidas kaastööd teha:",
+  "noChanges": "Muudatuste puudumisel lihtsalt <1>lohista</1> ette järgmine foto",
+  "seeChanges": "Kui näed muudatusi ehitistes, <1>puuduta korra</1> ja ruut muutub roheliseks",
+  "unsure": "Ebakindel? <1>Puuduta kaks korda</1> ja ruut muutub kollaseks",
+  "badImagery": "Pildi viga, näiteks pilved katavad vaadet? <1>Puuduta kolm korda</1> ja ruut muutub punaseks",
+  "holdZoom": "Kui soovid pildimaterjali lähemalt vaadelda, puuduta ja hoia ruutu selle veidi suurendamiseks.",
+  "hint": "Vihje:",
+  "differentImagery": "Mõnikord on kasutatud erinevaid pildiallikaid. Pildid võivad olla veidi erinevalt joondatud või erineva resolutsiooniga. Pea meeles, et otsid <1>määratud muutusi asulates ja hoonetes</1> , nii et kui tundub, et hooned on samad, kuid võib-olla on uus katus, siis lihtsalt \"ei olegi muutusi\" ja võid libistada ette järgmise pildi."
+}

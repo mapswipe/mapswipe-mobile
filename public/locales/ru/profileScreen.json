@@ -1,0 +1,16 @@
+{
+  "levelX": "Уровень {{level}}",
+  "youveCompletedXTasks": "Вы выполнили {{contributions}} заданий/-ия!",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} заданий ({{swipes}} перелистываний) до следующего уровня",
+  "yourTeam": "Ваша группа: {{teamName}}",
+  "changeLanguage": "Изменить язык",
+  "mapswipeWebsite": "Сайт проекта MapSwipe",
+  "missingmapsWebsite": "Сайт проекта Missing Maps",
+  "emailUs": "Напишите нам",
+  "signOut": "Выход",
+  "deleteMyAccount": "Удалить мой аккаунт",
+  "deleteAccountQuestion": "Удалить аккаунт?",
+  "deleteAccountWarning": "Вы потеряете все ваши достижения и награды. Ваш вклад останется в открытом доступе, но больше не будет привязан к вашему аккаунту.\nВы хотите продолжить?",
+  "noKeepMyAccount": "Нет, сохранить мой аккаунт",
+  "yesDeleteIt": "Да, удалите его!"
+}
