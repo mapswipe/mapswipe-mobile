@@ -3,6 +3,7 @@ import {
     useMemo,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Alert,
     Linking,
@@ -31,7 +32,10 @@ import InlineListView from '@/components/InlineListView';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
-import { publicDashboardUrl } from '@/constants/common';
+import {
+    publicDashboardUrl,
+    supportedLanguages,
+} from '@/constants/common';
 import {
     FONT_SIZE_SM,
     SPACING_MD,
@@ -123,6 +127,11 @@ function Profile() {
     const router = useRouter();
     const styles = useThemedStyles(createStyles);
     const [isEnabledAccessibility, setIsEnabledAccessibility] = useState<boolean>(false);
+    const { t, i18n } = useTranslation();
+
+    const currentLanguage = (supportedLanguages ?? []).find(
+        (lang: { code: string }) => lang.code === i18n.language,
+    )?.name ?? i18n.language;
 
     const userDetailQuery = useMemo(() => (
         isDefined(user)
@@ -211,15 +220,15 @@ function Profile() {
     const theme = useTheme();
 
     const onHandleChangeUsername = useCallback(() => {
-        router.push('profile/changeUsername');
+        router.push('(auth)/changeUsername');
     }, [router]);
 
     const onHandleChangeLanguage = useCallback(() => {
-        router.push('profile/language');
+        router.push({ pathname: 'languageSelection', params: { isDarkBackground: String(false) } });
     }, [router]);
 
     const onHandleExploreGroups = useCallback(() => {
-        router.push('profile/exploreGroups');
+        router.push('(auth)/exploreGroups');
     }, [router]);
 
     const onHandleAccessibilityChange = useCallback(() => {
@@ -325,7 +334,7 @@ function Profile() {
             title: 'Language',
             onPress: onHandleChangeLanguage,
             showChevronIcon: true,
-            after: <Text> English</Text>,
+            after: <Text>{currentLanguage}</Text>,
         },
         {
             title: 'Accessibility',

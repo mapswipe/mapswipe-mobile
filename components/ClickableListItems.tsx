@@ -22,13 +22,14 @@ import Text from './Text';
 
 export type TextSize = 'sm' | 'md' | 'lg';
 
-export type colorVariant = 'primary' | 'danger' | 'info';
+export type colorVariant = 'primary' | 'danger' | 'info' | 'light';
 
 export type ClickableListItemProps<N> = {
     name?: N;
     accessibilityLabel?: string;
     showChevronIcon?: boolean;
     after?: React.ReactNode;
+    before?: React.ReactNode;
     onPress?: (name?: N) => void;
     title: string;
     textSize?: TextSize;
@@ -52,6 +53,7 @@ const createStyles = (
         primary: theme.textPrimary,
         danger: theme.primaryRed,
         info: theme.info,
+        light: theme.textOnPrimary,
     };
 
     return StyleSheet.create({
@@ -87,6 +89,7 @@ function ClickableListItem<N = unknown>({
     accessibilityLabel,
     style,
     after,
+    before,
     showChevronIcon = false,
     textSize = 'sm',
     colorVariant = 'primary',
@@ -113,6 +116,7 @@ function ClickableListItem<N = unknown>({
                     style={styles.list}
                     spacing="xs"
                 >
+                    {before}
                     <Text style={styles.text}>
                         {title}
                     </Text>

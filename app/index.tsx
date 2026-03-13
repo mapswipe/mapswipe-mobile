@@ -15,28 +15,27 @@ function AppIndex() {
     useEffect(() => {
         const checkNavigation = async () => {
             if (authPending) return;
-
             if (isLoggedIn) {
-                router.push('/projects');
+                router.replace('/projects');
+                return;
             }
             try {
                 const hasSeen = await AsyncStorage.getItem('@hasSeenOnboarding');
                 if (hasSeen && !isLoggedIn) {
                     router.replace('/login');
                 } else {
-                    router.replace('/onboarding');
+                    router.replace('/languageSplashScreen');
                 }
             } catch {
-                router.replace('/onboarding');
+                router.replace('/languageSplashScreen');
             }
         };
-
         checkNavigation();
     }, [authPending, isLoggedIn]);
 
     return (
         <Page title="MapSwipe">
-            <LoadingComponent label="Getting things ready..." />
+            <LoadingComponent label="loading..." />
         </Page>
     );
 }

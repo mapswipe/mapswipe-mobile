@@ -10,6 +10,7 @@ import {
     CursorClickIcon,
     EggIcon,
     FlagIcon,
+    GlobeIcon,
     HandIcon,
     HeartIcon,
     type Icon as PhosphorIcon,
@@ -67,6 +68,7 @@ export type IconName =
     | 'caret-right'
     | 'caret-left'
     | 'sign-out'
+    | 'globe'
     | 'warning-outline';
 
 const iconMap: Record<IconName, PhosphorIcon> = {
@@ -105,6 +107,8 @@ const iconMap: Record<IconName, PhosphorIcon> = {
     'caret-right': CaretRightIcon,
     'caret-left': CaretLeftIcon,
     'sign-out': SignOutIcon,
+    globe: GlobeIcon,
+
 };
 
 interface Props extends IconProps {

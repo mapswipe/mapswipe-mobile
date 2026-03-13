@@ -146,11 +146,17 @@ export default function AppLayout() {
                 />
                     <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Protected guard={!isAuthenticated}>
+                        <Stack.Screen name="languageSplashScreen" />
+                    </Stack.Protected>
+                    <Stack.Protected guard={!isAuthenticated}>
                         <Stack.Screen name="onboarding" />
                     </Stack.Protected>
                         <Stack.Protected guard={!isAuthenticated}>
                             <Stack.Screen name="login" />
                         </Stack.Protected>
+                    <Stack.Protected guard={!isAuthenticated}>
+                        <Stack.Screen name="register" />
+                    </Stack.Protected>
                         <Stack.Protected guard={isAuthenticated}>
                             <Stack.Screen name="(auth)" />
                         </Stack.Protected>

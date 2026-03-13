@@ -6,6 +6,8 @@ function AuthLayout() {
             <Stack.Screen name="(home)" />
             <Stack.Screen name="project" />
             <Stack.Screen name="exploreGroup" />
+            <Stack.Screen name="changeUsername" />
+            <Stack.Screen name="exploreGroups" />
         </Stack>
     );
 }
