@@ -1,7 +1,6 @@
 import {
     useCallback,
     useEffect,
-    useRef,
     useState,
 } from 'react';
 import {
@@ -14,11 +13,13 @@ import {
     View,
 } from 'react-native';
 import {
-    PinchGestureHandler,
-    PinchGestureHandlerGestureEvent,
-    PinchGestureHandlerStateChangeEvent,
-    State,
+    Gesture,
+    GestureDetector,
 } from 'react-native-gesture-handler';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+} from 'react-native-reanimated';
 import Svg, { Rect } from 'react-native-svg';
 
 import { SCREEN_WIDTH } from '@/constants/dimensions';
@@ -122,13 +123,6 @@ export default function ImageWrapper({
     const [error, setError] = useState(false);
     const [retryKey, setRetryKey] = useState(0);
     const [imageDimensions, setImageDimensions] = useState<ImageDimensions>();
-    const [scale, setScale] = useState(1);
-    const [focalX, setFocalX] = useState(0);
-    const [focalY, setFocalY] = useState(0);
-
-    const baseScale = useRef(1);
-    const lastFocalX = useRef<number | null>(null);
-    const lastFocalY = useRef<number | null>(null);
 
     useEffect(() => {
         onImageLoadStart(itemIndex);
@@ -165,46 +159,6 @@ export default function ImageWrapper({
         }
     }, [item.url, onImageLoadEnd, itemIndex]);
 
-    const handlePinch = useCallback(
-        (event: PinchGestureHandlerGestureEvent) => {
-            const { scale: gestureScale, focalX: gFocalX, focalY: gFocalY } = event.nativeEvent;
-
-            const newScale = baseScale.current * gestureScale;
-            const deltaX = lastFocalX.current != null ? gFocalX - lastFocalX.current : 0;
-            const deltaY = lastFocalY.current != null ? gFocalY - lastFocalY.current : 0;
-
-            lastFocalX.current = gFocalX;
-            lastFocalY.current = gFocalY;
-
-            setScale(newScale);
-            setFocalX((prev) => prev + deltaX);
-            setFocalY((prev) => prev + deltaY);
-        },
-        [],
-    );
-
-    const onPinchStateChange = useCallback(
-        (event: PinchGestureHandlerStateChangeEvent) => {
-            const { state } = event.nativeEvent;
-
-            if (state === State.BEGAN) {
-                baseScale.current = scale;
-                lastFocalX.current = null;
-                lastFocalY.current = null;
-            }
-
-            if (state === State.END || state === State.CANCELLED) {
-                baseScale.current = 1;
-                lastFocalX.current = null;
-                lastFocalY.current = null;
-                setScale(1);
-                setFocalX(0);
-                setFocalY(0);
-            }
-        },
-        [scale],
-    );
-
     const handleLayout = useCallback((event: LayoutChangeEvent) => {
         const { width, height } = event.nativeEvent.layout;
         setImageDimensions((prev) => ({
@@ -216,19 +170,52 @@ export default function ImageWrapper({
 
     const bboxForBox = calculateBbox(imageDimensions, bbox);
 
-    const transform = [
-        { translateX: -focalX },
-        { translateY: -focalY },
-        { scale },
-        { translateX: focalX },
-        { translateY: focalY },
-    ] as const;
+    const scale = useSharedValue(1);
+    const focalX = useSharedValue(0);
+    const focalY = useSharedValue(0);
+    const baseScale = useSharedValue(1);
+    const lastFocalX = useSharedValue<number | null>(null);
+    const lastFocalY = useSharedValue<number | null>(null);
 
+    const pinchGesture = Gesture.Pinch()
+        .onBegin(() => {
+            baseScale.value = scale.value;
+            lastFocalX.value = null;
+            lastFocalY.value = null;
+        })
+        .onUpdate((e) => {
+            const newScale = baseScale.value * e.scale;
+
+            const deltaX = lastFocalX.value != null ? e.focalX - lastFocalX.value : 0;
+            const deltaY = lastFocalY.value != null ? e.focalY - lastFocalY.value : 0;
+
+            lastFocalX.value = e.focalX;
+            lastFocalY.value = e.focalY;
+
+            scale.value = newScale;
+            focalX.value += deltaX;
+            focalY.value += deltaY;
+        })
+        .onEnd(() => {
+            baseScale.value = 1;
+            lastFocalX.value = null;
+            lastFocalY.value = null;
+            scale.value = 1;
+            focalX.value = 0;
+            focalY.value = 0;
+        });
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [
+            { translateX: -focalX.value },
+            { translateY: -focalY.value },
+            { scale: scale.value },
+            { translateX: focalX.value },
+            { translateY: focalY.value },
+        ],
+    }));
     return (
-        <PinchGestureHandler
-            onGestureEvent={handlePinch}
-            onHandlerStateChange={onPinchStateChange}
-        >
+        <GestureDetector gesture={pinchGesture}>
             <View onLayout={handleLayout} style={styles.container}>
                 {loading && (
                     <ActivityIndicator
@@ -238,10 +225,10 @@ export default function ImageWrapper({
                     />
                 )}
                 {!error ? (
-                    <Image
+                    <Animated.Image
                         key={retryKey}
                         source={{ uri: 'https://i.imgur.com/t3WOlrJ.jpeg' }}
-                        style={[styles.image, { transform }]}
+                        style={[styles.image, animatedStyle]}
                         onLoadStart={handleLoadStart}
                         onLoadEnd={handleLoadEnd}
                         onError={handleError}
@@ -256,23 +243,28 @@ export default function ImageWrapper({
                     </View>
                 )}
                 {bboxForBox && (
-                    <Svg
-                        style={[StyleSheet.absoluteFill, { transform }, styles.svg]}
+                    <Animated.View
+                        style={[StyleSheet.absoluteFill, animatedStyle, styles.svg]}
                         pointerEvents="none"
                     >
-                        <Rect
-                            x={bboxForBox.x}
-                            y={bboxForBox.y}
-                            width={bboxForBox.width}
-                            height={bboxForBox.height}
-                            stroke="#f00"
-                            strokeWidth={2}
-                            fill="#fff"
-                            fillOpacity="0.1"
-                        />
-                    </Svg>
+                        <Svg
+                            style={[StyleSheet.absoluteFill, styles.svg]}
+                            pointerEvents="none"
+                        >
+                            <Rect
+                                x={bboxForBox.x}
+                                y={bboxForBox.y}
+                                width={bboxForBox.width}
+                                height={bboxForBox.height}
+                                stroke="#f00"
+                                strokeWidth={2}
+                                fill="#fff"
+                                fillOpacity="0.1"
+                            />
+                        </Svg>
+                    </Animated.View>
                 )}
             </View>
-        </PinchGestureHandler>
+        </GestureDetector>
     );
 }

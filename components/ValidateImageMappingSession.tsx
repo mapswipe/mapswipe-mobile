@@ -2,7 +2,6 @@ import {
     type Dispatch,
     type SetStateAction,
     useCallback,
-    useEffect,
     useMemo,
     useRef,
     useState,
@@ -39,7 +38,7 @@ const viewabilityConfig = {
     viewAreaCoveragePercentThreshold: 50,
 };
 
-const createStyles = (theme: AppTheme) => (
+const createStyles = (_: AppTheme) => (
     StyleSheet.create({
         view: {
             flex: 1,
@@ -107,6 +106,8 @@ function ValidateImageMappingSession(props: Props) {
 
     const options = projectDetails.customOptions;
 
+    const flatListRef = useRef<RefType>(null);
+
     const handleAnswerSelect = useCallback((newValue: number) => {
         if (isDefined(currentTask)) {
             onResultsChange((prevResults) => ({
@@ -114,7 +115,17 @@ function ValidateImageMappingSession(props: Props) {
                 [currentTask.taskId]: newValue,
             }));
         }
-    }, [currentTask, onResultsChange]);
+
+        const nextIndex = currentTaskIndex + 1;
+        if (nextIndex < maxTasks) {
+            setTimeout(() => {
+                flatListRef.current?.scrollToIndex({
+                    index: nextIndex,
+                    animated: true,
+                });
+            }, 0);
+        }
+    }, [currentTask, onResultsChange, maxTasks, currentTaskIndex]);
 
     const selectedValue = isDefined(currentTask)
         ? results[currentTask.taskId]
@@ -128,31 +139,11 @@ function ValidateImageMappingSession(props: Props) {
         }
     }
 
-    const flatListRef = useRef<RefType>(null);
-
     const limitedTasks = [...(taskList ?? [])].slice(0, totalSwipedTasks + 1);
-    console.log('here', limitedTasks);
 
-    // FIXME: Not sure if this is correct or even needed?
-    // Scroll to selectedIndex when it changes from outside
-    useEffect(() => {
-        if (taskList.length < 1) {
-            return;
-        }
-        if (totalSwipedTasks + 1 > currentTaskIndex) {
-            // NOTE: Using setTimeout to fix issue where scroll
-            // wasn't working probably due to tasks and currentTaskIndex
-            // coming in during different times
-            setTimeout(() => {
-                flatListRef.current?.scrollToIndex({
-                    index: currentTaskIndex,
-                    animated: true,
-                });
-            }, 0);
-        }
-    }, [currentTaskIndex, totalSwipedTasks, taskList]);
-
-    const onViewableItemsChanged = useCallback(({ viewableItems }) => {
+    const onViewableItemsChanged = useCallback(({
+        viewableItems,
+    }: { viewableItems: { index: number | null | undefined }[] }) => {
         if (viewableItems.length > 0) {
             const { index } = viewableItems[0];
             if (index !== undefined && index !== null) {
@@ -175,6 +166,8 @@ function ValidateImageMappingSession(props: Props) {
         }));
     }, []);
 
+    const disableOptions = !!imagesLoading[currentTaskIndex];
+
     return (
         <BlockListView style={styles.view}>
             <FlatList
@@ -191,7 +184,7 @@ function ValidateImageMappingSession(props: Props) {
                         bbox={item.bbox}
                     />
                 )}
-                // onViewableItemsChanged={onViewableItemsChanged}
+                onViewableItemsChanged={onViewableItemsChanged}
                 viewabilityConfig={viewabilityConfig}
                 horizontal
                 getItemLayout={(_, index) => ({
@@ -216,6 +209,7 @@ function ValidateImageMappingSession(props: Props) {
                         iconName={option.icon as IconName}
                         tintColor={option.iconColor}
                         active={selectedValue === option.value}
+                        disabled={disableOptions}
                     />
                 ))}
             </InlineListView>
