@@ -10,6 +10,7 @@ import {
     ActivityIndicator,
     View,
 } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast, {
     BaseToast,
     ErrorToast,
@@ -128,17 +129,19 @@ export default function AppLayout() {
     const isAuthenticated = isDefined(user);
 
     return (
-        <AuthContext.Provider value={authContextValue}>
-            <StatusBar style="auto" />
-            <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Protected guard={!isAuthenticated}>
-                    <Stack.Screen name="login" />
-                </Stack.Protected>
-                <Stack.Protected guard={isAuthenticated}>
-                    <Stack.Screen name="(auth)" />
-                </Stack.Protected>
-            </Stack>
-            <Toast config={toastConfig} />
-        </AuthContext.Provider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <AuthContext.Provider value={authContextValue}>
+                <StatusBar style="auto" />
+                <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Protected guard={!isAuthenticated}>
+                        <Stack.Screen name="login" />
+                    </Stack.Protected>
+                    <Stack.Protected guard={isAuthenticated}>
+                        <Stack.Screen name="(auth)" />
+                    </Stack.Protected>
+                </Stack>
+                <Toast config={toastConfig} />
+            </AuthContext.Provider>
+        </GestureHandlerRootView>
     );
 }

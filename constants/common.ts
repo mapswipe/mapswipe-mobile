@@ -8,9 +8,9 @@ import {
 
 // eslint-disable-next-line import/prefer-default-export
 export const SUPPORTED_PROJECT_TYPES = [
-    PROJECT_TYPE_FIND,
-    PROJECT_TYPE_VALIDATE,
-    PROJECT_TYPE_COMPARE,
-    PROJECT_TYPE_COMPLETENESS,
+    // PROJECT_TYPE_FIND,
+    // PROJECT_TYPE_COMPARE,
+    // PROJECT_TYPE_COMPLETENESS,
+    // PROJECT_TYPE_VALIDATE,
     PROJECT_TYPE_VALIDATE_IMAGE,
 ];

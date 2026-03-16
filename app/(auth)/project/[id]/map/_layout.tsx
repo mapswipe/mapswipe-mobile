@@ -5,7 +5,7 @@ export default function ProjectMapLayout() {
     return (
         <>
             <StatusBar style="auto" />
-            <Stack screenOptions={{ headerShown: false }} />
+            <Stack screenOptions={{ headerShown: true }} />
         </>
     );
 }

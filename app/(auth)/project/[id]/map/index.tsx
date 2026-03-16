@@ -1,11 +1,13 @@
 import {
     useEffect,
+    useLayoutEffect,
     useMemo,
 } from 'react';
 import { ActivityIndicator } from 'react-native';
 import {
     router,
     useLocalSearchParams,
+    useNavigation,
 } from 'expo-router';
 import {
     isDefined,
@@ -24,12 +26,16 @@ import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
 import { firebaseRef } from '@/utils/firebase';
 
 function MapProjectIndex() {
+    const navigation = useNavigation();
+
     const {
         id: projectId,
         taskGroupId,
+        projectInstruction,
     } = useLocalSearchParams<{
         id: string;
         taskGroupId: string;
+        projectInstruction: string;
     }>();
 
     const leastMappedGroupQuery = useMemo(
@@ -58,10 +64,17 @@ function MapProjectIndex() {
                 params: {
                     id: projectId,
                     taskGroupId: leastMappedTaskGroupId,
+                    projectInstruction,
                 },
             });
         }
-    }, [projectId, taskGroupId, leastMappedTaskGroupId]);
+    }, [projectId, taskGroupId, leastMappedTaskGroupId, projectInstruction]);
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            title: String(projectInstruction),
+        });
+    }, [navigation, projectInstruction, pending]);
 
     if (pending) {
         return (

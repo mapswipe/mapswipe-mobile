@@ -1,26 +1,78 @@
 import {
+    type Dispatch,
+    type SetStateAction,
+    useCallback,
+    useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
+import {
+    FlatList,
+    StyleSheet,
+} from 'react-native';
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
+import { decode } from 'base-64';
+import { inflate } from 'pako';
 
 import BlockListView from '@/components/BlockListView';
-import Text from '@/components/Text';
+import { type IconName } from '@/components/Icon';
+import IconButton from '@/components/IconButton';
+import InlineListView from '@/components/InlineListView';
+import ImageWrapper from '@/components/ValidateImageWrapper';
+import { SCREEN_WIDTH } from '@/constants/dimensions';
+import { type AppTheme } from '@/constants/theme';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
-import { ValidateImageProject } from '@/utils/types';
+import {
+    Results,
+    ValidateImageProject,
+    ValidateImageTask,
+} from '@/utils/types';
+
+type RefType = FlatList<ValidateImageTask> | null;
+const viewabilityConfig = {
+    viewAreaCoveragePercentThreshold: 50,
+};
+
+const createStyles = (theme: AppTheme) => (
+    StyleSheet.create({
+        view: {
+            flex: 1,
+            flexDirection: 'column',
+        },
+        tasks: {
+            flex: 2,
+            width: SCREEN_WIDTH,
+        },
+        buttons: {
+            flexGrow: 0,
+        },
+    })
+);
 
 interface Props {
     taskGroupId: string;
     projectDetails: ValidateImageProject;
+    onResultsChange: Dispatch<SetStateAction<Results>>;
+    results: Results;
 }
 
 function ValidateImageMappingSession(props: Props) {
     const {
         taskGroupId,
         projectDetails,
+        onResultsChange,
+        results,
     } = props;
+    const styles = useThemedStyles(createStyles);
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+    const [imagesLoading, setImagesLoading] = useState<Record<number, boolean>>({});
 
     const taskQuery = useMemo(() => (
         firebaseRef(`v2/tasks/${projectDetails.projectId}/${taskGroupId}`)
@@ -30,13 +82,143 @@ function ValidateImageMappingSession(props: Props) {
         query: taskQuery,
     });
 
-    console.info(compressedTasks);
+    const taskList = useMemo(() => {
+        if (isNotDefined(compressedTasks)) {
+            return [];
+        }
+        if (Array.isArray(compressedTasks)) {
+            return compressedTasks;
+        }
+        if (typeof compressedTasks !== 'string') {
+            return [];
+        }
+
+        const decodedStr = decode(compressedTasks);
+        const charList = decodedStr.split('').map((splitteStr) => splitteStr.charCodeAt(0));
+        const binaryCompressedTasks = new Uint8Array(charList);
+        const decompressedTasks = inflate(binaryCompressedTasks, { to: 'string' });
+
+        // FIXME: add schema validation
+        return JSON.parse(decompressedTasks) as unknown[];
+    }, [compressedTasks]);
+
+    const currentTask = taskList[currentTaskIndex] as ValidateImageTask | undefined;
+    const maxTasks = taskList.length;
+
+    const options = projectDetails.customOptions;
+
+    const handleAnswerSelect = useCallback((newValue: number) => {
+        if (isDefined(currentTask)) {
+            onResultsChange((prevResults) => ({
+                ...prevResults,
+                [currentTask.taskId]: newValue,
+            }));
+        }
+    }, [currentTask, onResultsChange]);
+
+    const selectedValue = isDefined(currentTask)
+        ? results[currentTask.taskId]
+        : undefined;
+
+    let totalSwipedTasks = 0;
+    if (results) {
+        totalSwipedTasks = Object.keys(results).length;
+        if ('startTime' in results) {
+            totalSwipedTasks -= 1;
+        }
+    }
+
+    const flatListRef = useRef<RefType>(null);
+
+    const limitedTasks = [...(taskList ?? [])].slice(0, totalSwipedTasks + 1);
+    console.log('here', limitedTasks);
+
+    // FIXME: Not sure if this is correct or even needed?
+    // Scroll to selectedIndex when it changes from outside
+    useEffect(() => {
+        if (taskList.length < 1) {
+            return;
+        }
+        if (totalSwipedTasks + 1 > currentTaskIndex) {
+            // NOTE: Using setTimeout to fix issue where scroll
+            // wasn't working probably due to tasks and currentTaskIndex
+            // coming in during different times
+            setTimeout(() => {
+                flatListRef.current?.scrollToIndex({
+                    index: currentTaskIndex,
+                    animated: true,
+                });
+            }, 0);
+        }
+    }, [currentTaskIndex, totalSwipedTasks, taskList]);
+
+    const onViewableItemsChanged = useCallback(({ viewableItems }) => {
+        if (viewableItems.length > 0) {
+            const { index } = viewableItems[0];
+            if (index !== undefined && index !== null) {
+                setCurrentTaskIndex(index);
+            }
+        }
+    }, []);
+
+    const handleImageLoadStart = useCallback((itemIndex: number) => {
+        setImagesLoading((oldVal) => ({
+            ...oldVal,
+            [itemIndex]: true,
+        }));
+    }, []);
+
+    const handleImageLoadEnd = useCallback((itemIndex: number) => {
+        setImagesLoading((oldVal) => ({
+            ...oldVal,
+            [itemIndex]: false,
+        }));
+    }, []);
 
     return (
-        <BlockListView>
-            <Text>
-                Not implemented yet!
-            </Text>
+        <BlockListView style={styles.view}>
+            <FlatList
+                style={styles.tasks}
+                ref={flatListRef}
+                data={limitedTasks}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={({ item, index }) => (
+                    <ImageWrapper
+                        item={item}
+                        itemIndex={index}
+                        onImageLoadStart={handleImageLoadStart}
+                        onImageLoadEnd={handleImageLoadEnd}
+                        bbox={item.bbox}
+                    />
+                )}
+                // onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
+                horizontal
+                getItemLayout={(_, index) => ({
+                    length: SCREEN_WIDTH,
+                    offset: SCREEN_WIDTH * index,
+                    index,
+                })}
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+            />
+            <InlineListView
+                withCenteredContent
+                style={styles.buttons}
+            >
+                {options?.map((option) => (
+                    <IconButton
+                        name={option.value}
+                        key={option.value}
+                        title={option.title}
+                        onPress={handleAnswerSelect}
+                        // FIXME: No casting
+                        iconName={option.icon as IconName}
+                        tintColor={option.iconColor}
+                        active={selectedValue === option.value}
+                    />
+                ))}
+            </InlineListView>
         </BlockListView>
     );
 }

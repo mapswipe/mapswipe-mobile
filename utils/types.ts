@@ -573,6 +573,8 @@ export type FbTutorial = FbBaseTutorial & (
 );
 
 export type ValidateTask = FbMappingTaskCreateOnlyInput & FbMappingTaskValidateCreateOnlyInput;
+export type ValidateImageTask = FbMappingTaskCreateOnlyInput
+    & FbMappingTaskValidateImageCreateOnlyInput;
 
 export type FbTask = FbMappingTaskCreateOnlyInput
     & FbMappingTaskValidateCreateOnlyInput

@@ -22,6 +22,7 @@ interface Props {
     style?: ViewStyle,
     children: React.ReactNode;
     variant?: 'normal' | 'brand';
+    maxHeight?: boolean;
 }
 
 function Page(props: Props) {
@@ -30,6 +31,7 @@ function Page(props: Props) {
         children,
         style,
         variant = 'normal',
+        maxHeight,
     } = props;
 
     const styles = useThemedStyles(createStyles, { variant });
@@ -41,9 +43,13 @@ function Page(props: Props) {
                 style,
             ]}
         >
-            <ScrollView>
-                {children}
-            </ScrollView>
+            {maxHeight ? (
+                children
+            ) : (
+                <ScrollView>
+                    {children}
+                </ScrollView>
+            )}
         </SafeAreaView>
     );
 }

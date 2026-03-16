@@ -1,18 +1,30 @@
 import {
+    useLayoutEffect,
     useMemo,
     useState,
 } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import {
+    Pressable,
+    StyleSheet,
+} from 'react-native';
+import {
+    useLocalSearchParams,
+    useNavigation,
+    useRouter,
+} from 'expo-router';
 
 import BlockListView from '@/components/BlockListView';
 import CompareMappingSession from '@/components/CompareMappingSession';
+import Icon from '@/components/Icon';
 import Page from '@/components/Page';
 import StreetMappingSession from '@/components/StreetMappingSession';
 import Text from '@/components/Text';
 import TileGridMappingSession from '@/components/TileGridMappingSession';
 import ValidateImageMappingSession from '@/components/ValidateImageMappingSession';
 import ValidateMappingSession from '@/components/ValidateMappingSession';
+import { type AppTheme } from '@/constants/theme';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
 import {
     FbProject,
@@ -24,6 +36,12 @@ import {
     PROJECT_TYPE_VALIDATE_IMAGE,
     Results,
 } from '@/utils/types';
+
+const createStyles = (theme: AppTheme) => StyleSheet.create({
+    backButton: {
+        color: theme.backgroundBrand,
+    },
+});
 
 function MapTaskGroup() {
     const {
@@ -40,14 +58,21 @@ function MapTaskGroup() {
 
     const { data: projectDetails } = useFirebaseDatabase<FbProject>({ query: projectQuery });
     const [results, setResults] = useState<Results>({});
+    const navigation = useNavigation();
+
+    const styles = useThemedStyles(createStyles, undefined);
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            title: projectDetails?.projectInstruction,
+        });
+    }, [navigation, projectDetails]);
 
     return (
-        <Page title="Map project">
-            <BlockListView withPadding>
-                <Text variant="title">
-                    {projectDetails?.projectInstruction}
-                </Text>
-            </BlockListView>
+        <Page
+            title="Map project"
+            maxHeight
+        >
             {projectDetails?.projectType === PROJECT_TYPE_FIND && (
                 <TileGridMappingSession
                     taskGroupId={taskGroupId}
@@ -82,6 +107,8 @@ function MapTaskGroup() {
                 <ValidateImageMappingSession
                     taskGroupId={taskGroupId}
                     projectDetails={projectDetails}
+                    results={results}
+                    onResultsChange={setResults}
                 />
             )}
             {projectDetails?.projectType === PROJECT_TYPE_STREET && (
