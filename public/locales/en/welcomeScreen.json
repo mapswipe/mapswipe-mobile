@@ -8,5 +8,6 @@
   "createData": "Create meaningful data",
   "dataUse": "The data is used to focus the efforts of Missing Maps volunteers to add detail to OpenStreetMap",
   "saveLives": "Save lives",
-  "mapHelps": "The map helps organisations coordinate humanitarian efforts and save lives"
+  "mapHelps": "The map helps organisations coordinate humanitarian efforts and save lives",
+  "skip": "skip"
 }

@@ -2,6 +2,7 @@ import {
     useCallback,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { updateProfile } from 'firebase/auth';
 import { update } from 'firebase/database';
@@ -31,6 +32,7 @@ export default function ChangePassword() {
     const [oldUsername, setOldUsername] = useState<string>('');
     const [newUserName, setNewUserName] = useState<string>('');
     const router = useRouter();
+    const { t } = useTranslation('changeUserName');
     const { mutate, isLoading } = useFirebaseMutation();
 
     const handleUpdateProfile = useCallback(async () => {
@@ -78,20 +80,19 @@ export default function ChangePassword() {
 
     return (
         <Page title="Change Username">
-            <PageHeader heading="Change Username" />
+            <PageHeader heading={t('changeUserName')} />
             <BlockListView
                 withPadding
             >
                 <TextInput
                     variant="normal"
-                    labelText="Current Username"
+                    labelText={t('currentUserName')}
                     value={oldUsername}
                     onChangeText={setOldUsername}
                 />
                 <TextInput
                     variant="normal"
-                    labelText="New Username"
-                    value={newUserName}
+                    labelText={t('newUserName')}
                     onChangeText={setNewUserName}
                     maxLength={128}
                     editable={!isLoading}
@@ -99,8 +100,8 @@ export default function ChangePassword() {
                 <Button
                     name="change-username"
                     title={isLoading
-                        ? ('Updating Username')
-                        : ('Confirm UserName Change')}
+                        ? t('Updating Username')
+                        : t('confirmUserNameChange')}
                     disabled={
                         isLoading
                         || (newUserName?.length ?? 0) < MIN_USERNAME_LENGTH

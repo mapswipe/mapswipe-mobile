@@ -3,6 +3,7 @@ import {
     StyleSheet,
     TouchableOpacity,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     Tabs,
     usePathname,
@@ -55,6 +56,7 @@ function TabBarButton({ children, onPress, href }: BottomTabBarButtonProps) {
 
 function HomeLayout() {
     const theme = useTheme();
+    const insets = useSafeAreaInsets();
 
     return (
         <Tabs
@@ -63,7 +65,7 @@ function HomeLayout() {
                 tabBarStyle: {
                     backgroundColor: theme.primaryBlue,
                     borderTopColor: 'transparent',
-                    height: 60,
+                    height: 60 + insets.bottom, // add safe area inset
                 },
 
                 tabBarActiveTintColor: '#ffffff',

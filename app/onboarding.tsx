@@ -1,9 +1,6 @@
-import React, {
-    useRef,
-    useState,
-} from 'react';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-    Dimensions,
     FlatList,
     NativeScrollEvent,
     NativeSyntheticEvent,
@@ -21,6 +18,8 @@ import welcome4 from '@/assets/images/custom/welcome4.png';
 import welcome5 from '@/assets/images/custom/welcome5.png';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
+import InlineListView from '@/components/InlineListView';
+import Page from '@/components/Page';
 import Text from '@/components/Text';
 import {
     FONT_SIZE_3XL,
@@ -32,47 +31,47 @@ import { AppTheme } from '@/constants/theme';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
-const { width, height } = Dimensions.get('window');
-
 const slides = [
     {
         id: '1',
-        title: 'Welcome to MapSwipe',
-        description: 'Help improve humanitarian responses from the comfort of your phone',
+        title: 'welcomeScreen:welcomeToMapSwipe',
+        description: 'welcomeScreen:helpImprove',
         imageUrl: welcome1,
     },
     {
         id: '2',
-        title: 'Part of Missing Maps',
-        description: 'With Missing Maps, we aim to put the world\'s vulnerable communities on the map',
+        title: 'welcomeScreen:partMissingMaps',
+        description: 'welcomeScreen:withMissingMaps',
         imageUrl: welcome2,
     },
     {
         id: '3',
-        title: 'Swipe',
-        description: 'Complete tasks by swiping through satellite imagery of areas that need mapping',
+        title: 'welcomeScreen:swipe',
+        description: 'welcomeScreen:completeTasks',
         imageUrl: welcome3,
     },
     {
         id: '4',
-        title: 'Create meaningful data',
-        description: 'The data is used to focus the efforts of Missing Maps volunteers to add detail to OpenStreetMap',
+        title: 'welcomeScreen:createData',
+        description: 'welcomeScreen:dataUse',
         imageUrl: welcome4,
     },
     {
         id: '5',
-        title: 'Save lives',
-        description: 'The map helps organisations coordinate humanitarian efforts and save lives',
+        title: 'welcomeScreen:saveLives',
+        description: 'welcomeScreen:mapHelps',
         imageUrl: welcome5,
     },
 ];
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
+    container: {
+        height: '100%',
+    },
     mainContent: {
-        width,
-        height,
-        justifyContent: 'center',
+        width: SCREEN_WIDTH,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     icon: {
         resizeMode: 'contain',
@@ -105,18 +104,25 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         borderRadius: 4,
         marginHorizontal: 6,
     },
+    skip: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        width: 100,
+        zIndex: 1,
+    },
 
 });
 export default function Onboarding() {
     const [index, setIndex] = useState(0);
-    const flatListRef = useRef<FlatList>(null);
     const styles = useThemedStyles(createStyles);
     const theme = useTheme();
     const router = useRouter();
+    const { t } = useTranslation(['welcomeScreen', 'signup']);
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const slideIndex = Math.round(
-            event.nativeEvent.contentOffset.x / width,
+            event.nativeEvent.contentOffset.x / SCREEN_WIDTH,
         );
         setIndex(slideIndex);
     };
@@ -124,67 +130,81 @@ export default function Onboarding() {
     const handleSignUp = async () => {
         try {
             await AsyncStorage.setItem('@hasSeenOnboarding', 'true');
-            router.replace('/register'); // Navigate to Sign Up screen
+            router.replace('/register');
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Error saving onboarding state:', error);
         }
     };
 
     return (
-        <View>
-            <FlatList
-                ref={flatListRef}
-                data={slides}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onScroll={handleScroll}
-                scrollEventThrottle={16}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item, index: itemIndex }) => (
-                    <BlockListView
-                        style={styles.mainContent}
-                        withCenteredContent
-                        withPadding
-                    >
-                        <Image
-                            style={styles.icon}
-                            source={item.imageUrl}
-                        />
-                        <BlockListView withCenteredContent withPadding>
-                            <Text style={styles.heading}>
-                                {item.title}
-                            </Text>
-                            <Text style={styles.text}>
-                                {item.description}
-                            </Text>
-                        </BlockListView>
-
-                        {/* Only render button on the last slide */}
-                        {itemIndex === slides.length - 1 && (
-                            <Button
-                                name="Sign Up"
-                                title="Sign Up"
-                                colorVariant="primaryRed"
-                                styleVariant="filled"
-                                onPress={handleSignUp}
-                            />
-                        )}
-                    </BlockListView>
-                )}
-            />
-            <View style={styles.dotContainer}>
-                {slides.map((item, i) => (
-                    <View
-                        key={item.id}
-                        style={[
-                            styles.dotBase,
-                            // eslint-disable-next-line react-native/no-inline-styles
-                            { backgroundColor: i === index ? theme.backgroundBrand : '#ccc' },
-                        ]}
+        <Page
+            title="onboarding"
+            isScrollable={false}
+        >
+            <BlockListView style={styles.container}>
+                <InlineListView style={styles.skip}>
+                    <Button
+                        name="skip"
+                        title={t('welcomeScreen:skip')}
+                        colorVariant="primaryBlue"
+                        styleVariant="transparent"
+                        onPress={handleSignUp}
                     />
-                ))}
-            </View>
-        </View>
+                </InlineListView>
+                <FlatList
+                    data={slides}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.container}
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item, index: itemIndex }) => (
+                        <BlockListView
+                            style={styles.mainContent}
+                            withCenteredContent
+                            withPadding
+                        >
+                            <Image
+                                style={styles.icon}
+                                source={item.imageUrl}
+                            />
+                            <BlockListView withCenteredContent withPadding>
+                                <Text style={styles.heading}>
+                                    {t(item.title)}
+                                </Text>
+                                <Text style={styles.text}>
+                                    {t(item.description)}
+                                </Text>
+                            </BlockListView>
+                            {/* Only render button on the last slide */}
+                            {itemIndex === slides.length - 1 && (
+                                <Button
+                                    name="Sign Up"
+                                    title={t('signup:signUp')}
+                                    colorVariant="primaryRed"
+                                    styleVariant="filled"
+                                    onPress={handleSignUp}
+                                />
+                            )}
+                        </BlockListView>
+                    )}
+                />
+                <View style={styles.dotContainer}>
+                    {slides.map((item, i) => (
+                        <View
+                            key={item.id}
+                            style={[
+                                styles.dotBase,
+                                // eslint-disable-next-line react-native/no-inline-styles
+                                { backgroundColor: i === index ? theme.backgroundBrand : '#ccc' },
+                            ]}
+                        />
+                    ))}
+                </View>
+            </BlockListView>
+        </Page>
     );
 }

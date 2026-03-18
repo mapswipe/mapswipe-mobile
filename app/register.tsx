@@ -2,21 +2,22 @@ import {
     useCallback,
     useState,
 } from 'react';
+import {
+    Trans,
+    useTranslation,
+} from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import { Checkbox } from 'expo-checkbox';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import {
     isDefined,
     isNotDefined,
-    isTruthyString,
 } from '@togglecorp/fujs';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
-import ExternalLink from '@/components/ExternalLink';
 import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
@@ -65,6 +66,8 @@ function Register() {
     const [usernameError, setUsernameError] = useState<string>();
     const [passwordError, setPasswordError] = useState<string>();
     const [pending, setPending] = useState<boolean>(false);
+    const { t } = useTranslation('signup');
+    const router = useRouter();
 
     const handleUsernameChange = useCallback((newUsername: string) => {
         setUsername(newUsername);
@@ -77,9 +80,9 @@ function Register() {
     const handlePasswordChange = useCallback((newPassword: string) => {
         setPassword(newPassword);
         setPasswordError(
-            newPassword.length < 6 ? 'Password must be longer than 6 characters.' : undefined,
+            newPassword.length < 6 ? t('passwordError') : undefined,
         );
-    }, []);
+    }, [t]);
 
     const handleSignUpPress = useCallback(async () => {
         const isValid = validateUserName(username);
@@ -88,7 +91,7 @@ function Register() {
         }
         if (!isValid) {
             showAlert({
-                title: 'Failed to Register',
+                title: t('errorOnSignup'),
                 message: usernameErrorText,
                 alertType: 'error',
             });
@@ -96,8 +99,8 @@ function Register() {
         }
         if (isDefined(username) && username?.indexOf('@') !== -1) {
             showAlert({
-                title: 'Failed to Register',
-                message: 'Your username can not be an email',
+                title: t('errorOnSignup'),
+                message: t('usernameNotEmail'),
                 alertType: 'error',
                 shouldHideAfterDelay: false,
             });
@@ -109,8 +112,8 @@ function Register() {
 
             if (userNameAlreadyExist) {
                 showAlert({
-                    title: 'Failed to Register',
-                    message: 'Username already exist, Please choose another username',
+                    title: t('errorOnSignup'),
+                    message: t('userNameExistError'),
                     alertType: 'error',
                     shouldHideAfterDelay: false,
                 });
@@ -122,7 +125,7 @@ function Register() {
         }
         console.log('handle register here');
     }, [
-        username,
+        username, t,
     ]);
 
     const styles = useThemedStyles(createStyles);
@@ -149,8 +152,8 @@ function Register() {
                         variant="brand"
                         autoCapitalize="none"
                         autoCorrect={false}
-                        placeholder="Choose your username"
-                        hintText="Your username will be publicly visible"
+                        placeholder={t('chooseUsername')}
+                        hintText={t('usernamePublic')}
                         value={username}
                         errorText={usernameError}
                         onChangeText={handleUsernameChange}
@@ -162,7 +165,7 @@ function Register() {
                         autoCorrect={false}
                         autoComplete="email"
                         keyboardType="email-address"
-                        placeholder="Enter your email"
+                        placeholder={t('enterYourEmail')}
                         value={email}
                         onChangeText={setEmail}
                         readOnly={pending}
@@ -171,7 +174,7 @@ function Register() {
                         variant="brand"
                         autoCapitalize="none"
                         autoCorrect={false}
-                        placeholder="Choose your password"
+                        placeholder={t('choosePassword')}
                         value={password}
                         onChangeText={handlePasswordChange}
                         errorText={passwordError}
@@ -191,14 +194,22 @@ function Register() {
                             variant="label"
                             style={styles.text}
                         >
-                            I agree to the
+                            <Trans
+                                i18nKey="signup:IagreeToPrivacyNotice"
+
+                            >
+                                I agree to the
+                                <Text
+                                    style={styles.privacyLink}
+                                    onPress={() => router.push({
+                                        pathname: '/WebviewWindow',
+                                        params: { uri: 'https://mapswipe.org/' },
+                                    })}
+                                >
+                                    Privacy Notice
+                                </Text>
+                            </Trans>
                         </Text>
-                        <ExternalLink
-                            href="https://mapswipe.org/privacy"
-                            style={styles.privacyLink}
-                        >
-                            Privacy Notice
-                        </ExternalLink>
                     </InlineListView>
                 </BlockListView>
                 <BlockListView
@@ -208,12 +219,12 @@ function Register() {
                         variant="label"
                         style={styles.text}
                     >
-                        {disclaimer}
+                        {t('contributionWarningOnSignup')}
                     </Text>
                     <Button
                         name={undefined}
                         onPress={handleSignUpPress}
-                        title="Sign up"
+                        title={t('signUp')}
                         disabled={pending}
                         colorVariant="primaryRed"
                         styleVariant="filled"
@@ -224,14 +235,14 @@ function Register() {
                             href={{
                                 pathname: '/login',
                             }}
-                            title="Log in to an existing account"
+                            title={t('loginExistingAccount')}
                         />
                         <Link
                             spacing="xs"
                             href={{
                                 pathname: '/loginWithOsm',
                             }}
-                            title="Login with OpenStreetMap"
+                            title={t('loginSignupWithOSM')}
                         />
                     </BlockListView>
                 </BlockListView>

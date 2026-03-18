@@ -24,7 +24,13 @@ export const healthCheckEndpoint = gqlEndpoint.replace(
 );
 export const referrerEndpoint = gqlEndpoint.replace('backend', 'manager');
 
-export const supportedLanguages = [
+type Language = {
+  code: string;
+  localeCode: string;
+  name: string;
+};
+
+export const supportedLanguages: Language[] = [
     // follows (hopefully) the order in which they are displayed
     // in wikipedia's list of languages (left side toolbar)
     // as shown on https://en.wikipedia.org/wiki/Main_Page

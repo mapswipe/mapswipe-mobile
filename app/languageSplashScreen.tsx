@@ -12,20 +12,19 @@ import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import ClickableListItem from '@/components/ClickableListItems';
 import Icon from '@/components/Icon';
+import Page from '@/components/Page';
 import { supportedLanguages } from '@/constants/common';
 import {
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
 } from '@/constants/dimensions';
-import { AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
+const createStyles = () => StyleSheet.create({
     mainContent: {
         width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT,
+        height: '100%',
         justifyContent: 'space-between',
-        backgroundColor: theme.backgroundBrand,
     },
     icon: {
         resizeMode: 'contain',
@@ -37,6 +36,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         flex: 1,
         display: 'flex',
         justifyContent: 'center',
+        alignItems: 'center',
     },
 
 });
@@ -56,35 +56,40 @@ function LanguageSplashScreen() {
     }, [router]);
 
     return (
-        <BlockListView
-            style={styles.mainContent}
-            withPadding
-            spacing="4xl"
+        <Page
+            title="language"
+            isScrollable={false}
+            variant="brand"
         >
-            <View
-                style={styles.iconContainer}
+            <BlockListView
+                style={styles.mainContent}
+                withPadding
             >
-                <Image
-                    style={styles.icon}
-                    source={splashScreen}
-                />
-            </View>
-            <BlockListView>
-                <ClickableListItem
-                    title={currentLanguage}
-                    showChevronIcon
-                    before={<Icon name="globe" />}
-                    onPress={handleSelection}
-                />
-                <Button
-                    name="continue"
-                    title="Continue"
-                    colorVariant="primaryRed"
-                    styleVariant="filled"
-                    onPress={handleContinue}
-                />
+                <View
+                    style={styles.iconContainer}
+                >
+                    <Image
+                        style={styles.icon}
+                        source={splashScreen}
+                    />
+                </View>
+                <BlockListView>
+                    <ClickableListItem
+                        title={currentLanguage}
+                        showChevronIcon
+                        before={<Icon name="globe" />}
+                        onPress={handleSelection}
+                    />
+                    <Button
+                        name="continue"
+                        title="Continue"
+                        colorVariant="primaryRed"
+                        styleVariant="filled"
+                        onPress={handleContinue}
+                    />
+                </BlockListView>
             </BlockListView>
-        </BlockListView>
+        </Page>
     );
 }
 

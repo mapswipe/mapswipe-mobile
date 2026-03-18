@@ -5,7 +5,6 @@ import React, {
 import {
     Alert,
     Linking,
-    Platform,
     RefreshControl,
     ScrollView,
     StyleSheet,
@@ -232,21 +231,14 @@ function ExploreGroup() {
                     });
                 }
             };
-
-            // Web: use window.confirm; Native: Alert.alert
-            if (Platform.OS === 'web') {
-                const confirmed = window.confirm(message);
-                if (confirmed) proceed();
-            } else {
-                Alert.alert(
-                    isJoin ? 'Join User Group' : 'Leave User Group',
-                    message,
-                    [
-                        { text: 'Cancel', style: 'cancel' },
-                        { text: 'OK', onPress: proceed },
-                    ],
-                );
-            }
+            Alert.alert(
+                isJoin ? 'Join User Group' : 'Leave User Group',
+                message,
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'OK', onPress: proceed },
+                ],
+            );
         },
         [userId, userGroupId, router],
     );
@@ -271,7 +263,10 @@ function ExploreGroup() {
     }, [communityUserGroupStatsData?.communityUserGroupStats?.filteredStats?.swipeByDate]);
 
     return (
-        <Page title="Explore Group" isScrollable={false}>
+        <Page
+            title="Explore Group"
+            isScrollable={false}
+        >
             <PageHeader heading={userGroupData?.name ?? ''} />
             <InlineListView
                 withPadding

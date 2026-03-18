@@ -2,14 +2,18 @@ import {
     useCallback,
     useState,
 } from 'react';
+import {
+    Trans,
+    useTranslation,
+} from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import { Checkbox } from 'expo-checkbox';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
-import ExternalLink from '@/components/ExternalLink';
 import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
@@ -17,9 +21,6 @@ import Text from '@/components/Text';
 import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
-
-const disclaimer = 'Your username will be publicly visible.';
-const info = 'You can sign up to MapSwipe using your OpenStreetMap account. If you already have a MapSwipe account, this will not link them together! (this will come soon in a future release)';
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
     mainContent: {
@@ -46,6 +47,9 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
 
 function Register() {
     const [agreeToPrivacy, setAgreeToPrivacy] = useState<boolean>(false);
+
+    const { t } = useTranslation('signup');
+    const router = useRouter();
 
     const handleLoginPress = useCallback(async () => {
         // FIXME: Handle this properly
@@ -75,7 +79,7 @@ function Register() {
                         variant="label"
                         style={styles.text}
                     >
-                        {disclaimer}
+                        {t('usernamePublic')}
                     </Text>
                     <InlineListView
                         spacing="3xs"
@@ -89,25 +93,32 @@ function Register() {
                             variant="label"
                             style={styles.text}
                         >
-                            I agree to the
+                            <Trans
+                                i18nKey="signup:IagreeToPrivacyNotice"
+                            >
+                                I agree to the
+                                <Text
+                                    style={styles.privacyLink}
+                                    onPress={() => router.push({
+                                        pathname: '/WebviewWindow',
+                                        params: { uri: 'https://mapswipe.org/' },
+                                    })}
+                                >
+                                    Privacy Notice
+                                </Text>
+                            </Trans>
                         </Text>
-                        <ExternalLink
-                            href="https://mapswipe.org/privacy"
-                            style={styles.privacyLink}
-                        >
-                            Privacy Notice
-                        </ExternalLink>
                     </InlineListView>
                     <Text
                         variant="label"
                         style={styles.text}
                     >
-                        {info}
+                        {t('OSMsignupExplanation')}
                     </Text>
                     <Button
                         name={undefined}
                         onPress={handleLoginPress}
-                        title="Login with OpenStreetMap"
+                        title={t('loginSignupWithOSM')}
                         colorVariant="primaryRed"
                         styleVariant="filled"
                         disabled={!agreeToPrivacy}
@@ -118,7 +129,7 @@ function Register() {
                             href={{
                                 pathname: '/login',
                             }}
-                            title="Log in to an existing account"
+                            title={t('loginExistingAccount')}
                         />
                     </BlockListView>
                 </BlockListView>

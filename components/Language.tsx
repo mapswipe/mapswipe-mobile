@@ -42,8 +42,14 @@ export default function Language({ isDarkBackground, onSelectLanguage }: Languag
     };
 
     return (
-        <Page title="Language" isScrollable={false}>
-            <PageHeader heading="Language" />
+        <Page
+            title="Language"
+            isScrollable={false}
+            variant={isDarkBackground ? 'brand' : 'normal'}
+        >
+            <PageHeader
+                heading="Language"
+            />
             <ScrollView
                 style={styles.language}
             >

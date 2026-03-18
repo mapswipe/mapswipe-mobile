@@ -2,11 +2,9 @@ import {
     useCallback,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { isTruthyString } from '@togglecorp/fujs';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
@@ -14,11 +12,8 @@ import Button from '@/components/Button';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
 import TextInput from '@/components/TextInput';
-import { showAlert } from '@/components/Toast';
-import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
-import { firebaseAuth } from '@/utils/firebase';
 
 const disclaimer = '* All the data you contribute to MapSwipe is open and available to anyone. Your username is public, but your email and password will never be shared with anyone.';
 
@@ -43,6 +38,8 @@ function Login() {
     const handleResetPress = useCallback(async () => {
         // TODO: Handle forgot password logic
     }, [email]);
+
+    const { t } = useTranslation('signup');
 
     const styles = useThemedStyles(createStyles);
 
@@ -69,8 +66,8 @@ function Login() {
                         autoCorrect={false}
                         autoComplete="email"
                         keyboardType="email-address"
-                        placeholder="Enter your email"
-                        hintText="* We will send you and email to reset your password"
+                        placeholder={t('enterYourEmail')}
+                        hintText={t('sendResetEmailWarning')}
                         value={email}
                         onChangeText={setEmail}
                         readOnly={pending}
@@ -82,7 +79,7 @@ function Login() {
                     <Button
                         name={undefined}
                         onPress={handleResetPress}
-                        title="Send reset email"
+                        title={t('sendResetEmail')}
                         disabled={pending}
                         colorVariant="primaryRed"
                         styleVariant="filled"
@@ -93,7 +90,7 @@ function Login() {
                             href={{
                                 pathname: '/login',
                             }}
-                            title="Back to login"
+                            title={t('backToLogin')}
                         />
                     </BlockListView>
                 </BlockListView>

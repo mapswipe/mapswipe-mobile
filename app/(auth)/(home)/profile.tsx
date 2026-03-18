@@ -127,11 +127,20 @@ function Profile() {
     const router = useRouter();
     const styles = useThemedStyles(createStyles);
     const [isEnabledAccessibility, setIsEnabledAccessibility] = useState<boolean>(false);
-    const { t, i18n } = useTranslation();
+    const { t, i18n } = useTranslation('profileScreen');
+
+    const kmTillNextLevelToShow = 231123;
+    const swipes = Math.ceil(kmTillNextLevelToShow / 6);
+    const sqkm = kmTillNextLevelToShow.toFixed(0);
+
+    const levelProgressText = t('xTasks(sSwipes)UntilTheNextLevel', {
+        sqkm,
+        swipes,
+    });
 
     const currentLanguage = (supportedLanguages ?? []).find(
-        (lang: { code: string }) => lang.code === i18n.language,
-    )?.name ?? i18n.language;
+        (lang: { localeCode: string }) => lang.localeCode === i18n.language,
+    );
 
     const userDetailQuery = useMemo(() => (
         isDefined(user)
@@ -160,10 +169,8 @@ function Profile() {
 
         const totalUserGroups = userStatsData?.communityUserStats?.statsLatest?.totalUserGroups;
 
-        // FIXME: Add Language Selected
-        const formatter = new Intl.NumberFormat('en');
+        const formatter = new Intl.NumberFormat(currentLanguage?.localeCode);
         const formatNumber = formatter.format;
-
         const totalSwipesFormatted = formatNumber(totalSwipes ?? 0);
         const totalMappingProjectsFormatted = formatNumber(
             totalMappingProjects ?? 0,
@@ -183,31 +190,31 @@ function Profile() {
 
         return [
             {
-                title: ('Total swipes'),
+                title: t('Total swipes'),
                 value: totalSwipesFormatted,
             },
             {
-                title: ('Total time spent swiping'),
+                title: t('Total time spent swiping'),
                 value: totalSwipeTimeSegments,
             },
             {
-                title: ('Total area swiped (sq.km)'),
+                title: t('Total area swiped (sq.km)'),
                 value: totalSwipeAreaFormatted,
             },
             {
-                title: ('Total projects'),
+                title: t('Total projects'),
                 value: totalMappingProjectsFormatted,
             },
             {
-                title: ('Organizations supported'),
+                title: t('Organizations supported'),
                 value: totalOrganizationFormatted,
             },
             {
-                title: ('User groups joined'),
+                title: t('User groups joined'),
                 value: totalUserGroupsFormatted,
             },
         ];
-    }, [userStatsData]);
+    }, [userStatsData, t]);
 
     const { data: userDetails } = useFirebaseDatabase<FbUser>(
         { query: userDetailQuery },
@@ -323,21 +330,21 @@ function Profile() {
 
     const settingItems: ClickableListItemProps<string>[] = [
         {
-            title: 'Change Username',
+            title: t('changeUserName'),
             onPress: onHandleChangeUsername,
         },
         {
-            title: 'Reset Password',
+            title: t('changePassword'),
             onPress: handleResetPasswordClick,
         },
         {
-            title: 'Language',
+            title: t('language'),
             onPress: onHandleChangeLanguage,
             showChevronIcon: true,
-            after: <Text>{currentLanguage}</Text>,
+            after: <Text>{currentLanguage?.name}</Text>,
         },
         {
-            title: 'Accessibility',
+            title: t('accessibility'),
             after: <Switch
                 trackColor={{
                     false: theme.backgroundBrand,
@@ -354,7 +361,7 @@ function Profile() {
             />,
         },
         {
-            title: 'Sign Out',
+            title: t('signOut'),
             onPress: onHandleSignoutClick,
         },
         {
@@ -364,7 +371,7 @@ function Profile() {
         },
         { title: 'gap' },
         {
-            title: 'MapSwipe website',
+            title: t('mapswipeWebsite'),
             onPress: onHandleMapSwipeWebsiteClick,
             after: <Icon
                 name="sign-out"
@@ -373,8 +380,7 @@ function Profile() {
             />,
         },
         {
-            title:
-                'Missing Maps',
+            title: t('missingMaps'),
             onPress: onHandleMissingMapsClick,
             after: <Icon
                 name="sign-out"
@@ -383,8 +389,7 @@ function Profile() {
             />,
         },
         {
-            title:
-                'Email',
+            title: t('email'),
             onPress: onHandleEmailClick,
             after: <Icon
                 name="sign-out"
@@ -430,7 +435,7 @@ function Profile() {
                         width={null}
                     />
                     <Text style={styles.progressText}>
-                        128 tasks (22 swipes) until the next level
+                        {levelProgressText}
                     </Text>
                 </BlockListView>
             </InlineListView>
@@ -465,7 +470,7 @@ function Profile() {
                     spacing="xs"
                 >
                     <Text variant="title">
-                        Contribution Heatmap (Last 30 days)
+                        {t('contributionHeatmap')}
                     </Text>
                     <HeatMap activityData={calendarHeatmapData} />
                     <ClickableListItem
@@ -491,7 +496,7 @@ function Profile() {
                         No groups yet
                     </Text>
                     <ClickableListItem
-                        title="Explore Groups"
+                        title={t('exploreGroups')}
                         onPress={onHandleExploreGroups}
                         colorVariant="info"
                     />
@@ -501,7 +506,7 @@ function Profile() {
                     spacing="xs"
                 >
                     <Text variant="title">
-                        Settings
+                        {t('settings')}
                     </Text>
                     {settingItems.map((item) => {
                         if (item.title === 'gap') {

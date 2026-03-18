@@ -3,6 +3,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     ScrollView,
@@ -39,6 +40,7 @@ export interface UserGroupWithKey {
 function ExploreGroups() {
     const [searchText, setSearchText] = useState<string>('');
     const router = useRouter();
+    const { t } = useTranslation('profileScreen');
     const userGroupsQuery = useMemo(() => (
         query(
             firebaseRef('/v2/userGroups/'),
@@ -74,7 +76,7 @@ function ExploreGroups() {
             title="Explore Group"
             isScrollable={false}
         >
-            <PageHeader heading="Explore Group" />
+            <PageHeader heading={t('exploreGroups')} />
             {pending && <ActivityIndicator size="large" />}
 
             <TextInput

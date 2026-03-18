@@ -4,13 +4,11 @@
 // } from '@react-native-firebase/analytics';
 // import { getApp } from '@react-native-firebase/app';
 import React from 'react';
-import {
-    StyleSheet,
-    View,
-} from 'react-native';
+import { StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useGlobalSearchParams } from 'expo-router';
 
+import Page from '@/components/Page';
 import PageHeader from '@/components/PageHeader';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
@@ -39,12 +37,16 @@ export default function WebviewWindow() {
     // }, [webUri]);
 
     return (
-        <View style={styles.webView}>
+        <Page
+            title="webView"
+            style={styles.webView}
+            isScrollable={false}
+        >
             <PageHeader heading={webUri} style={styles.swipeNavTop} />
             <WebView
                 javaScriptEnabled
                 source={{ uri: webUri }}
             />
-        </View>
+        </Page>
     );
 }
