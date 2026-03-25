@@ -116,7 +116,7 @@ const appConfigs = compat.config({
 }).map((conf) => ({
     ...conf,
     files: [
-        'app/**/*.tsx', 'app/**/*.jsx', 'app/**/*.ts', 'app/**/*.js', 'generated/**/*.ts',
+        'app/**/*.tsx', 'app/**/*.jsx', 'app/**/*.ts', 'app/**/*.js',
         'components/**/*.tsx', 'components/**/*.jsx', 'components/**/*.ts', 'components/**/*.js',
         'contexts/**/*.tsx', 'contexts/**/*.jsx', 'contexts/**/*.ts', 'contexts/**/*.js',
         'hooks/**/*.tsx', 'hooks/**/*.jsx', 'hooks/**/*.ts', 'hooks/**/*.js',
@@ -129,7 +129,8 @@ const appConfigs = compat.config({
         "android/",
         "ios/",
         "coverage/",
-        'src/generated/types.ts'
+        "codegen.ts",
+        'generated/types/'
     ],
 }));
 

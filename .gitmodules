@@ -1,3 +1,6 @@
 [submodule "firebase"]
 	path = firebase
 	url = git@github.com:mapswipe/mapswipe-firebase.git
+[submodule "backend"]
+	path = backend
+	url = git@github.com:mapswipe/mapswipe-backend.git

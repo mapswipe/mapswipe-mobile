@@ -2,6 +2,7 @@ import React, {
     useCallback,
     useMemo,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Alert,
     Linking,
@@ -19,10 +20,7 @@ import {
     query,
     update,
 } from 'firebase/database';
-import {
-    gql,
-    useQuery,
-} from 'urql';
+import { gql } from 'urql';
 
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
@@ -35,7 +33,11 @@ import Page from '@/components/Page';
 import PageHeader from '@/components/PageHeader';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
-import { publicDashboardUrl } from '@/constants/common';
+import {
+    publicDashboardUrl,
+    supportedLanguages,
+} from '@/constants/common';
+import { useUserGroupStatsQuery } from '@/generated/types/graphql';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useTheme from '@/hooks/useTheme';
@@ -43,6 +45,7 @@ import useThemedStyles from '@/hooks/useThemedStyles';
 import { getTimeSegments } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USER_GROUP_STATS = gql`
     query UserGroupStats($userGroupId: ID!) {
         communityUserGroupStats(userGroupId: { firebaseId: $userGroupId }) {
@@ -94,6 +97,7 @@ function ExploreGroup() {
     const styles = useThemedStyles(createStyles);
     const theme = useTheme();
     const router = useRouter();
+    const { t, i18n } = useTranslation(['profileScreen', 'userGroupScreen']);
 
     const userGroupsQuery = useMemo(() => (
         query(
@@ -111,13 +115,16 @@ function ExploreGroup() {
     const [{
         data: communityUserGroupStatsData,
         fetching: loadingUserGroupStats,
-    }, refetchUserGroupStats] = useQuery({
-        query: USER_GROUP_STATS,
+    }, refetchUserGroupStats] = useUserGroupStatsQuery({
         variables: { userGroupId },
     });
 
+    const currentLanguage = (supportedLanguages ?? []).find(
+        (lang: { localeCode: string }) => lang.localeCode === i18n.language,
+    );
+
     const communityUserGroupStats: StatsInfo[] = useMemo(() => {
-        const stats = communityUserGroupStatsData?.communityUserGroupStats?.stats ?? {};
+        const stats = communityUserGroupStatsData?.communityUserGroupStats?.stats;
         const {
             totalContributors,
             totalMappingProjects,
@@ -125,10 +132,10 @@ function ExploreGroup() {
             totalAreaSwiped,
             totalSwipeTime,
             totalOrganization,
-        } = stats;
+        } = stats ?? {};
 
         // FIXME: Add Language Selected
-        const formatter = new Intl.NumberFormat('en');
+        const formatter = new Intl.NumberFormat(currentLanguage?.localeCode);
         const formatNumber = formatter.format;
 
         const totalSwipesFormatted = formatNumber(totalSwipes ?? 0);
@@ -148,33 +155,32 @@ function ExploreGroup() {
 
         return [
             {
-                title: ('Total swipes'),
+                title: t('Total swipes'),
                 value: totalSwipesFormatted,
             },
             {
-                title: ('Total contributors'),
+                title: t('Total contributors'),
                 value: totalContributorsFormatted,
             },
             {
-                title: ('Total time spent swiping'),
+                title: t('Total time spent swiping'),
                 value: totalSwipeTimeSegments,
             },
             {
-                title: ('Total area swiped (sq.km)'),
+                title: t('Total area swiped (sq.km)'),
                 value: totalSwipeAreaFormatted,
             },
             {
-                title: ('Total projects'),
+                title: t('Total projects'),
                 value: totalMappingProjectsFormatted,
             },
             {
-                title: ('Organizations supported'),
+                title: t('Organizations supported'),
                 value: totalOrganizationFormatted,
             },
         ];
-    }, [
-        communityUserGroupStatsData,
-    ]);
+    }, [communityUserGroupStatsData?.communityUserGroupStats?.stats,
+        currentLanguage?.localeCode, t]);
 
     const handleMoreStatsClick = useCallback(() => {
         if (userGroupId) {
@@ -274,7 +280,7 @@ function ExploreGroup() {
             >
                 <Button
                     name="Join"
-                    title="Join"
+                    title={t('userGroupScreen:joinGroup')}
                     colorVariant="success"
                     onPress={() => handleUserGroupAction('join')}
                 />
@@ -313,7 +319,7 @@ function ExploreGroup() {
                     spacing="xs"
                 >
                     <Text variant="title">
-                        Contribution Heatmap (Last 30 days)
+                        {t('profileScreen:contributionHeatmap')}
                     </Text>
                     <HeatMap activityData={calendarHeatmapData} />
                     <ClickableListItem
@@ -333,11 +339,11 @@ function ExploreGroup() {
                     spacing="xs"
                 >
                     <Text variant="title">
-                        Settings
+                        {t('profileScreen:settings')}
                     </Text>
                     <ClickableListItem
-                        title="Leave Group"
-                        accessibilityLabel="Leave Group"
+                        title={t('userGroupScreen:leaveGroup')}
+                        accessibilityLabel={t('userGroupScreen:leaveGroup')}
                         onPress={() => handleUserGroupAction('leave')}
                     />
                 </BlockListView>

@@ -1,5 +1,6 @@
 import {
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -16,11 +17,9 @@ import {
 import { Bar } from 'react-native-progress';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isDefined } from '@togglecorp/fujs';
-import {
-    gql,
-    useQuery,
-} from 'urql';
+import { gql } from 'urql';
 
 import BlockListView from '@/components/BlockListView';
 import ClickableListItem, { ClickableListItemProps } from '@/components/ClickableListItems';
@@ -52,6 +51,9 @@ import {
 } from '@/utils/firebase';
 import getLevelInfo from '@/utils/getLevel';
 
+import { useUserStatsQuery } from '../../../generated/types/graphql';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USER_STATS = gql`
     query UserStats($firebaseId: ID!) {
         communityUserStats(userId: { firebaseId: $firebaseId }) {
@@ -122,11 +124,22 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     },
 });
 
+const ACCESSIBILITY_KEY = '@accessibility';
+
 function Profile() {
     const { user } = useAuth();
     const router = useRouter();
     const styles = useThemedStyles(createStyles);
-    const [isEnabledAccessibility, setIsEnabledAccessibility] = useState<boolean>(false);
+    const [accessibility, setAccessibility] = useState<string>('disabled');
+
+    useEffect(() => {
+        const load = async () => {
+            const value = await AsyncStorage.getItem(ACCESSIBILITY_KEY);
+            setAccessibility(value ?? '');
+        };
+        load();
+    }, []);
+
     const { t, i18n } = useTranslation('profileScreen');
 
     const {
@@ -152,8 +165,10 @@ function Profile() {
             : undefined
     ), [user]);
 
-    const [{ data: userStatsData, fetching: loadingUserStats }, refetchUserStats] = useQuery({
-        query: USER_STATS,
+    const [{
+        data: userStatsData,
+        fetching: loadingUserStats,
+    }, refetchUserStats] = useUserStatsQuery({
         variables: { firebaseId: user ? user.uid : '' },
     });
 
@@ -162,14 +177,14 @@ function Profile() {
     }, [refetchUserStats]);
 
     const userStats: StatsInfo[] = useMemo(() => {
-        const stats = userStatsData?.communityUserStats?.stats ?? {};
+        const stats = userStatsData?.communityUserStats?.stats;
         const {
             totalAreaSwiped,
             totalMappingProjects,
             totalOrganization,
             totalSwipeTime,
             totalSwipes,
-        } = stats;
+        } = stats ?? {};
 
         const totalUserGroups = userStatsData?.communityUserStats?.statsLatest?.totalUserGroups;
 
@@ -244,9 +259,11 @@ function Profile() {
         router.push('(auth)/exploreGroups');
     }, [router]);
 
-    const onHandleAccessibilityChange = useCallback(() => {
-        setIsEnabledAccessibility((prev) => !prev);
-    }, []);
+    const onHandleAccessibilityChange = useCallback(async () => {
+        const newValue = accessibility === 'enabled' ? 'disabled' : 'enabled';
+        await AsyncStorage.setItem(ACCESSIBILITY_KEY, newValue);
+        setAccessibility(newValue);
+    }, [accessibility]);
 
     const onHandleMissingMapsClick = useCallback(() => {
         router.push({
@@ -357,12 +374,12 @@ function Profile() {
                     true: theme.success,
                 }}
                 thumbColor={
-                    isEnabledAccessibility
+                    accessibility === 'enabled'
                         ? theme.primaryBlue
                         : theme.backgroundMuted
                 }
                 onValueChange={onHandleAccessibilityChange}
-                value={isEnabledAccessibility}
+                value={accessibility === 'enabled'}
             // disabled={disabled}
             />,
         },
