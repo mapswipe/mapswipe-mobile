@@ -23,7 +23,7 @@ import {
 } from '@togglecorp/fujs';
 
 import ProgressBar from '@/components/ProgressBar';
-import Text from '@/components/Text';
+import ScaleBar from '@/components/ScaleBar';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
@@ -32,6 +32,7 @@ import {
     CompletenessProject,
     FbMappingGroupTileMapServiceCreateOnlyInput,
     FindProject,
+    PROJECT_TYPE_COMPLETENESS,
     ResultOption,
     Results,
 } from '@/utils/types';
@@ -186,6 +187,17 @@ function TileGridMappingSession(props: Props) {
         }));
     }, [getNextValue, onResultsChange]);
 
+    const latitude = useMemo(() => {
+        if (!groupDetails) {
+            return undefined;
+        }
+        return (
+            Math.atan(
+                Math.sinh(Math.PI * (1 - (2 * groupDetails.yMin) / 2 ** projectDetails.zoomLevel)),
+            ) * (180 / Math.PI)
+        );
+    }, [projectDetails, groupDetails]);
+
     return (
         <>
             <FlatList
@@ -200,11 +212,19 @@ function TileGridMappingSession(props: Props) {
                                 ? optionsByValue[result]
                                 : undefined;
 
+                            if (!task.url) {
+                                return null;
+                            }
                             return (
                                 <ImageTile
                                     key={task.taskId}
                                     taskId={task.taskId}
                                     url={task.url}
+                                    urlB={
+                                        projectDetails.projectType === PROJECT_TYPE_COMPLETENESS
+                                            ? task.urlB
+                                            : undefined
+                                    }
                                     width={tileWidth}
                                     tintColor={selectedOption?.color}
                                     onPress={handleTilePress}
@@ -226,6 +246,15 @@ function TileGridMappingSession(props: Props) {
                 initialNumToRender={2}
                 // removeClippedSubviews
             />
+            {latitude && (
+                <ScaleBar
+                    latitude={latitude}
+                    position="bottom"
+                    referenceSize={tileWidth}
+                    tileSize={tileWidth}
+                    zoomLevel={projectDetails?.zoomLevel}
+                />
+            )}
             <ProgressBar
                 currentValue={Math.floor(currentTaskIndex / 2) + 1}
                 totalValue={Math.ceil(groupedTasks.length / 2)}

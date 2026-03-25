@@ -3,22 +3,15 @@ import {
     useMemo,
     useState,
 } from 'react';
-import {
-    Pressable,
-    StyleSheet,
-} from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
     useLocalSearchParams,
     useNavigation,
-    useRouter,
 } from 'expo-router';
 
-import BlockListView from '@/components/BlockListView';
 import CompareMappingSession from '@/components/CompareMappingSession';
-import Icon from '@/components/Icon';
 import Page from '@/components/Page';
 import StreetMappingSession from '@/components/StreetMappingSession';
-import Text from '@/components/Text';
 import TileGridMappingSession from '@/components/TileGridMappingSession';
 import ValidateImageMappingSession from '@/components/ValidateImageMappingSession';
 import ValidateMappingSession from '@/components/ValidateMappingSession';

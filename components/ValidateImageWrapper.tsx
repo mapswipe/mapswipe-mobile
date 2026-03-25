@@ -227,6 +227,7 @@ export default function ImageWrapper({
                 {!error ? (
                     <Animated.Image
                         key={retryKey}
+                        // TODO: Use actual URL
                         source={{ uri: 'https://i.imgur.com/t3WOlrJ.jpeg' }}
                         style={[styles.image, animatedStyle]}
                         onLoadStart={handleLoadStart}
