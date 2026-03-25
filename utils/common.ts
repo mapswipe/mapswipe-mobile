@@ -8,12 +8,11 @@ import {
     get,
     orderByChild,
     query,
-    ref,
 } from 'firebase/database';
 
 import { showAlert } from '@/components/Toast';
 
-import { firebaseDatabase } from './firebase';
+import { firebaseRef } from './firebase';
 
 export const MIN_USERNAME_LENGTH = 4;
 
@@ -60,11 +59,10 @@ export function rankedSearchOnList<T>(
 export async function usernameExists(username: string) {
     try {
         const q = query(
-            ref(firebaseDatabase, 'v2/users'),
+            firebaseRef('v2/users'),
             orderByChild('usernameKey'),
             equalTo(username),
         );
-
         const snap = await get(q);
         return snap.exists();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

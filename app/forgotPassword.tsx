@@ -5,6 +5,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
@@ -12,12 +13,12 @@ import Button from '@/components/Button';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
 import TextInput from '@/components/TextInput';
-import { type AppTheme } from '@/constants/theme';
+import { showAlert } from '@/components/Toast';
+import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import { firebaseAuth } from '@/utils/firebase';
 
-const disclaimer = '* All the data you contribute to MapSwipe is open and available to anyone. Your username is public, but your email and password will never be shared with anyone.';
-
-const createStyles = (theme: AppTheme) => StyleSheet.create({
+const createStyles = () => StyleSheet.create({
     mainContent: {
         flexDirection: 'column',
         gap: 48,
@@ -31,15 +32,41 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     },
 });
 
-function Login() {
+function ForgoPassword() {
     const [email, setEmail] = useState<string>();
-    const [pending, setPending] = useState<boolean>(false);
+    const { handleAsync, isLoading } = useAsyncHandler();
+    const { t } = useTranslation('signup');
 
     const handleResetPress = useCallback(async () => {
-        // TODO: Handle forgot password logic
-    }, [email]);
-
-    const { t } = useTranslation('signup');
+        handleAsync(async () => {
+            if (!email) return;
+            await sendPasswordResetEmail(firebaseAuth, email);
+        }).then(() => {
+            showAlert({
+                title: t('signup:success'),
+                message: t('signup:checkYourEmail'),
+                alertType: 'info',
+            });
+        }).catch((error) => {
+            let errorMessage;
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    errorMessage = t('signup:noAccountFoundForEmail');
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = t('signup:emailInvalid');
+                    break;
+                default:
+                    errorMessage = t('signup:problemResettingPassword');
+            }
+            showAlert({
+                title: t('signup:errorResetPass'),
+                message: errorMessage,
+                alertType: 'error',
+                shouldHideAfterDelay: false,
+            });
+        });
+    }, [handleAsync, email, t]);
 
     const styles = useThemedStyles(createStyles);
 
@@ -70,7 +97,7 @@ function Login() {
                         hintText={t('sendResetEmailWarning')}
                         value={email}
                         onChangeText={setEmail}
-                        readOnly={pending}
+                        readOnly={isLoading}
                     />
                 </BlockListView>
                 <BlockListView
@@ -80,7 +107,7 @@ function Login() {
                         name={undefined}
                         onPress={handleResetPress}
                         title={t('sendResetEmail')}
-                        disabled={pending}
+                        disabled={isLoading}
                         colorVariant="primaryRed"
                         styleVariant="filled"
                     />
@@ -99,4 +126,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default ForgoPassword;

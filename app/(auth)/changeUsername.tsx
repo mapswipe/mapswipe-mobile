@@ -13,8 +13,8 @@ import Page from '@/components/Page';
 import PageHeader from '@/components/PageHeader';
 import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
+import useFirebaseMutation from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
-import useFirebaseMutation from '@/hooks/useFirebaseMutation';
 import {
     MIN_USERNAME_LENGTH,
     usernameExists,
@@ -22,77 +22,78 @@ import {
 } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
 
-const usernameErrorText = 'Username must be at least 4 characters long and cannot contain space and uppercase';
-const usernameAlreadyExists = 'Username already exists';
-const errorTitle = 'Failed to Change Username!';
-const successTitle = 'Username updated successfully!';
+const successTitle = 'Username updated!';
+const usernameSameAsBefore = 'New username is same as old!';
 
 export default function ChangePassword() {
     const { user, setUser } = useAuth();
-    const [oldUsername, setOldUsername] = useState<string>('');
     const [newUserName, setNewUserName] = useState<string>('');
     const router = useRouter();
-    const { t } = useTranslation('changeUserName');
-    const { mutate, isLoading } = useFirebaseMutation();
+    const { t } = useTranslation(['changeUserName', 'signup']);
+    const { handleAsync, isLoading } = useFirebaseMutation();
 
     const handleUpdateProfile = useCallback(async () => {
-        const isCurrentUsernameCorrect = user?.displayName === oldUsername;
-        const isSame = newUserName === oldUsername;
-        const isValid = validateUserName(newUserName) && !isSame && isCurrentUsernameCorrect;
-        if (!isValid) {
-            showAlert({
-                title: errorTitle,
-                message: usernameErrorText,
-                alertType: 'error',
-            });
-            return;
-        }
-        const userNameAlreadyExist = await usernameExists(newUserName);
-        if (userNameAlreadyExist) {
-            showAlert({
-                title: errorTitle,
-                message: usernameAlreadyExists,
-                alertType: 'error',
-                shouldHideAfterDelay: false,
-            });
-            return;
-        }
-        mutate(newUserName, async (name) => {
+        const isSame = newUserName === user?.displayName;
+        const isValid = validateUserName(newUserName) && !isSame;
+        handleAsync(async () => {
+            if (isSame) {
+                showAlert({
+                    title: t('signup:errorOnSignup'),
+                    message: usernameSameAsBefore,
+                    alertType: 'error',
+                });
+                return;
+            }
+            if (!isValid) {
+                showAlert({
+                    title: t('signup:errorOnSignup'),
+                    message: t('signup:usernameError'),
+                    alertType: 'error',
+                });
+                return;
+            }
+            const userNameAlreadyExist = await usernameExists(newUserName);
+
+            if (userNameAlreadyExist) {
+                showAlert({
+                    title: t('signup:errorOnSignup'),
+                    message: t('signup:userNameExistError'),
+                    alertType: 'error',
+                    shouldHideAfterDelay: false,
+                });
+                return;
+            }
             if (!user) return;
-            await updateProfile(user, { displayName: name as string });
-            await update(firebaseRef(`users/${user.uid}`), { username: name });
+
+            await updateProfile(user, { displayName: newUserName as string });
+            await update(firebaseRef(`v2/users/${user.uid}`), { username: newUserName });
             await user.reload();
-            setUser({ ...user });
-            setNewUserName('');
-            setOldUsername('');
-        }).then(() => {
             showAlert({
                 title: 'Success',
                 message: successTitle,
                 alertType: 'success',
             });
             router.back();
-        }).catch((err) => {
-            // eslint-disable-next-line no-console
-            console.error(err);
+            setUser({ ...user });
+            setNewUserName('');
         });
-    }, [oldUsername, newUserName, user, setUser, mutate, router]);
+    }, [newUserName, user, setUser, handleAsync, router, t]);
 
     return (
         <Page title="Change Username">
-            <PageHeader heading={t('changeUserName')} />
+            <PageHeader heading={t('changeUserName:changeUserName')} />
             <BlockListView
                 withPadding
             >
                 <TextInput
                     variant="normal"
-                    labelText={t('currentUserName')}
-                    value={oldUsername}
-                    onChangeText={setOldUsername}
+                    labelText={t('changeUserName:currentUserName')}
+                    value={user?.displayName ?? ''}
+                    editable={false}
                 />
                 <TextInput
                     variant="normal"
-                    labelText={t('newUserName')}
+                    labelText={t('changeUserName:newUserName')}
                     onChangeText={setNewUserName}
                     maxLength={128}
                     editable={!isLoading}
@@ -100,8 +101,8 @@ export default function ChangePassword() {
                 <Button
                     name="change-username"
                     title={isLoading
-                        ? t('Updating Username')
-                        : t('confirmUserNameChange')}
+                        ? t('changeUserName:Updating Username')
+                        : t('changeUserName:confirmUserNameChange')}
                     disabled={
                         isLoading
                         || (newUserName?.length ?? 0) < MIN_USERNAME_LENGTH
