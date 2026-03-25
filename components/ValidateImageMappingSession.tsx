@@ -210,6 +210,7 @@ function ValidateImageMappingSession(props: Props) {
                         tintColor={option.iconColor}
                         active={selectedValue === option.value}
                         disabled={disableOptions}
+                        textColorVariant="brand"
                     />
                 ))}
             </InlineListView>

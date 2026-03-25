@@ -71,6 +71,7 @@ function MapTaskGroup() {
     return (
         <Page
             title="Map project"
+            variant="brand"
             maxHeight
         >
             {projectDetails?.projectType === PROJECT_TYPE_FIND && (

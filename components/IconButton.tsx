@@ -15,6 +15,7 @@ interface Props<NAME> extends Omit<PressableProps, 'onPress'> {
     iconName: IconName;
     tintColor?: string;
     active?: boolean;
+    textColorVariant?: 'brand' | 'normal';
 }
 
 function IconButton<const NAME>(props: Props<NAME>) {
@@ -26,6 +27,7 @@ function IconButton<const NAME>(props: Props<NAME>) {
         iconName,
         tintColor,
         active,
+        textColorVariant,
         ...pressableProps
     } = props;
 
@@ -63,7 +65,9 @@ function IconButton<const NAME>(props: Props<NAME>) {
                     color="#ffffff"
                 />
             </Pressable>
-            <Text>
+            <Text
+                colorVariant={textColorVariant}
+            >
                 {title}
             </Text>
         </BlockListView>
