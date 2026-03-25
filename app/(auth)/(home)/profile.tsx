@@ -22,7 +22,6 @@ import {
     useQuery,
 } from 'urql';
 
-import ImageSrc from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
 import ClickableListItem, { ClickableListItemProps } from '@/components/ClickableListItems';
 import HeatMap from '@/components/HeatMap';
@@ -51,6 +50,7 @@ import {
     firebaseAuth,
     firebaseRef,
 } from '@/utils/firebase';
+import getLevelInfo from '@/utils/getLevel';
 
 const USER_STATS = gql`
     query UserStats($firebaseId: ID!) {
@@ -129,9 +129,13 @@ function Profile() {
     const [isEnabledAccessibility, setIsEnabledAccessibility] = useState<boolean>(false);
     const { t, i18n } = useTranslation('profileScreen');
 
-    const kmTillNextLevelToShow = 231123;
-    const swipes = Math.ceil(kmTillNextLevelToShow / 6);
-    const sqkm = kmTillNextLevelToShow.toFixed(0);
+    const {
+        level,
+        sqkm,
+        swipes,
+        levelData,
+        progress,
+    } = getLevelInfo(10695);
 
     const levelProgressText = t('xTasks(sSwipes)UntilTheNextLevel', {
         sqkm,
@@ -214,7 +218,9 @@ function Profile() {
                 value: totalUserGroupsFormatted,
             },
         ];
-    }, [userStatsData, t]);
+    }, [userStatsData?.communityUserStats?.stats,
+        userStatsData?.communityUserStats?.statsLatest?.totalUserGroups,
+        currentLanguage?.localeCode, t]);
 
     const { data: userDetails } = useFirebaseDatabase<FbUser>(
         { query: userDetailQuery },
@@ -412,8 +418,10 @@ function Profile() {
                 spacing="lg"
             >
                 <Image
-                    source={user?.photoURL ?? ImageSrc}
+                    source={levelData.badge}
                     style={styles.displayPicture}
+                    key={levelData.title}
+                    accessibilityLabel={levelData.title}
                 />
                 <BlockListView
                     spacing="3xs"
@@ -423,14 +431,15 @@ function Profile() {
                         {user?.displayName}
                     </Text>
                     <Text style={styles.levelText}>
-                        Level 1 (Square One)
+                        {`${t('levelX', { level })} (${levelData.title
+                        })`}
                     </Text>
                     <Bar
                         borderRadius={0}
                         borderWidth={0}
                         color={theme.primaryGreen}
                         height={10}
-                        progress={0.5}
+                        progress={progress.percentage}
                         unfilledColor={theme.backgroundMuted}
                         width={null}
                     />
