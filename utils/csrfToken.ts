@@ -12,7 +12,6 @@ export async function fetchCsrfToken() {
             credentials: 'include',
         });
 
-        console.log('I am her');
         const setCookie = response.headers.get('set-cookie');
 
         if (setCookie) {

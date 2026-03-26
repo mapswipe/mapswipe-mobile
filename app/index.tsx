@@ -10,6 +10,7 @@ function AppIndex() {
     const {
         authPending,
         isLoggedIn,
+        user,
     } = useAuth();
 
     useEffect(() => {
@@ -21,17 +22,24 @@ function AppIndex() {
             }
             try {
                 const hasSeen = await AsyncStorage.getItem('@hasSeenOnboarding');
-                if (hasSeen && !isLoggedIn) {
-                    router.replace('/login');
-                } else {
+                const appLanguage = await AsyncStorage.getItem('appLanguage');
+
+                if (!appLanguage) {
                     router.replace('/languageSplashScreen');
+                    return;
                 }
+
+                if (!hasSeen) {
+                    router.replace('/onboarding');
+                    return;
+                }
+                router.replace('/login');
             } catch {
                 router.replace('/languageSplashScreen');
             }
         };
         checkNavigation();
-    }, [authPending, isLoggedIn]);
+    }, [authPending, isLoggedIn, user]);
 
     return (
         <Page title="MapSwipe">

@@ -22,7 +22,8 @@ import { isDefined } from '@togglecorp/fujs';
 import { gql } from 'urql';
 
 import BlockListView from '@/components/BlockListView';
-import ClickableListItem, { ClickableListItemProps } from '@/components/ClickableListItems';
+import Button from '@/components/Button';
+import { ButtonLayoutProps } from '@/components/ButtonLayout';
 import HeatMap from '@/components/HeatMap';
 import Icon from '@/components/Icon';
 import InfoCard, { StatsInfo } from '@/components/InfoCard';
@@ -121,6 +122,9 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     infoCard: {
         width: '48%',
         marginBottom: 12,
+    },
+    alignCenter: {
+        alignItems: 'center',
     },
 });
 
@@ -303,11 +307,12 @@ function Profile() {
                                 alertType: 'error',
                             });
                         });
+                        router.replace('/');
                     },
                 },
             ],
         );
-    }, []);
+    }, [router]);
 
     const handleResetPasswordClick = useCallback(() => {
         Alert.alert(
@@ -351,7 +356,7 @@ function Profile() {
         return contributionStatsMap;
     }, [userStatsData?.communityUserStats?.filteredStats?.swipeByDate]);
 
-    const settingItems: ClickableListItemProps<string>[] = [
+    const settingItems: ButtonLayoutProps[] = [
         {
             title: t('changeUserName'),
             onPress: onHandleChangeUsername,
@@ -363,12 +368,19 @@ function Profile() {
         {
             title: t('language'),
             onPress: onHandleChangeLanguage,
-            showChevronIcon: true,
-            after: <Text>{currentLanguage?.name}</Text>,
+            action: (
+                <InlineListView
+                    spacing="4xs"
+                    style={styles.alignCenter}
+                >
+                    <Text>{currentLanguage?.name}</Text>
+                    <Icon name="caret-right" size={14} />
+                </InlineListView>
+            ),
         },
         {
             title: t('accessibility'),
-            after: <Switch
+            action: <Switch
                 trackColor={{
                     false: theme.backgroundBrand,
                     true: theme.success,
@@ -396,7 +408,7 @@ function Profile() {
         {
             title: t('mapswipeWebsite'),
             onPress: onHandleMapSwipeWebsiteClick,
-            after: <Icon
+            action: <Icon
                 name="sign-out"
                 size={18}
                 color={theme.info}
@@ -405,7 +417,7 @@ function Profile() {
         {
             title: t('missingMaps'),
             onPress: onHandleMissingMapsClick,
-            after: <Icon
+            action: <Icon
                 name="sign-out"
                 size={18}
                 color={theme.info}
@@ -414,7 +426,7 @@ function Profile() {
         {
             title: t('email'),
             onPress: onHandleEmailClick,
-            after: <Icon
+            action: <Icon
                 name="sign-out"
                 size={18}
                 color={theme.info}
@@ -448,8 +460,7 @@ function Profile() {
                         {user?.displayName}
                     </Text>
                     <Text style={styles.levelText}>
-                        {`${t('levelX', { level })} (${levelData.title
-                        })`}
+                        {`${t('levelX', { level })} (${levelData.title})`}
                     </Text>
                     <Bar
                         borderRadius={0}
@@ -499,16 +510,18 @@ function Profile() {
                         {t('contributionHeatmap')}
                     </Text>
                     <HeatMap activityData={calendarHeatmapData} />
-                    <ClickableListItem
+                    <Button
+                        name="MoreStats"
                         title="More Stats"
                         onPress={handleMoreStatsClick}
-                        after={(
+                        action={(
                             <Icon
                                 name="sign-out"
                                 size={18}
                                 color={theme.info}
                             />
                         )}
+                        styleVariant="block"
                     />
                 </BlockListView>
                 <BlockListView
@@ -521,10 +534,12 @@ function Profile() {
                     <Text variant="label">
                         No groups yet
                     </Text>
-                    <ClickableListItem
+                    <Button
+                        name="exploreGroup"
                         title={t('exploreGroups')}
                         onPress={onHandleExploreGroups}
                         colorVariant="info"
+                        styleVariant="block"
                     />
                 </BlockListView>
                 <BlockListView
@@ -544,14 +559,14 @@ function Profile() {
                             );
                         }
                         return (
-                            <ClickableListItem
+                            <Button
+                                name={item.title}
                                 key={item.title}
                                 title={item.title}
                                 onPress={item.onPress}
-                                textSize={item.textSize}
-                                showChevronIcon={item.showChevronIcon}
-                                after={item.after}
+                                action={item.action}
                                 colorVariant={item.colorVariant}
+                                styleVariant="block"
                             />
                         );
                     })}

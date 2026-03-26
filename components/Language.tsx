@@ -4,7 +4,6 @@ import {
     StyleSheet,
 } from 'react-native';
 
-import ClickableListItem from '@/components/ClickableListItems';
 import Icon from '@/components/Icon';
 import Page from '@/components/Page';
 import PageHeader from '@/components/PageHeader';
@@ -12,6 +11,8 @@ import { supportedLanguages } from '@/constants/common';
 import { AppTheme } from '@/constants/theme';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+
+import Button from './Button';
 
 type LanguageProps = {
     isDarkBackground?: boolean
@@ -56,11 +57,11 @@ export default function Language({ isDarkBackground, onSelectLanguage }: Languag
                 {supportedLanguages.map((item) => {
                     const isActive = selected === item.localeCode;
                     return (
-                        <ClickableListItem
+                        <Button
                             key={item.code}
                             name={item.code}
                             title={item.name}
-                            after={isActive && (
+                            action={isActive && (
                                 <Icon
                                     name="checkmark-outline"
                                     size={16}
@@ -68,8 +69,8 @@ export default function Language({ isDarkBackground, onSelectLanguage }: Languag
                                         ? theme.textOnPrimary : theme.textPrimary}
                                 />
                             )}
-                            colorVariant={isDarkBackground ? 'light' : 'primary'}
-                            isActive={isActive}
+                            colorVariant={isDarkBackground ? 'card' : 'primaryBlue'}
+                            styleVariant="block"
                             onPress={() => selectLanguage(item.localeCode)}
                             style={styles.language}
                         />

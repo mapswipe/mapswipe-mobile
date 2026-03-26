@@ -10,7 +10,6 @@ import { useRouter } from 'expo-router';
 import splashScreen from '@/assets/images/splash-icon.png';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
-import ClickableListItem from '@/components/ClickableListItems';
 import Icon from '@/components/Icon';
 import Page from '@/components/Page';
 import { supportedLanguages } from '@/constants/common';
@@ -74,10 +73,12 @@ function LanguageSplashScreen() {
                     />
                 </View>
                 <BlockListView>
-                    <ClickableListItem
+                    <Button
+                        name={undefined}
                         title={currentLanguage}
-                        showChevronIcon
-                        before={<Icon name="globe" />}
+                        iconName="globe"
+                        styleVariant="block"
+                        action={<Icon name="caret-right" size={18} />}
                         onPress={handleSelection}
                     />
                     <Button

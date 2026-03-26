@@ -24,7 +24,6 @@ import { gql } from 'urql';
 
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
-import ClickableListItem from '@/components/ClickableListItems';
 import HeatMap from '@/components/HeatMap';
 import Icon from '@/components/Icon';
 import InfoCard, { StatsInfo } from '@/components/InfoCard';
@@ -322,16 +321,18 @@ function ExploreGroup() {
                         {t('profileScreen:contributionHeatmap')}
                     </Text>
                     <HeatMap activityData={calendarHeatmapData} />
-                    <ClickableListItem
+                    <Button
+                        name="moreStat"
                         title="More Stats"
                         onPress={handleMoreStatsClick}
-                        after={(
+                        action={(
                             <Icon
                                 name="sign-out"
                                 size={18}
                                 color={theme.info}
                             />
                         )}
+                        styleVariant="block"
                     />
                 </BlockListView>
                 <BlockListView
@@ -341,10 +342,11 @@ function ExploreGroup() {
                     <Text variant="title">
                         {t('profileScreen:settings')}
                     </Text>
-                    <ClickableListItem
+                    <Button
+                        name="leaveGroup"
                         title={t('userGroupScreen:leaveGroup')}
-                        accessibilityLabel={t('userGroupScreen:leaveGroup')}
                         onPress={() => handleUserGroupAction('leave')}
+                        styleVariant="block"
                     />
                 </BlockListView>
             </ScrollView>

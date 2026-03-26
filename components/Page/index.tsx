@@ -45,7 +45,11 @@ function Page(props: Props) {
             ]}
         >
             <Stack.Screen options={{ title }} />
-            {isScrollable ? <ScrollView>{children}</ScrollView> : children}
+            {isScrollable ? (
+                <ScrollView>
+                    {children}
+                </ScrollView>
+            ) : children}
         </SafeAreaView>
     );
 }

@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { query } from 'firebase/database';
 
-import ClickableListItem from '@/components/ClickableListItems';
+import Button from '@/components/Button';
 import Page from '@/components/Page';
 import PageHeader from '@/components/PageHeader';
 import Text from '@/components/Text';
@@ -96,11 +96,12 @@ function ExploreGroups() {
                 <ScrollView>
                     {filteredGroups.length > 0 ? (
                         filteredGroups.map((group) => (
-                            <ClickableListItem
+                            <Button
                                 key={group.nameKey}
                                 name={group.key}
                                 title={group.name ?? ''}
                                 onPress={onHandleItemClick}
+                                styleVariant="block"
                             />
                         ))
                     ) : (
