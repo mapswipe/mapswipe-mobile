@@ -79,6 +79,8 @@ function MapTaskGroup() {
                 <CompareMappingSession
                     taskGroupId={taskGroupId}
                     projectDetails={projectDetails}
+                    results={results}
+                    onResultsChange={setResults}
                 />
             )}
             {projectDetails?.projectType === PROJECT_TYPE_VALIDATE && (
