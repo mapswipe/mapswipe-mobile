@@ -196,6 +196,7 @@ export default function ProjectDetail() {
                             pathname: '/project/[id]/map',
                             params: {
                                 id: projectId,
+                                projectInstruction: project?.projectInstruction,
                             },
                         }}
                         title="Map now"

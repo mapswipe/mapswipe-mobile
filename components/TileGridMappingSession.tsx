@@ -4,9 +4,12 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
+    useState,
 } from 'react';
 import {
     FlatList,
+    StyleSheet,
     useWindowDimensions,
     View,
 } from 'react-native';
@@ -19,18 +22,33 @@ import {
     mapToList,
 } from '@togglecorp/fujs';
 
+import ProgressBar from '@/components/ProgressBar';
+import ScaleBar from '@/components/ScaleBar';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
 import { buildTasks } from '@/utils/task';
 import {
     CompletenessProject,
     FbMappingGroupTileMapServiceCreateOnlyInput,
     FindProject,
+    PROJECT_TYPE_COMPLETENESS,
     ResultOption,
     Results,
 } from '@/utils/types';
 
 import ImageTile from './ImageTile';
+
+const createStyles = () => StyleSheet.create({
+    content: {
+        flex: 1,
+        alignItems: 'center',
+    },
+});
+
+const VIEWABILITY_CONFIG = {
+    viewAreaCoveragePercentThreshold: 50,
+};
 
 interface Props {
     taskGroupId: string;
@@ -46,6 +64,10 @@ function TileGridMappingSession(props: Props) {
         results,
         onResultsChange,
     } = props;
+
+    const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+
+    const styles = useThemedStyles(createStyles);
 
     const {
         width: pageWidth,
@@ -151,6 +173,13 @@ function TileGridMappingSession(props: Props) {
 
     const tileWidth = Math.min(pageWidth / 2, pageHeight / 4);
 
+    const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { x: number } } }) => {
+        const offsetX = event.nativeEvent.contentOffset.x;
+        const pageIndex = Math.round(offsetX / pageWidth);
+        const itemIndex = Math.min(pageIndex * 2, groupedTasks.length - 1);
+        setCurrentTaskIndex(itemIndex);
+    }, [pageWidth, groupedTasks.length]);
+
     const handleTilePress = useCallback((taskId: string) => {
         onResultsChange((prevResults) => ({
             ...prevResults,
@@ -158,42 +187,80 @@ function TileGridMappingSession(props: Props) {
         }));
     }, [getNextValue, onResultsChange]);
 
-    return (
-        <FlatList
-            key={groupedTasks.length}
-            data={groupedTasks}
-            keyExtractor={(groupedTaskItem) => groupedTaskItem.taskX}
-            renderItem={({ item: groupedTasksFromRenderer }) => (
-                <View>
-                    {groupedTasksFromRenderer.taskList.map((task) => {
-                        const result = results[task.taskId];
-                        const selectedOption = isDefined(result)
-                            ? optionsByValue[result]
-                            : undefined;
+    const latitude = useMemo(() => {
+        if (!groupDetails) {
+            return undefined;
+        }
+        return (
+            Math.atan(
+                Math.sinh(Math.PI * (1 - (2 * groupDetails.yMin) / 2 ** projectDetails.zoomLevel)),
+            ) * (180 / Math.PI)
+        );
+    }, [projectDetails, groupDetails]);
 
-                        return (
-                            <ImageTile
-                                key={task.taskId}
-                                taskId={task.taskId}
-                                url={task.url}
-                                width={tileWidth}
-                                tintColor={selectedOption?.color}
-                                onPress={handleTilePress}
-                            />
-                        );
-                    })}
-                </View>
+    return (
+        <>
+            <FlatList
+                data={groupedTasks}
+                contentContainerStyle={styles.content}
+                keyExtractor={(groupedTaskItem) => groupedTaskItem.taskX}
+                renderItem={({ item: groupedTasksFromRenderer }) => (
+                    <View>
+                        {groupedTasksFromRenderer.taskList.map((task) => {
+                            const result = results[task.taskId];
+                            const selectedOption = isDefined(result)
+                                ? optionsByValue[result]
+                                : undefined;
+
+                            if (!task.url) {
+                                return null;
+                            }
+                            return (
+                                <ImageTile
+                                    key={task.taskId}
+                                    taskId={task.taskId}
+                                    url={task.url}
+                                    urlB={
+                                        projectDetails.projectType === PROJECT_TYPE_COMPLETENESS
+                                            ? task.urlB
+                                            : undefined
+                                    }
+                                    width={tileWidth}
+                                    tintColor={selectedOption?.color}
+                                    onPress={handleTilePress}
+                                />
+                            );
+                        })}
+                    </View>
+                )}
+                horizontal
+                pagingEnabled
+                decelerationRate="fast"
+                showsHorizontalScrollIndicator={false}
+                disableIntervalMomentum
+                snapToOffsets={groupedTasks.map((_, i) => i * tileWidth * 2)}
+                viewabilityConfig={VIEWABILITY_CONFIG}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+                windowSize={3}
+                initialNumToRender={2}
+                // removeClippedSubviews
+            />
+            {latitude && (
+                <ScaleBar
+                    latitude={latitude}
+                    position="bottom"
+                    referenceSize={tileWidth}
+                    tileSize={tileWidth}
+                    zoomLevel={projectDetails?.zoomLevel}
+                />
             )}
-            horizontal
-            pagingEnabled
-            decelerationRate="fast"
-            disableIntervalMomentum
-            snapToOffsets={groupedTasks.map((_, i) => i * tileWidth * 2)}
-            snapToAlignment="start"
-            windowSize={3}
-            initialNumToRender={2}
-            removeClippedSubviews
-        />
+            <ProgressBar
+                currentValue={Math.floor(currentTaskIndex / 2) + 1}
+                totalValue={Math.ceil(groupedTasks.length / 2)}
+                colorVariant="brand"
+            />
+        </>
     );
 }
 

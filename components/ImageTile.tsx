@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import {
+    ImageBackground,
     Pressable,
     StyleSheet,
     View,
@@ -29,6 +30,13 @@ const createStyles = (
         borderColor: theme.mapBoundary,
         borderWidth: 1,
     },
+    imageB: {
+        width,
+        aspectRatio: 1,
+        opacity: 0.7,
+        borderWidth: 0.5,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
     view: {
         position: 'absolute',
         left: 0,
@@ -43,7 +51,8 @@ const createStyles = (
 interface Props<TASK_ID> {
     taskId: TASK_ID;
     onPress: (taskId: TASK_ID) => void;
-    url: string | undefined;
+    url: string;
+    urlB: string | undefined;
     width: number;
     tintColor?: string;
 }
@@ -53,6 +62,7 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
         taskId,
         onPress,
         url,
+        urlB,
         width,
         tintColor,
     } = props;
@@ -68,10 +78,17 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
             onPress={handlePress}
             style={styles.imageTile}
         >
-            <Image
-                source={url}
+            <ImageBackground
+                source={{ uri: url }}
                 style={styles.image}
-            />
+            >
+                {urlB && (
+                    <Image
+                        source={urlB}
+                        style={styles.imageB}
+                    />
+                )}
+            </ImageBackground>
             <View
                 style={styles.view}
             />

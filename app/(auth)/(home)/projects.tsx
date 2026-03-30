@@ -34,7 +34,12 @@ import { getProjectProgressForDisplay } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
 import {
     FbProject,
+    PROJECT_TYPE_COMPARE,
     PROJECT_TYPE_COMPLETENESS,
+    PROJECT_TYPE_FIND,
+    PROJECT_TYPE_STREET,
+    PROJECT_TYPE_VALIDATE,
+    PROJECT_TYPE_VALIDATE_IMAGE,
 } from '@/utils/types';
 
 const PROJECT_CARD_HEIGHT = 220;
@@ -134,6 +139,15 @@ const createProjectStyles = (_: AppTheme, { featured }: { featured: boolean }) =
     );
 };
 
+const projectTypeTextMapping: Record<FbProject['projectType'], string> = {
+    [PROJECT_TYPE_FIND]: 'find',
+    [PROJECT_TYPE_COMPARE]: 'compare',
+    [PROJECT_TYPE_COMPLETENESS]: 'completeness',
+    [PROJECT_TYPE_VALIDATE]: 'validate',
+    [PROJECT_TYPE_STREET]: 'street',
+    [PROJECT_TYPE_VALIDATE_IMAGE]: 'validate image',
+};
+
 interface ProjectItemProps {
     project: FbProject;
     featured: boolean;
@@ -180,6 +194,9 @@ function ProjectItem(props: ProjectItemProps) {
                 )}
                 <View style={styles.overlay} />
                 <View style={styles.overlayContainer}>
+                    <Text style={styles.projectDetailsText}>
+                        {projectTypeTextMapping[project.projectType]}
+                    </Text>
                     <Text style={styles.projectDetailsText}>
                         {project.projectTopic}
                     </Text>

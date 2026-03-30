@@ -17,12 +17,14 @@ interface Props {
     children: string | null | undefined;
     style?: TextStyle;
     variant?: 'default' | 'heading' | 'title' | 'label' | 'description';
+    colorVariant?: 'normal' | 'brand';
 }
 
 function Text(props: Props) {
     const {
         style,
         children,
+        colorVariant = 'normal',
         variant = 'default',
     } = props;
 
@@ -50,6 +52,9 @@ function Text(props: Props) {
                 fontWeight: 'regular',
                 color: theme.textSecondary,
             },
+            brand: {
+                color: theme.textOnBrand,
+            },
         })
     ), [theme]);
 
@@ -60,6 +65,7 @@ function Text(props: Props) {
                 variant === 'title' && styles.title,
                 variant === 'label' && styles.label,
                 variant === 'description' && styles.description,
+                colorVariant === 'brand' && styles.brand,
                 style,
             ]}
         >
