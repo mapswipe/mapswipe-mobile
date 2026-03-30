@@ -13,7 +13,7 @@ import {
 
 const styles = StyleSheet.create({
     inlineListView: {
-        // flexGrow: 1,
+        flexGrow: 1,
         flexDirection: 'row',
     },
     withCenteredContent: {

@@ -126,6 +126,10 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     alignCenter: {
         alignItems: 'center',
     },
+    switch: {
+        transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }],
+        height: 18,
+    },
 });
 
 const ACCESSIBILITY_KEY = '@accessibility';
@@ -135,17 +139,13 @@ function Profile() {
     const router = useRouter();
     const styles = useThemedStyles(createStyles);
     const [accessibility, setAccessibility] = useState<string>('disabled');
-
-    useEffect(() => {
-        const load = async () => {
-            const value = await AsyncStorage.getItem(ACCESSIBILITY_KEY);
-            setAccessibility(value ?? '');
-        };
-        load();
-    }, []);
-
     const { t, i18n } = useTranslation('profileScreen');
-
+    const [{
+        data: userStatsData,
+        fetching: loadingUserStats,
+    }, refetchUserStats] = useUserStatsQuery({
+        variables: { firebaseId: user ? user.uid : '' },
+    });
     const {
         level,
         sqkm,
@@ -159,6 +159,14 @@ function Profile() {
         swipes,
     });
 
+    useEffect(() => {
+        const load = async () => {
+            const value = await AsyncStorage.getItem(ACCESSIBILITY_KEY);
+            setAccessibility(value ?? '');
+        };
+        load();
+    }, []);
+
     const currentLanguage = (supportedLanguages ?? []).find(
         (lang: { localeCode: string }) => lang.localeCode === i18n.language,
     );
@@ -168,13 +176,6 @@ function Profile() {
             ? firebaseRef(`v2/users/${user.uid}`)
             : undefined
     ), [user]);
-
-    const [{
-        data: userStatsData,
-        fetching: loadingUserStats,
-    }, refetchUserStats] = useUserStatsQuery({
-        variables: { firebaseId: user ? user.uid : '' },
-    });
 
     const refreshPage = useCallback(() => {
         refetchUserStats();
@@ -380,20 +381,22 @@ function Profile() {
         },
         {
             title: t('accessibility'),
-            action: <Switch
-                trackColor={{
-                    false: theme.backgroundBrand,
-                    true: theme.success,
-                }}
-                thumbColor={
-                    accessibility === 'enabled'
-                        ? theme.primaryBlue
-                        : theme.backgroundMuted
-                }
-                onValueChange={onHandleAccessibilityChange}
-                value={accessibility === 'enabled'}
-            // disabled={disabled}
-            />,
+            onPress: onHandleAccessibilityChange,
+            action: (
+                <Switch
+                    trackColor={{
+                        false: theme.backgroundBrand,
+                        true: theme.success,
+                    }}
+                    thumbColor={
+                        accessibility === 'enabled'
+                            ? theme.primaryBlue
+                            : theme.backgroundMuted
+                    }
+                    value={accessibility === 'enabled'}
+                    style={styles.switch}
+                />
+            ),
         },
         {
             title: t('signOut'),

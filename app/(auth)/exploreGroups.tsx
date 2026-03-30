@@ -14,7 +14,6 @@ import { query } from 'firebase/database';
 
 import Button from '@/components/Button';
 import Page from '@/components/Page';
-import PageHeader from '@/components/PageHeader';
 import Text from '@/components/Text';
 import TextInput from '@/components/TextInput';
 import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
@@ -73,10 +72,10 @@ function ExploreGroups() {
 
     return (
         <Page
-            title="Explore Group"
+            title={t('exploreGroups')}
             isScrollable={false}
+            showBackButton
         >
-            <PageHeader heading={t('exploreGroups')} />
             {pending && <ActivityIndicator size="large" />}
 
             <TextInput

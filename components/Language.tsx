@@ -6,7 +6,6 @@ import {
 
 import Icon from '@/components/Icon';
 import Page from '@/components/Page';
-import PageHeader from '@/components/PageHeader';
 import { supportedLanguages } from '@/constants/common';
 import { AppTheme } from '@/constants/theme';
 import useTheme from '@/hooks/useTheme';
@@ -47,10 +46,8 @@ export default function Language({ isDarkBackground, onSelectLanguage }: Languag
             title="Language"
             isScrollable={false}
             variant={isDarkBackground ? 'brand' : 'normal'}
+            showBackButton
         >
-            <PageHeader
-                heading="Language"
-            />
             <ScrollView
                 style={styles.language}
             >

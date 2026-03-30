@@ -9,7 +9,6 @@ import { WebView } from 'react-native-webview';
 import { useGlobalSearchParams } from 'expo-router';
 
 import Page from '@/components/Page';
-import PageHeader from '@/components/PageHeader';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
 type SearchParams = {
@@ -38,11 +37,11 @@ export default function WebviewWindow() {
 
     return (
         <Page
-            title="webView"
+            title={webUri}
             style={styles.webView}
             isScrollable={false}
+            showBackButton
         >
-            <PageHeader heading={webUri} style={styles.swipeNavTop} />
             <WebView
                 javaScriptEnabled
                 source={{ uri: webUri }}

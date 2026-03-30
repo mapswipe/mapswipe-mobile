@@ -1,12 +1,14 @@
+import { useLayoutEffect } from 'react';
 import {
     ScrollView,
     StyleSheet,
     ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
+import { useNavigation } from 'expo-router';
 
 import { type AppTheme } from '@/constants/theme';
+import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
 type Variant = 'normal' | 'brand';
@@ -24,6 +26,7 @@ interface Props {
     children: React.ReactNode;
     variant?: 'normal' | 'brand';
     isScrollable?: boolean
+    showBackButton?: boolean;
 }
 
 function Page(props: Props) {
@@ -33,9 +36,23 @@ function Page(props: Props) {
         style,
         variant = 'normal',
         isScrollable = true,
+        showBackButton = false,
     } = props;
-
+    const navigation = useNavigation();
+    const theme = useTheme();
     const styles = useThemedStyles(createStyles, { variant });
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            title,
+            headerShown: showBackButton,
+            headerBackVisible: showBackButton,
+            headerStyle: {
+                backgroundColor: theme.backgroundBrand,
+            },
+            headerTintColor: theme.card,
+        });
+    }, [navigation, title, theme, showBackButton]);
 
     return (
         <SafeAreaView
@@ -43,8 +60,8 @@ function Page(props: Props) {
                 styles.page,
                 style,
             ]}
+            edges={showBackButton ? ['bottom'] : undefined}
         >
-            <Stack.Screen options={{ title }} />
             {isScrollable ? (
                 <ScrollView>
                     {children}

@@ -29,7 +29,6 @@ import Icon from '@/components/Icon';
 import InfoCard, { StatsInfo } from '@/components/InfoCard';
 import InlineListView from '@/components/InlineListView';
 import Page from '@/components/Page';
-import PageHeader from '@/components/PageHeader';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
 import {
@@ -133,7 +132,6 @@ function ExploreGroup() {
             totalOrganization,
         } = stats ?? {};
 
-        // FIXME: Add Language Selected
         const formatter = new Intl.NumberFormat(currentLanguage?.localeCode);
         const formatNumber = formatter.format;
 
@@ -269,10 +267,10 @@ function ExploreGroup() {
 
     return (
         <Page
-            title="Explore Group"
+            title={userGroupData?.name ?? 'Explore Group'}
             isScrollable={false}
+            showBackButton
         >
-            <PageHeader heading={userGroupData?.name ?? ''} />
             <InlineListView
                 withPadding
                 spacing="2xs"

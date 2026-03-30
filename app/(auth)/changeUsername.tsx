@@ -10,7 +10,6 @@ import { update } from 'firebase/database';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import Page from '@/components/Page';
-import PageHeader from '@/components/PageHeader';
 import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
 import useFirebaseMutation from '@/hooks/useAsyncHandler';
@@ -80,8 +79,10 @@ export default function ChangePassword() {
     }, [newUserName, user, setUser, handleAsync, router, t]);
 
     return (
-        <Page title="Change Username">
-            <PageHeader heading={t('changeUserName:changeUserName')} />
+        <Page
+            title={t('changeUserName:changeUserName')}
+            showBackButton
+        >
             <BlockListView
                 withPadding
             >
