@@ -138,32 +138,32 @@ export default function AppLayout() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <UrqlProvider value={client}>
-            <AuthContext.Provider value={authContextValue}>
+                <AuthContext.Provider value={authContextValue}>
                     <StatusBar
-                    backgroundColor={theme.primaryBlue}
-                    translucent={false}
-                    style="light"
-                />
+                        backgroundColor={theme.primaryBlue}
+                        translucent={false}
+                        style="light"
+                    />
                     <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Protected guard={!isAuthenticated}>
-                        <Stack.Screen name="languageSplashScreen" />
-                    </Stack.Protected>
-                    <Stack.Protected guard={!isAuthenticated}>
-                        <Stack.Screen name="onboarding" />
-                    </Stack.Protected>
+                        <Stack.Protected guard={!isAuthenticated}>
+                            <Stack.Screen name="languageSplashScreen" />
+                        </Stack.Protected>
+                        <Stack.Protected guard={!isAuthenticated}>
+                            <Stack.Screen name="onboarding" />
+                        </Stack.Protected>
                         <Stack.Protected guard={!isAuthenticated}>
                             <Stack.Screen name="login" />
                         </Stack.Protected>
-                    <Stack.Protected guard={!isAuthenticated}>
-                        <Stack.Screen name="register" />
-                    </Stack.Protected>
+                        <Stack.Protected guard={!isAuthenticated}>
+                            <Stack.Screen name="register" />
+                        </Stack.Protected>
                         <Stack.Protected guard={isAuthenticated}>
                             <Stack.Screen name="(auth)" />
                         </Stack.Protected>
                     </Stack>
                     <Toast config={toastConfig} />
                 </AuthContext.Provider>
-        </UrqlProvider>
+            </UrqlProvider>
         </GestureHandlerRootView>
     );
 }

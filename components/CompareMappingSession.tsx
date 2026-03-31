@@ -37,7 +37,7 @@ import ImageTile from './ImageTile';
 
 const createStyles = () => StyleSheet.create({
     content: {
-        flex: 1,
+        // flex: 1,
         alignItems: 'center',
     },
     taskContent: {
@@ -215,7 +215,7 @@ function CompareMappingSession(props: Props) {
                 decelerationRate="fast"
                 showsHorizontalScrollIndicator={false}
                 disableIntervalMomentum
-                snapToOffsets={compressedTasks.map((_, i) => i * tileWidth)}
+                snapToOffsets={compressedTasks.map((_, i) => i * pageWidth)}
                 viewabilityConfig={VIEWABILITY_CONFIG}
                 onScroll={handleScroll}
             />

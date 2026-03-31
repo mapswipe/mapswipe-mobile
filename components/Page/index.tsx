@@ -27,6 +27,7 @@ interface Props {
     variant?: 'normal' | 'brand';
     isScrollable?: boolean
     showBackButton?: boolean;
+    headerTitleAlign?: 'left' | 'center';
 }
 
 function Page(props: Props) {
@@ -37,6 +38,7 @@ function Page(props: Props) {
         variant = 'normal',
         isScrollable = true,
         showBackButton = false,
+        headerTitleAlign = 'left',
     } = props;
     const navigation = useNavigation();
     const theme = useTheme();
@@ -50,9 +52,11 @@ function Page(props: Props) {
             headerStyle: {
                 backgroundColor: theme.backgroundBrand,
             },
-            headerTintColor: theme.card,
+            headerTintColor: theme.textOnBrand,
+            headerShadowVisible: false,
+            headerTitleAlign,
         });
-    }, [navigation, title, theme, showBackButton]);
+    }, [navigation, title, theme, showBackButton, headerTitleAlign]);
 
     return (
         <SafeAreaView

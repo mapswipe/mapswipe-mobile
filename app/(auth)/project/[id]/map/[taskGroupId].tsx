@@ -1,13 +1,8 @@
 import {
-    useLayoutEffect,
     useMemo,
     useState,
 } from 'react';
-import { StyleSheet } from 'react-native';
-import {
-    useLocalSearchParams,
-    useNavigation,
-} from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 import CompareMappingSession from '@/components/CompareMappingSession';
 import Page from '@/components/Page';
@@ -15,9 +10,7 @@ import StreetMappingSession from '@/components/StreetMappingSession';
 import TileGridMappingSession from '@/components/TileGridMappingSession';
 import ValidateImageMappingSession from '@/components/ValidateImageMappingSession';
 import ValidateMappingSession from '@/components/ValidateMappingSession';
-import { type AppTheme } from '@/constants/theme';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
-import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
 import {
     FbProject,
@@ -30,42 +23,29 @@ import {
     Results,
 } from '@/utils/types';
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
-    backButton: {
-        color: theme.backgroundBrand,
-    },
-});
-
 function MapTaskGroup() {
-    const {
-        id: projectId,
-        taskGroupId,
-    } = useLocalSearchParams<{
-        id: string;
-        taskGroupId: string;
-    }>();
+    const { id: projectId, taskGroupId } = useLocalSearchParams<{
+    id: string;
+    taskGroupId: string;
+  }>();
 
-    const projectQuery = useMemo(() => (
-        firebaseRef(`v2/projects/${projectId}`)
-    ), [projectId]);
+    const projectQuery = useMemo(
+        () => firebaseRef(`v2/projects/${projectId}`),
+        [projectId],
+    );
 
-    const { data: projectDetails } = useFirebaseDatabase<FbProject>({ query: projectQuery });
+    const { data: projectDetails } = useFirebaseDatabase<FbProject>({
+        query: projectQuery,
+    });
     const [results, setResults] = useState<Results>({});
-    const navigation = useNavigation();
-
-    const styles = useThemedStyles(createStyles, undefined);
-
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            title: projectDetails?.projectInstruction,
-        });
-    }, [navigation, projectDetails]);
 
     return (
         <Page
-            title="Map project"
+            title={projectDetails?.projectInstruction ?? 'Map Project'}
             variant="brand"
-            maxHeight
+            isScrollable={false}
+            showBackButton
+            headerTitleAlign="center"
         >
             {projectDetails?.projectType === PROJECT_TYPE_FIND && (
                 <TileGridMappingSession

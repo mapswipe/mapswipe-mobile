@@ -5,10 +5,7 @@ import {
     View,
 } from 'react-native';
 import { Image } from 'expo-image';
-import {
-    useLocalSearchParams,
-    useRouter,
-} from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 import heartIcon from '@/assets/images/custom/heart_icon.png';
