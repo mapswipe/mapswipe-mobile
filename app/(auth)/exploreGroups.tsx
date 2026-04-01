@@ -16,6 +16,7 @@ import Button from '@/components/Button';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
 import TextInput from '@/components/TextInput';
+import { FbUserGroup } from '@/firebaseGenerated/extended_models';
 import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
 import { rankedSearchOnList } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
@@ -28,11 +29,7 @@ const styles = StyleSheet.create({
     },
 });
 
-export interface UserGroupWithKey {
-    nameKey: string;
-    name?: string;
-    archivedAt?: string;
-    archivedBy?: string;
+export interface UserGroupWithKey extends FbUserGroup {
     [key: string]: unknown;
 }
 

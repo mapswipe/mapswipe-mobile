@@ -35,6 +35,9 @@ import {
     publicDashboardUrl,
     supportedLanguages,
 } from '@/constants/common';
+import { SPACING_XS } from '@/constants/dimensions';
+import { AppTheme } from '@/constants/theme';
+import { FbUserGroup } from '@/firebaseGenerated/extended_models';
 import { useUserGroupStatsQuery } from '@/generated/types/graphql';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
@@ -64,16 +67,7 @@ const USER_GROUP_STATS = gql`
         }
     }
 `;
-
-interface userGroup {
-    createdAt: number;
-    createdBy: string;
-    description: string;
-    name: string;
-    nameKey: string;
-}
-
-const createStyles = () => StyleSheet.create({
+const createStyles = (theme: AppTheme) => StyleSheet.create({
     infoCardContainer: {
         display: 'flex',
         flexWrap: 'wrap',
@@ -85,6 +79,14 @@ const createStyles = () => StyleSheet.create({
     infoCard: {
         width: '48%',
         marginBottom: 12,
+    },
+    archivedInfo: {
+        padding: SPACING_XS,
+        backgroundColor: theme.overlay,
+    },
+    infoText: {
+        justifyContent: 'center',
+        flex: 1,
     },
 });
 
@@ -106,7 +108,7 @@ function ExploreGroup() {
     const {
         data: userGroupData,
         pending: userGroupDetailPending,
-    } = useFirebaseDatabase<userGroup>({
+    } = useFirebaseDatabase<FbUserGroup>({
         query: userGroupsQuery,
     });
 
@@ -265,89 +267,126 @@ function ExploreGroup() {
         return contributionStatsMap;
     }, [communityUserGroupStatsData?.communityUserGroupStats?.filteredStats?.swipeByDate]);
 
+    const isUserMember = !!userId && !!userGroupData?.users?.[userId];
+    const isGroupArchived = !!userGroupData?.archivedAt || !!userGroupData?.archivedBy;
+
     return (
         <Page
             title={userGroupData?.name ?? 'Explore Group'}
             isScrollable={false}
             showBackButton
         >
-            <InlineListView
-                withPadding
-                spacing="2xs"
-            >
-                <Button
-                    name="Join"
-                    title={t('userGroupScreen:joinGroup')}
-                    colorVariant="success"
-                    onPress={() => handleUserGroupAction('join')}
-                />
-            </InlineListView>
-            <ScrollView
-                refreshControl={(
-                    <RefreshControl
-                        refreshing={
-                            userGroupDetailPending
+            {userGroupDetailPending && (
+                <BlockListView
+                    withCenteredContent
+                    withPadding
+                    style={styles.infoText}
+                >
+                    <Text>
+                        <Text>{t('Loading group details...')}</Text>
+                    </Text>
+                </BlockListView>
+            )}
+            {!userGroupDetailPending && !userGroupData && (
+                <BlockListView
+                    withCenteredContent
+                    withPadding
+                    style={styles.infoText}
+                >
+                    <Text>
+                        {t('Details not available for this User group')}
+                    </Text>
+                </BlockListView>
+            )}
+            {!isUserMember && !isGroupArchived && userGroupData && (
+                <InlineListView
+                    withPadding
+                    spacing="2xs"
+                >
+                    <Button
+                        name="Join"
+                        title={t('userGroupScreen:joinGroup')}
+                        colorVariant="success"
+                        onPress={() => handleUserGroupAction('join')}
+                    />
+                </InlineListView>
+            ) }
+            {isGroupArchived && (
+                <View style={styles.archivedInfo}>
+                    <Text>{t('This group has been archived')}</Text>
+                </View>
+            )}
+            {!userGroupDetailPending && userGroupData && (
+                <ScrollView
+                    refreshControl={(
+                        <RefreshControl
+                            refreshing={
+                                userGroupDetailPending
                             || loadingUserGroupStats
-                        }
-                        onRefresh={refetchUserGroupStats}
-                    />
-                )}
-            >
-                <BlockListView
-                    withPadding
-                    spacing="xs"
+                            }
+                            onRefresh={refetchUserGroupStats}
+                        />
+                    )}
                 >
-                    <Text variant="label">
-                        All the stats are only updated once a day
-                    </Text>
-                    <View style={styles.infoCardContainer}>
-                        {communityUserGroupStats.map((item) => (
-                            <InfoCard
-                                key={item.title}
-                                title={item.title}
-                                value={item.value}
-                                style={styles.infoCard}
+                    <BlockListView
+                        withPadding
+                        spacing="xs"
+                    >
+                        <Text variant="label">
+                            All the stats are only updated once a day
+                        </Text>
+                        <View style={styles.infoCardContainer}>
+                            {communityUserGroupStats.map((item) => (
+                                <InfoCard
+                                    key={item.title}
+                                    title={item.title}
+                                    value={item.value}
+                                    style={styles.infoCard}
+                                />
+                            ))}
+                        </View>
+                    </BlockListView>
+                    <BlockListView
+                        withPadding
+                        spacing="xs"
+                    >
+                        <Text variant="title">
+                            {t('profileScreen:contributionHeatmap')}
+                        </Text>
+                        <HeatMap activityData={calendarHeatmapData} />
+                        <Button
+                            name="moreStat"
+                            title="More Stats"
+                            onPress={handleMoreStatsClick}
+                            action={(
+                                <Icon
+                                    name="sign-out"
+                                    size={18}
+                                    color={theme.info}
+                                />
+                            )}
+                            styleVariant="block"
+                        />
+                    </BlockListView>
+                    {isUserMember && (
+                        <BlockListView
+                            withPadding
+                            spacing="xs"
+                        >
+                            <Text variant="title">
+                                {t('profileScreen:settings')}
+                            </Text>
+                            <Button
+                                name="leaveGroup"
+                                title={t('userGroupScreen:leaveGroup')}
+                                onPress={() => handleUserGroupAction('leave')}
+                                styleVariant="block"
+                                colorVariant="danger"
                             />
-                        ))}
-                    </View>
-                </BlockListView>
-                <BlockListView
-                    withPadding
-                    spacing="xs"
-                >
-                    <Text variant="title">
-                        {t('profileScreen:contributionHeatmap')}
-                    </Text>
-                    <HeatMap activityData={calendarHeatmapData} />
-                    <Button
-                        name="moreStat"
-                        title="More Stats"
-                        onPress={handleMoreStatsClick}
-                        action={(
-                            <Icon
-                                name="sign-out"
-                                size={18}
-                                color={theme.info}
-                            />
-                        )}
-                        styleVariant="block"
-                    />
-                </BlockListView>
-                <BlockListView
-                    withPadding
-                    spacing="xs"
-                >
-                    <Text variant="title">
-                        {t('profileScreen:settings')}
-                    </Text>
-                    <Button
-                        name="leaveGroup"
-                        title={t('userGroupScreen:leaveGroup')}
-                        onPress={() => handleUserGroupAction('leave')}
-                        styleVariant="block"
-                    />
-                </BlockListView>
-            </ScrollView>
+                        </BlockListView>
+                    )}
+                </ScrollView>
+            )}
         </Page>
     );
 }

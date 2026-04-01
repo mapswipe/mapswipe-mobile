@@ -41,10 +41,12 @@ import {
 } from '@/constants/dimensions';
 import { AppTheme } from '@/constants/theme';
 import { FbUser } from '@/firebaseGenerated/extended_models';
+import { useUserStatsQuery } from '@/generated/types/graphql';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import useUserGroups from '@/hooks/useUserGroup';
 import { getTimeSegments } from '@/utils/common';
 import {
     firebaseAuth,
@@ -52,30 +54,28 @@ import {
 } from '@/utils/firebase';
 import getLevelInfo from '@/utils/getLevel';
 
-import { useUserStatsQuery } from '../../../generated/types/graphql';
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USER_STATS = gql`
-    query UserStats($firebaseId: ID!) {
-        communityUserStats(userId: { firebaseId: $firebaseId }) {
-            stats {
-                totalAreaSwiped
-                totalMappingProjects
-                totalOrganization
-                totalSwipeTime
-                totalSwipes
-            }
-            filteredStats {
-                swipeByDate {
-                    taskDate
-                    totalSwipes
-                }
-            }
-            statsLatest {
-                totalUserGroups
-            }
+  query UserStats($firebaseId: ID!) {
+    communityUserStats(userId: { firebaseId: $firebaseId }) {
+      stats {
+        totalAreaSwiped
+        totalMappingProjects
+        totalOrganization
+        totalSwipeTime
+        totalSwipes
+      }
+      filteredStats {
+        swipeByDate {
+          taskDate
+          totalSwipes
         }
+      }
+      statsLatest {
+        totalUserGroups
+      }
     }
+  }
 `;
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
@@ -140,19 +140,26 @@ function Profile() {
     const styles = useThemedStyles(createStyles);
     const [accessibility, setAccessibility] = useState<string>('disabled');
     const { t, i18n } = useTranslation('profileScreen');
-    const [{
-        data: userStatsData,
-        fetching: loadingUserStats,
-    }, refetchUserStats] = useUserStatsQuery({
-        variables: { firebaseId: user ? user.uid : '' },
+
+    const userDetailQuery = useMemo(
+        () => (isDefined(user) ? firebaseRef(`v2/users/${user.uid}`) : undefined),
+        [user],
+    );
+    const { data: userDetails } = useFirebaseDatabase<FbUser>({
+        query: userDetailQuery,
     });
+    const [
+        { data: userStatsData, fetching: loadingUserStats },
+        refetchUserStats,
+    ] = useUserStatsQuery({
+        variables: { firebaseId: user.uid || '' },
+    });
+
+    const { userGroups } = useUserGroups({ userId: user?.uid });
+
     const {
-        level,
-        sqkm,
-        swipes,
-        levelData,
-        progress,
-    } = getLevelInfo(10695);
+        level, sqkm, swipes, levelData, progress,
+    } = getLevelInfo(userDetails?.taskContributionCount ?? 0);
 
     const levelProgressText = t('xTasks(sSwipes)UntilTheNextLevel', {
         sqkm,
@@ -170,12 +177,6 @@ function Profile() {
     const currentLanguage = (supportedLanguages ?? []).find(
         (lang: { localeCode: string }) => lang.localeCode === i18n.language,
     );
-
-    const userDetailQuery = useMemo(() => (
-        isDefined(user)
-            ? firebaseRef(`v2/users/${user.uid}`)
-            : undefined
-    ), [user]);
 
     const refreshPage = useCallback(() => {
         refetchUserStats();
@@ -238,13 +239,12 @@ function Profile() {
                 value: totalUserGroupsFormatted,
             },
         ];
-    }, [userStatsData?.communityUserStats?.stats,
+    }, [
+        userStatsData?.communityUserStats?.stats,
         userStatsData?.communityUserStats?.statsLatest?.totalUserGroups,
-        currentLanguage?.localeCode, t]);
-
-    const { data: userDetails } = useFirebaseDatabase<FbUser>(
-        { query: userDetailQuery },
-    );
+        currentLanguage?.localeCode,
+        t,
+    ]);
 
     const handleLogout = useCallback(() => {
         firebaseAuth.signOut();
@@ -257,11 +257,17 @@ function Profile() {
     }, [router]);
 
     const onHandleChangeLanguage = useCallback(() => {
-        router.push({ pathname: 'languageSelection', params: { isDarkBackground: String(false) } });
+        router.push({
+            pathname: 'languageSelection',
+            params: { isDarkBackground: String(false) },
+        });
     }, [router]);
 
     const onHandleExploreGroups = useCallback(() => {
         router.push('(auth)/exploreGroups');
+    }, [router]);
+    const onHandleUserGroupsClick = useCallback((key?: string) => {
+        router.push(`exploreGroup/${key}`);
     }, [router]);
 
     const onHandleAccessibilityChange = useCallback(async () => {
@@ -289,9 +295,32 @@ function Profile() {
     }, []);
 
     const onHandleSignoutClick = useCallback(() => {
+        Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+            {
+                text: 'Cancel',
+                style: 'cancel',
+            },
+            {
+                text: 'OK',
+                style: 'destructive',
+                onPress: () => {
+                    firebaseAuth.signOut().catch((error) => {
+                        showAlert({
+                            title: 'Sign out error',
+                            message: error,
+                            alertType: 'error',
+                        });
+                    });
+                    router.replace('/');
+                },
+            },
+        ]);
+    }, [router]);
+
+    const handleResetPasswordClick = useCallback(() => {
         Alert.alert(
-            'Sign Out',
-            'Are you sure you want to sign out?',
+            'Reset Password',
+            'An email will be sent to your account with the reset link. Are you sure you want to continue?',
             [
                 {
                     text: 'Cancel',
@@ -299,33 +328,6 @@ function Profile() {
                 },
                 {
                     text: 'OK',
-                    style: 'destructive',
-                    onPress: () => {
-                        firebaseAuth.signOut().catch((error) => {
-                            showAlert({
-                                title: 'Sign out error',
-                                message: error,
-                                alertType: 'error',
-                            });
-                        });
-                        router.replace('/');
-                    },
-                },
-            ],
-        );
-    }, [router]);
-
-    const handleResetPasswordClick = useCallback(() => {
-        Alert.alert(
-            ('Reset Password'),
-            'An email will be sent to your account with the reset link. Are you sure you want to continue?',
-            [
-                {
-                    text: ('Cancel'),
-                    style: 'cancel',
-                },
-                {
-                    text: ('OK'),
                     onPress: () => {
                         // auth().sendPasswordResetEmail(auth().currentUser.email);
                     },
@@ -347,12 +349,16 @@ function Profile() {
             return {};
         }
 
-        const contributionStatsMap = contributionStats
-            .reduce((acc: Record<string, number>, val:
-                { taskDate: string | number; totalSwipes: number; }) => {
+        const contributionStatsMap = contributionStats.reduce(
+            (
+                acc: Record<string, number>,
+                val: { taskDate: string | number; totalSwipes: number },
+            ) => {
                 acc[val.taskDate] = val.totalSwipes;
                 return acc;
-            }, {});
+            },
+            {},
+        );
 
         return contributionStatsMap;
     }, [userStatsData?.communityUserStats?.filteredStats?.swipeByDate]);
@@ -411,38 +417,31 @@ function Profile() {
         {
             title: t('mapswipeWebsite'),
             onPress: onHandleMapSwipeWebsiteClick,
-            action: <Icon
-                name="sign-out"
-                size={18}
-                color={theme.info}
-            />,
+            action: (
+                <Icon
+                    name="sign-out"
+                    size={18}
+                    color={theme.info}
+                />),
         },
         {
             title: t('missingMaps'),
             onPress: onHandleMissingMapsClick,
-            action: <Icon
-                name="sign-out"
-                size={18}
-                color={theme.info}
-            />,
+            action: (
+                <Icon
+                    name="sign-out"
+                    size={18}
+                    color={theme.info}
+                />),
         },
         {
             title: t('email'),
             onPress: onHandleEmailClick,
-            action: <Icon
-                name="sign-out"
-                size={18}
-                color={theme.info}
-            />,
+            action: <Icon name="sign-out" size={18} color={theme.info} />,
         },
-
     ];
     return (
-        <Page
-            title="Profile"
-            style={styles.page}
-            isScrollable={false}
-        >
+        <Page title="Profile" style={styles.page} isScrollable={false}>
             <InlineListView
                 style={styles.profileCard}
                 withCenteredContent
@@ -459,10 +458,15 @@ function Profile() {
                     spacing="3xs"
                     style={styles.profileDetail}
                 >
-                    <Text variant="title" style={styles.profileDetailsText}>
+                    <Text
+                        variant="title"
+                        style={styles.profileDetailsText}
+                    >
                         {user?.displayName}
                     </Text>
-                    <Text style={styles.levelText}>
+                    <Text
+                        style={styles.levelText}
+                    >
                         {`${t('levelX', { level })} (${levelData.title})`}
                     </Text>
                     <Bar
@@ -474,9 +478,7 @@ function Profile() {
                         unfilledColor={theme.backgroundMuted}
                         width={null}
                     />
-                    <Text style={styles.progressText}>
-                        {levelProgressText}
-                    </Text>
+                    <Text style={styles.progressText}>{levelProgressText}</Text>
                 </BlockListView>
             </InlineListView>
             <ScrollView
@@ -491,7 +493,9 @@ function Profile() {
                     withPadding
                     spacing="xs"
                 >
-                    <Text variant="label">
+                    <Text
+                        variant="label"
+                    >
                         All the stats are only updated once a day
                     </Text>
                     <View style={styles.infoCardContainer}>
@@ -509,7 +513,9 @@ function Profile() {
                     withPadding
                     spacing="xs"
                 >
-                    <Text variant="title">
+                    <Text
+                        variant="title"
+                    >
                         {t('contributionHeatmap')}
                     </Text>
                     <HeatMap activityData={calendarHeatmapData} />
@@ -517,13 +523,7 @@ function Profile() {
                         name="MoreStats"
                         title="More Stats"
                         onPress={handleMoreStatsClick}
-                        action={(
-                            <Icon
-                                name="sign-out"
-                                size={18}
-                                color={theme.info}
-                            />
-                        )}
+                        action={<Icon name="sign-out" size={18} color={theme.info} />}
                         styleVariant="block"
                     />
                 </BlockListView>
@@ -531,14 +531,28 @@ function Profile() {
                     withPadding
                     spacing="xs"
                 >
-                    <Text variant="title">
-                        User Groups
-                    </Text>
-                    <Text variant="label">
-                        No groups yet
-                    </Text>
+                    <Text variant="title">User Groups</Text>
+                    {userGroups?.length ? (
+                        userGroups.map((group) => (
+                            <Button
+                                key={group.groupId}
+                                name={group.groupId}
+                                title={
+                                    group.archivedAt || group.archivedBy
+                                        ? `${group.name} (Archived)`
+                                        : group.name
+                                }
+                                onPress={onHandleUserGroupsClick}
+                                styleVariant="block"
+                                action={(
+                                    <Icon name="caret-right" size={14} />
+                                )}
+                            />
+                        ))
+                    ) : (
+                        <Text variant="label">No groups yet</Text>)}
                     <Button
-                        name="exploreGroup"
+                        name="exploreGroups"
                         title={t('exploreGroups')}
                         onPress={onHandleExploreGroups}
                         colorVariant="info"
@@ -549,17 +563,14 @@ function Profile() {
                     withPadding
                     spacing="xs"
                 >
-                    <Text variant="title">
+                    <Text
+                        variant="title"
+                    >
                         {t('settings')}
                     </Text>
                     {settingItems.map((item) => {
                         if (item.title === 'gap') {
-                            return (
-                                <View
-                                    key={item.title}
-                                    style={{ height: SPACING_MD }}
-                                />
-                            );
+                            return <View key={item.title} style={{ height: SPACING_MD }} />;
                         }
                         return (
                             <Button

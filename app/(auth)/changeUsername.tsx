@@ -65,7 +65,7 @@ export default function ChangePassword() {
             if (!user) return;
 
             await updateProfile(user, { displayName: newUserName as string });
-            await update(firebaseRef(`v2/users/${user.uid}`), { username: newUserName });
+            await update(firebaseRef(`v2/users/${user.uid}`), { username: newUserName, usernameKey: newUserName.toLowerCase() });
             await user.reload();
             showAlert({
                 title: 'Success',
