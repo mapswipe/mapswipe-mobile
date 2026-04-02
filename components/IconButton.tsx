@@ -56,7 +56,7 @@ function IconButton<const NAME>(props: Props<NAME>) {
                     borderRadius: '50%',
                     outlineStyle: 'dashed',
                     outlineOffset: 3,
-                    outlineColor: active ? '#000000' : 'transparent',
+                    outlineColor: active ? '#ffffff' : 'transparent',
                     outlineWidth: active ? 4 : undefined,
                 }}
             >

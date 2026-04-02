@@ -3,11 +3,14 @@ import {
     SetStateAction,
     useCallback,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import {
     ActivityIndicator,
+    FlatList,
     StyleSheet,
+    View,
 } from 'react-native';
 import {
     isDefined,
@@ -17,9 +20,9 @@ import { decode } from 'base-64';
 import { inflate } from 'pako';
 
 import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
 import InlineListView from '@/components/InlineListView';
 import MapTile from '@/components/MapTile';
+import { SCREEN_WIDTH } from '@/constants/dimensions';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
 import {
@@ -32,7 +35,30 @@ import {
 import { type IconName } from './Icon';
 import IconButton from './IconButton';
 
+type RefType = FlatList<ValidateTask> | null;
+const viewabilityConfig = {
+    viewAreaCoveragePercentThreshold: 50,
+};
+
 const styles = StyleSheet.create({
+    view: {
+        flex: 1,
+        flexDirection: 'column',
+    },
+    tasks: {
+        flex: 2,
+        flexGrow: 1,
+        width: SCREEN_WIDTH,
+    },
+    task: {
+        width: SCREEN_WIDTH,
+        padding: 20,
+    },
+    buttons: {
+        flexGrow: 0,
+        flexShrink: 0,
+        padding: 20,
+    },
     loadingContainer: {
         alignItems: 'center',
     },
@@ -64,7 +90,13 @@ function ValidateMappingSession(props: Props) {
     });
 
     const taskList = useMemo(() => {
-        if (isNotDefined(compressedTasks) || typeof compressedTasks !== 'string') {
+        if (isNotDefined(compressedTasks)) {
+            return [] as ValidateTask[];
+        }
+        if (Array.isArray(compressedTasks)) {
+            return compressedTasks as ValidateTask[];
+        }
+        if (typeof compressedTasks !== 'string') {
             return [];
         }
 
@@ -74,31 +106,14 @@ function ValidateMappingSession(props: Props) {
         const decompressedTasks = inflate(binaryCompressedTasks, { to: 'string' });
 
         // FIXME: add schema validation
-        return JSON.parse(decompressedTasks) as unknown[];
+        return JSON.parse(decompressedTasks) as ValidateTask[];
     }, [compressedTasks]);
 
     const currentTask = taskList[currentTaskIndex] as ValidateTask | undefined;
+    const options = projectDetails.customOptions;
     const maxTasks = taskList.length;
 
-    const handleNextPress = useCallback(() => {
-        setCurrentTaskIndex(
-            (prevTaskIndex) => Math.min(
-                prevTaskIndex + 1,
-                maxTasks,
-            ),
-        );
-    }, [maxTasks]);
-
-    const handlePrevPress = useCallback(() => {
-        setCurrentTaskIndex(
-            (prevTaskIndex) => Math.max(
-                prevTaskIndex - 1,
-                0,
-            ),
-        );
-    }, []);
-
-    const options = projectDetails.customOptions;
+    const flatListRef = useRef<RefType>(null);
 
     const handleAnswerSelect = useCallback((newValue: number) => {
         if (isDefined(currentTask)) {
@@ -107,54 +122,95 @@ function ValidateMappingSession(props: Props) {
                 [currentTask.taskId]: newValue,
             }));
         }
-    }, [currentTask, onResultsChange]);
+
+        const nextIndex = currentTaskIndex + 1;
+        if (nextIndex < maxTasks) {
+            setTimeout(() => {
+                flatListRef.current?.scrollToIndex({
+                    index: nextIndex,
+                    animated: true,
+                });
+            }, 0);
+        }
+    }, [currentTask, onResultsChange, maxTasks, currentTaskIndex]);
 
     const selectedValue = isDefined(currentTask)
         ? results[currentTask.taskId]
         : undefined;
 
+    const onViewableItemsChanged = useCallback(({
+        viewableItems,
+    }: { viewableItems: { index: number | null | undefined }[] }) => {
+        if (viewableItems.length > 0) {
+            const { index } = viewableItems[0];
+            if (index !== undefined && index !== null) {
+                setCurrentTaskIndex(index);
+            }
+        }
+    }, []);
+
+    let totalSwipedTasks = 0;
+    if (results) {
+        totalSwipedTasks = Object.keys(results).length;
+        if ('startTime' in results) {
+            totalSwipedTasks -= 1;
+        }
+    }
+
+    const limitedTasks = [...(taskList ?? [])].slice(0, totalSwipedTasks + 1);
+
+    const disableOptions = currentTaskIndex === undefined || currentTaskIndex === -1;
+
     return (
-        <BlockListView withPadding>
+        <BlockListView style={styles.view}>
             {isNotDefined(currentTask?.geojson) && (
                 <BlockListView style={styles.loadingContainer}>
                     <ActivityIndicator size="large" />
                 </BlockListView>
             )}
-            {isDefined(currentTask?.geojson) && (
-                <>
-                    <MapTile
-                        geoJson={currentTask.geojson as FeatureGeoJson}
-                        tileServer={projectDetails.tileServer}
+            <FlatList
+                style={styles.tasks}
+                ref={flatListRef}
+                data={limitedTasks}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={({ item }) => (
+                    <View style={styles.task}>
+                        <MapTile
+                            geoJson={item.geojson as FeatureGeoJson}
+                            tileServer={projectDetails.tileServer}
+                        />
+                    </View>
+                )}
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
+                horizontal
+                getItemLayout={(_, index) => ({
+                    length: SCREEN_WIDTH,
+                    offset: SCREEN_WIDTH * index,
+                    index,
+                })}
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+            />
+            <InlineListView
+                withCenteredContent
+                style={styles.buttons}
+            >
+                {options?.map((option) => (
+                    <IconButton
+                        name={option.value}
+                        key={option.value}
+                        title={option.title}
+                        onPress={handleAnswerSelect}
+                        // FIXME: No casting
+                        iconName={option.icon as IconName}
+                        tintColor={option.iconColor}
+                        active={selectedValue === option.value}
+                        disabled={disableOptions}
+                        textColorVariant="brand"
                     />
-                    <InlineListView withCenteredContent>
-                        {options?.map((option) => (
-                            <IconButton
-                                name={option.value}
-                                key={option.value}
-                                title={option.title}
-                                onPress={handleAnswerSelect}
-                                // FIXME: No casting
-                                iconName={option.icon as IconName}
-                                tintColor={option.iconColor}
-                                active={selectedValue === option.value}
-                            />
-                        ))}
-                    </InlineListView>
-                    <InlineListView withSpaceBetweenContents>
-                        <Button
-                            name="prev"
-                            title="Prev"
-                            onPress={handlePrevPress}
-                        />
-                        <Button
-                            name="next"
-                            title="Next"
-                            onPress={handleNextPress}
-                            disabled={isNotDefined(selectedValue)}
-                        />
-                    </InlineListView>
-                </>
-            )}
+                ))}
+            </InlineListView>
         </BlockListView>
     );
 }

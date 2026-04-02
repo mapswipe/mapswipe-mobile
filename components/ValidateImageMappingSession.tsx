@@ -50,6 +50,8 @@ const createStyles = (_: AppTheme) => (
         },
         buttons: {
             flexGrow: 0,
+            flexShrink: 0,
+            padding: 20,
         },
     })
 );
