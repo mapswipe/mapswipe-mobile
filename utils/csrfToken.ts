@@ -23,6 +23,7 @@ export async function fetchCsrfToken() {
         }
         return null;
     } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Failed to fetch CSRF token', err);
         return null;
     }

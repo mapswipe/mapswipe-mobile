@@ -1,9 +1,12 @@
 import { lazy } from 'react';
 import {
+    StyleSheet,
     useWindowDimensions,
     View,
 } from 'react-native';
 
+import { AppTheme } from '@/constants/theme';
+import useThemedStyles from '@/hooks/useThemedStyles';
 import {
     FbObjRasterTileServer,
     FeatureGeoJson,
@@ -22,19 +25,29 @@ interface Props {
     tileServer: FbObjRasterTileServer;
 }
 
+const createStyles = (theme: AppTheme, { height }:
+     {height: number}) => StyleSheet.create({
+    mainContent: {
+        width: '100%',
+        height: height * 0.6,
+    },
+    mapContainerLazy: {
+        width: '100%',
+        height: '100%',
+    },
+
+});
+
 function MapTile(props: Props) {
     const {
         geoJson,
         tileServer,
     } = props;
     const { height } = useWindowDimensions();
-
+    const styles = useThemedStyles(createStyles, { height });
     return (
         <View
-            style={{
-                width: '100%',
-                height: height * 0.6,
-            }}
+            style={styles.mainContent}
         >
             <BaseMap baseTileServer={tileServer}>
                 <GeoJsonMapSource
@@ -43,10 +56,7 @@ function MapTile(props: Props) {
                     layerKey="shape-line-layer"
                 />
                 <MapContainerLazy
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                    }}
+                    style={styles.mapContainerLazy}
                 />
             </BaseMap>
         </View>

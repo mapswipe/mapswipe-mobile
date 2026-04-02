@@ -12,7 +12,6 @@ function AppIndex() {
         isLoggedIn,
         user,
     } = useAuth();
-
     useEffect(() => {
         const checkNavigation = async () => {
             if (authPending) return;
@@ -22,9 +21,9 @@ function AppIndex() {
             }
             try {
                 const hasSeen = await AsyncStorage.getItem('@hasSeenOnboarding');
-                const appLanguage = await AsyncStorage.getItem('appLanguage');
+                const hasSelectedLanguage = await AsyncStorage.getItem('@hasSelectedLanguage');
 
-                if (!appLanguage) {
+                if (!hasSelectedLanguage) {
                     router.replace('/languageSplashScreen');
                     return;
                 }
@@ -40,7 +39,6 @@ function AppIndex() {
         };
         checkNavigation();
     }, [authPending, isLoggedIn, user]);
-
     return (
         <Page title="MapSwipe">
             <LoadingComponent label="loading..." />

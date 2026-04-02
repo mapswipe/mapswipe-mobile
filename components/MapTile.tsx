@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { StyleSheet } from 'react-native';
 import {
     Camera,
     LineLayer,
@@ -12,6 +13,7 @@ import {
     isNotDefined,
 } from '@togglecorp/fujs';
 
+import useThemedStyles from '@/hooks/useThemedStyles';
 import {
     getBbox,
     standardizeQuadKey,
@@ -23,11 +25,19 @@ interface Props {
     tileServer: FbObjRasterTileServer;
 }
 
+const createStyles = () => StyleSheet.create({
+    mapView: {
+        width: '100%',
+        aspectRatio: 0.8,
+    },
+});
 function MapTile(props: Props) {
     const {
         geoJson,
         tileServer,
     } = props;
+
+    const styles = useThemedStyles(createStyles);
 
     const center = useMemo<[number, number] | undefined>(() => {
         const bounds = getBbox(geoJson);
@@ -50,10 +60,7 @@ function MapTile(props: Props) {
     return (
         <MapView
             // FIXME: use pre-defined values
-            style={{
-                width: '100%',
-                aspectRatio: 0.8,
-            }}
+            style={styles.mapView}
             attributionEnabled={false}
             scrollEnabled={false}
             zoomEnabled={false}
@@ -77,6 +84,7 @@ function MapTile(props: Props) {
                 <LineLayer
                     id="shape-line-layer"
                     sourceID="shape-source"
+                    // eslint-disable-next-line react-native/no-inline-styles
                     style={{
                         lineWidth: 1,
                         lineOpacity: 0.9,

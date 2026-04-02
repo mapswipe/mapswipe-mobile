@@ -59,7 +59,7 @@ function MapProjectIndex() {
 
     useEffect(() => {
         if (isNotDefined(taskGroupId) && isDefined(leastMappedTaskGroupId)) {
-            router.push({
+            router.replace({
                 pathname: '/project/[id]/map/[taskGroupId]',
                 params: {
                     id: projectId,
@@ -81,7 +81,7 @@ function MapProjectIndex() {
             <Page title="Map project">
                 <BlockListView
                     withPadding
-                    style={{ alignItems: 'center' }}
+                    withCenteredContent
                 >
                     <ActivityIndicator size="large" />
                     <Text>

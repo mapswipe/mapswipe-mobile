@@ -2,7 +2,11 @@ import { useCallback } from 'react';
 import {
     Pressable,
     PressableProps,
+    StyleSheet,
 } from 'react-native';
+
+import { AppTheme } from '@/constants/theme';
+import useThemedStyles from '@/hooks/useThemedStyles';
 
 import BlockListView from './BlockListView';
 import Icon, { type IconName } from './Icon';
@@ -17,6 +21,24 @@ interface Props<NAME> extends Omit<PressableProps, 'onPress'> {
     active?: boolean;
     textColorVariant?: 'brand' | 'normal';
 }
+
+const createStyles = (theme: AppTheme, { active, tintColor, disabled }:
+    { active?: boolean; tintColor?: string; disabled?: boolean }) => StyleSheet.create({
+    button: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: tintColor,
+        opacity: disabled ? 0.5 : 1,
+        width: 50,
+        aspectRatio: 1,
+        borderRadius: '50%',
+        outlineStyle: 'dashed',
+        outlineOffset: 3,
+        outlineColor: active ? theme.card : 'transparent',
+        outlineWidth: active ? 4 : undefined,
+    },
+});
 
 function IconButton<const NAME>(props: Props<NAME>) {
     const {
@@ -35,6 +57,11 @@ function IconButton<const NAME>(props: Props<NAME>) {
         onPress?.(name);
     }, [name, onPress]);
 
+    const styles = useThemedStyles(
+        createStyles,
+        { active, tintColor, disabled: disabled ?? undefined },
+    );
+
     return (
         <BlockListView
             spacing="2xs"
@@ -45,20 +72,7 @@ function IconButton<const NAME>(props: Props<NAME>) {
                 {...pressableProps}
                 onPress={handlePress}
                 disabled={disabled}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: tintColor,
-                    opacity: disabled ? 0.5 : 1,
-                    width: 50,
-                    aspectRatio: 1,
-                    borderRadius: '50%',
-                    outlineStyle: 'dashed',
-                    outlineOffset: 3,
-                    outlineColor: active ? '#ffffff' : 'transparent',
-                    outlineWidth: active ? 4 : undefined,
-                }}
+                style={styles.button}
             >
                 <Icon
                     name={iconName}

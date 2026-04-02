@@ -14,7 +14,6 @@ import {
     Switch,
     View,
 } from 'react-native';
-import { Bar } from 'react-native-progress';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,6 +28,7 @@ import Icon from '@/components/Icon';
 import InfoCard, { StatsInfo } from '@/components/InfoCard';
 import InlineListView from '@/components/InlineListView';
 import Page from '@/components/Page';
+import ProgressBar from '@/components/ProgressBar';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
 import {
@@ -152,7 +152,7 @@ function Profile() {
         { data: userStatsData, fetching: loadingUserStats },
         refetchUserStats,
     ] = useUserStatsQuery({
-        variables: { firebaseId: user.uid || '' },
+        variables: { firebaseId: user?.uid || '' },
     });
 
     const { userGroups } = useUserGroups({ userId: user?.uid });
@@ -469,14 +469,10 @@ function Profile() {
                     >
                         {`${t('levelX', { level })} (${levelData.title})`}
                     </Text>
-                    <Bar
-                        borderRadius={0}
-                        borderWidth={0}
-                        color={theme.primaryGreen}
-                        height={10}
-                        progress={progress.percentage}
-                        unfilledColor={theme.backgroundMuted}
-                        width={null}
+                    <ProgressBar
+                        percentage={progress.percentage}
+                        colorVariant="green"
+                        sizeVariant="large"
                     />
                     <Text style={styles.progressText}>{levelProgressText}</Text>
                 </BlockListView>

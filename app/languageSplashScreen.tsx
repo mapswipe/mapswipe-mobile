@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import splashScreen from '@/assets/images/splash-icon.png';
 import BlockListView from '@/components/BlockListView';
@@ -49,7 +50,11 @@ function LanguageSplashScreen() {
 
     const styles = useThemedStyles(createStyles);
 
-    const handleContinue = useCallback(() => (router.push('/onboarding')), [router]);
+    const handleContinue = useCallback(async () => {
+        await AsyncStorage.setItem('@hasSelectedLanguage', 'true');
+        router.push('/onboarding');
+    }, [router]);
+
     const handleSelection = useCallback(() => {
         router.push({ pathname: 'languageSelection', params: { isDarkBackground: String(true) } });
     }, [router]);
