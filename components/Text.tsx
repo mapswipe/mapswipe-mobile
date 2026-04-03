@@ -18,7 +18,7 @@ interface Props {
     children: string | null | undefined | React.ReactNode;
     style?: TextStyle;
     variant?: 'default' | 'heading' | 'title' | 'label' | 'description';
-    onPress?: (event: GestureResponderEvent) => void; // ✅ added
+    onPress?: (event: GestureResponderEvent) => void;
 
     colorVariant?: 'normal' | 'brand';
 }

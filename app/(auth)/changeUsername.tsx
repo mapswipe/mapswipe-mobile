@@ -29,7 +29,7 @@ export default function ChangePassword() {
     const [newUserName, setNewUserName] = useState<string>('');
     const router = useRouter();
     const { t } = useTranslation(['changeUserName', 'signup']);
-    const { handleAsync, isLoading } = useFirebaseMutation();
+    const { handleAsync, loading } = useFirebaseMutation();
 
     const handleUpdateProfile = useCallback(async () => {
         const isSame = newUserName === user?.displayName;
@@ -97,15 +97,15 @@ export default function ChangePassword() {
                     labelText={t('changeUserName:newUserName')}
                     onChangeText={setNewUserName}
                     maxLength={128}
-                    editable={!isLoading}
+                    editable={!loading}
                 />
                 <Button
                     name="change-username"
-                    title={isLoading
+                    title={loading
                         ? t('changeUserName:Updating Username')
                         : t('changeUserName:confirmUserNameChange')}
                     disabled={
-                        isLoading
+                        loading
                         || (newUserName?.length ?? 0) < MIN_USERNAME_LENGTH
                     }
                     onPress={handleUpdateProfile}

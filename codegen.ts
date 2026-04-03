@@ -9,10 +9,14 @@ if (!schema) {
 }
 
 const config: CodegenConfig = {
-  schema,                          // ✅ guaranteed to be a string
+  schema,                         
   documents: [
     'app/**/*.tsx',
-    'app/**/*.ts'
+    'app/**/*.ts',
+    'hooks/**/*.tsx',
+    'hooks/**/*.ts',
+    'components/**/*.tsx',
+    'components/**/*.ts',
   ],
   ignoreNoDocuments: true,
   generates: {

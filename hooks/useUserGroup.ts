@@ -17,18 +17,26 @@ export interface UserGroupWithGroupId extends FbUserGroup {
     groupId: string;
 }
 
-interface Props {
-    userId: string | undefined;
-}
+/**
+ * Fetches all groups a user belongs to, with their full group data.
+ *
+ * Works in two steps:
+ * 1. Retrieves the list of group keys from the user's profile (`v2/users/{userId}/userGroups`)
+ * 2. Subscribes to each group's full data in real-time (`v2/userGroups/{key}`)
+ * 3. Merges the group data into a single state array that updates in real-time.
+ *
+ * The group keys and group data are stored separately in Firebase, so two
+ * fetches are required one to get which groups the user belongs to,
+ * and another to get the actual data for each group.
+ */
 
-function useUserGroups({ userId }: Props) {
-    // Step 1: Get the list of group keys the user belongs to
-    const userGroupsQuery = useMemo(() => {
-        if (!userId) return undefined;
-        return firebaseRef(`v2/users/${userId}/userGroups/`);
-    }, [userId]);
+function useUserGroups(userId: string | undefined) {
+    const userGroupsQuery = useMemo(
+        () => (userId ? firebaseRef(`v2/users/${userId}/userGroups/`) : undefined),
+        [userId],
+    );
 
-    const { list: userGroupRefs, pending: refsPending } = useFirebaseDatabaseList({
+    const { list: userGroupRefs, pending: loadingGroupKeys } = useFirebaseDatabaseList({
         query: userGroupsQuery as Query,
         skip: !userId,
     });
@@ -38,48 +46,38 @@ function useUserGroups({ userId }: Props) {
         [userGroupRefs],
     );
 
-    // Step 2: Manually fetch group details (hooks can't run in a loop,
-    // so we use a useEffect for the secondary fan-out fetch)
     const [userGroups, setUserGroups] = useState<UserGroupWithGroupId[]>([]);
-    const [groupsPending, setGroupsPending] = useState(false);
+    const [loadingGroupData, setLoadingGroupData] = useState(true);
 
     useEffect(() => {
-        if (groupKeys.length === 0) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setUserGroups([]);
-            return;
-        }
+        if (groupKeys.length === 0) return;
 
-        setGroupsPending(true);
-
+        // Subscribe to real-time updates for each group and merge into state
         const unsubscribes = groupKeys.map((key) => {
             const groupRef = firebaseRef(`v2/userGroups/${key}`);
 
             return onValue(groupRef, (snapshot) => {
-                if (!snapshot.exists()) return;
-
                 const groupData = snapshot.val() as FbUserGroup;
-                if (!groupData.name) return;
 
-                setUserGroups((prev) => {
-                    // Replace or insert this group in the list
-                    const withoutThis = prev.filter((g) => g.groupId !== key);
-                    return [...withoutThis, { groupId: key, ...groupData }];
-                });
+                if (!snapshot.exists() || !groupData.name) return;
 
-                setGroupsPending(false);
+                setUserGroups((prev) => [
+                    ...prev.filter((group) => group.groupId !== key),
+                    { groupId: key, ...groupData },
+                ]);
+
+                setLoadingGroupData(false);
             });
         });
-
+        // Cleanup: unsubscribe all listeners on unmount or when groupKeys changes
         // eslint-disable-next-line consistent-return
-        return () => {
-            unsubscribes.forEach((unsub) => unsub());
-        };
+        return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
     }, [groupKeys]);
 
-    const pending = refsPending || groupsPending;
-
-    return { userGroups, pending };
+    return {
+        userGroups,
+        pending: loadingGroupKeys || loadingGroupData,
+    };
 }
 
 export default useUserGroups;

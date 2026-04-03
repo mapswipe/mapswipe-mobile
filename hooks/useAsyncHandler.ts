@@ -4,26 +4,26 @@ import {
 } from 'react';
 
 export default function useAsyncHandler() {
-    const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const handleAsync = useCallback(
         async <T>(task: () => Promise<T>): Promise<T> => {
-            setIsLoading(true);
+            setLoading(true);
             setError(null);
 
             try {
                 const result = await task();
-                setIsLoading(false);
+                setLoading(false);
                 return result;
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Unknown error occurred';
                 setError(message);
-                setIsLoading(false);
+                setLoading(false);
                 throw err;
             }
         },
         [],
     );
 
-    return { handleAsync, isLoading, error };
+    return { handleAsync, loading, error };
 }

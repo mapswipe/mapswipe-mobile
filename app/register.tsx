@@ -74,7 +74,7 @@ function Register() {
     const [usernameError, setUsernameError] = useState<string>();
     const [passwordError, setPasswordError] = useState<string>();
     const { t } = useTranslation('signup');
-    const { handleAsync, isLoading } = useAsyncHandler();
+    const { handleAsync, loading } = useAsyncHandler();
 
     const router = useRouter();
 
@@ -205,7 +205,7 @@ function Register() {
                         value={username}
                         errorText={usernameError}
                         onChangeText={handleUsernameChange}
-                        readOnly={isLoading}
+                        readOnly={loading}
                     />
                     <TextInput
                         variant="brand"
@@ -216,7 +216,7 @@ function Register() {
                         placeholder={t('enterYourEmail')}
                         value={email}
                         onChangeText={setEmail}
-                        readOnly={isLoading}
+                        readOnly={loading}
                     />
                     <TextInput
                         variant="brand"
@@ -226,7 +226,7 @@ function Register() {
                         value={password}
                         onChangeText={handlePasswordChange}
                         errorText={passwordError}
-                        readOnly={isLoading}
+                        readOnly={loading}
                         secureTextEntry
                     />
                     <InlineListView
@@ -236,7 +236,7 @@ function Register() {
                             value={agreeToPrivacy}
                             onValueChange={setAgreeToPrivacy}
                             color={agreeToPrivacy ? '#4630EB' : undefined}
-                            disabled={isLoading}
+                            disabled={loading}
                         />
                         <Text
                             variant="label"
@@ -273,7 +273,7 @@ function Register() {
                         name={undefined}
                         onPress={handleSignUpPress}
                         title={t('signUp')}
-                        disabled={isLoading || !agreeToPrivacy}
+                        disabled={loading || !agreeToPrivacy}
                         colorVariant="primaryRed"
                         styleVariant="filled"
                     />

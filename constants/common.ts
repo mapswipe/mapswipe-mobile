@@ -14,14 +14,11 @@ export const SUPPORTED_PROJECT_TYPES = [
     PROJECT_TYPE_VALIDATE_IMAGE,
 ];
 
-export const publicDashboardUrl = 'https://community-stage.mapswipe.org';
-
+export const publicDashboardUrl = process.env.EXPO_PUBLIC_Dashboard_URL;
+export const missingMapUrl = 'https://www.missingmaps.org';
+export const mapSwipeWebUrl = 'https://mapswipe.org/';
 export const gqlEndpoint = `${process.env.EXPO_PUBLIC_GRAPHQL_ENDPOINT}/graphql/`;
-
-export const healthCheckEndpoint = gqlEndpoint.replace(
-    /graphql\/?$/,
-    'health-check/',
-);
+export const healthCheckEndpoint = `${process.env.EXPO_PUBLIC_GRAPHQL_ENDPOINT}/health-check/`;
 export const referrerEndpoint = gqlEndpoint.replace('backend', 'manager');
 
 type Language = {

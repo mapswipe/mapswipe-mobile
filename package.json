@@ -3,10 +3,10 @@
     "main": "expo-router/entry",
     "version": "0.0.1",
     "scripts": {
-        "start": "expo start --port 3000",
+        "start": "expo start",
         "android": "expo run:android",
         "ios": "expo run:ios",
-        "web": "expo start --web --port 3000",
+        "web": "expo start --web",
         "prebuild": "expo prebuild",
         "prebuild:clean": "expo prebuild --clean",
         "build:debug": "pnpm prebuild && cd android && ./gradlew assembleDebug && cd .. && ts-node -P tsconfig.scripts.json scripts/copy-apk.ts debug",

@@ -34,7 +34,7 @@ const createStyles = () => StyleSheet.create({
 
 function ForgoPassword() {
     const [email, setEmail] = useState<string>();
-    const { handleAsync, isLoading } = useAsyncHandler();
+    const { handleAsync, loading } = useAsyncHandler();
     const { t } = useTranslation('signup');
 
     const handleResetPress = useCallback(async () => {
@@ -97,7 +97,7 @@ function ForgoPassword() {
                         hintText={t('sendResetEmailWarning')}
                         value={email}
                         onChangeText={setEmail}
-                        readOnly={isLoading}
+                        readOnly={loading}
                     />
                 </BlockListView>
                 <BlockListView
@@ -107,7 +107,7 @@ function ForgoPassword() {
                         name={undefined}
                         onPress={handleResetPress}
                         title={t('sendResetEmail')}
-                        disabled={isLoading}
+                        disabled={loading}
                         colorVariant="primaryRed"
                         styleVariant="filled"
                     />

@@ -32,6 +32,8 @@ import ProgressBar from '@/components/ProgressBar';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
 import {
+    mapSwipeWebUrl,
+    missingMapUrl,
     publicDashboardUrl,
     supportedLanguages,
 } from '@/constants/common';
@@ -155,7 +157,7 @@ function Profile() {
         variables: { firebaseId: user?.uid || '' },
     });
 
-    const { userGroups } = useUserGroups({ userId: user?.uid });
+    const { userGroups } = useUserGroups(user?.uid || '');
 
     const {
         level, sqkm, swipes, levelData, progress,
@@ -279,14 +281,14 @@ function Profile() {
     const onHandleMissingMapsClick = useCallback(() => {
         router.push({
             pathname: '/WebviewWindow',
-            params: { uri: 'https://www.missingmaps.org' },
+            params: { uri: missingMapUrl },
         });
     }, [router]);
 
     const onHandleMapSwipeWebsiteClick = useCallback(() => {
         router.push({
             pathname: '/WebviewWindow',
-            params: { uri: 'https://mapswipe.org/' },
+            params: { uri: mapSwipeWebUrl },
         });
     }, [router]);
 
