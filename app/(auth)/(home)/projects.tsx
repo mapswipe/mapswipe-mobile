@@ -295,7 +295,7 @@ function Projects() {
     return (
         <Page
             title="Projects"
-            isScrollable={false}
+            scrollable={false}
         >
             <FlatList
                 style={styles.projects}

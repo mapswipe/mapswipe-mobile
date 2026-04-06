@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
     TouchableOpacity,
     ViewStyle,
@@ -17,13 +17,13 @@ export default function BackButton({ style }: Props) {
     const router = useRouter();
     const theme = useTheme();
 
-    const handleBack = () => {
+    const handleBack = useCallback(() => {
         if (router.canGoBack()) {
             router.back();
         } else {
             router.push('/');
         }
-    };
+    }, [router]);
 
     return (
         <TouchableOpacity

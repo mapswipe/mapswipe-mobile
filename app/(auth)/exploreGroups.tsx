@@ -70,7 +70,7 @@ function ExploreGroups() {
     return (
         <Page
             title={t('exploreGroups')}
-            isScrollable={false}
+            scrollable={false}
             showBackButton
         >
             {pending && <ActivityIndicator size="large" />}

@@ -24,10 +24,10 @@ import {
 } from '@/utils/types';
 
 function MapTaskGroup() {
-    const { id: projectId, taskGroupId } = useLocalSearchParams<{
-    id: string;
-    taskGroupId: string;
-  }>();
+    const {
+        id: projectId,
+        taskGroupId,
+    } = useLocalSearchParams<{id: string; taskGroupId: string;}>();
 
     const projectQuery = useMemo(
         () => firebaseRef(`v2/projects/${projectId}`),
@@ -43,7 +43,7 @@ function MapTaskGroup() {
         <Page
             title={projectDetails?.projectInstruction ?? 'Map Project'}
             variant="brand"
-            isScrollable={false}
+            scrollable={false}
             showBackButton
             headerTitleAlign="center"
         >

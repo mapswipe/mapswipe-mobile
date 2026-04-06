@@ -12,7 +12,7 @@ import useThemedStyles from '@/hooks/useThemedStyles';
 import Icon, { type IconName } from './Icon';
 import InlineListView, { type Props as InlineLayoutProps } from './InlineListView';
 
-export type ButtonColorVariant = 'primaryBlue' | 'primaryGreen' | 'primaryRed' | 'success' | 'danger' | 'info' | 'card';
+export type ButtonColorVariant = 'primaryBlue' | 'primaryGreen' | 'primaryRed' | 'success' | 'danger' | 'info' | 'white';
 export type ButtonStyleVariant = 'outline' | 'filled' | 'transparent' | 'block' | 'underline' | 'action';
 
 const VARIANT_COLOR: Record<ButtonColorVariant, keyof AppTheme> = {
@@ -22,7 +22,7 @@ const VARIANT_COLOR: Record<ButtonColorVariant, keyof AppTheme> = {
     success: 'success',
     danger: 'error',
     info: 'info',
-    card: 'card',
+    white: 'card',
 };
 
 const createStyles = (

@@ -1,4 +1,7 @@
-import { useCallback } from 'react';
+import {
+    useCallback,
+    useMemo,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     StyleSheet,
@@ -44,9 +47,13 @@ const createStyles = () => StyleSheet.create({
 function LanguageSplashScreen() {
     const router = useRouter();
     const { i18n } = useTranslation();
-    const currentLanguage = (supportedLanguages ?? []).find(
-        (lang: { localeCode: string }) => lang.localeCode === i18n.language,
-    )?.name ?? i18n.language;
+
+    const currentLanguage = useMemo(
+        () => (supportedLanguages ?? []).find(
+            (lang: { localeCode: string }) => lang.localeCode === i18n.language,
+        )?.name ?? i18n.language,
+        [i18n.language],
+    );
 
     const styles = useThemedStyles(createStyles);
 
@@ -56,13 +63,16 @@ function LanguageSplashScreen() {
     }, [router]);
 
     const handleSelection = useCallback(() => {
-        router.push({ pathname: 'languageSelection', params: { isDarkBackground: String(true) } });
+        router.push({
+            pathname: 'languageSelectionList',
+            params: { isDarkBackground: String(true) },
+        });
     }, [router]);
 
     return (
         <Page
             title="language"
-            isScrollable={false}
+            scrollable={false}
             variant="brand"
         >
             <BlockListView

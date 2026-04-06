@@ -39,7 +39,7 @@ export default function WebviewWindow() {
         <Page
             title={webUri}
             style={styles.webView}
-            isScrollable={false}
+            scrollable={false}
             showBackButton
         >
             <WebView

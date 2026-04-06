@@ -119,8 +119,11 @@ function ExploreGroup() {
         variables: { userGroupId },
     });
 
-    const currentLanguage = (supportedLanguages ?? []).find(
-        (lang: { localeCode: string }) => lang.localeCode === i18n.language,
+    const currentLanguage = useMemo(
+        () => (supportedLanguages ?? []).find(
+            (lang: { localeCode: string }) => lang.localeCode === i18n.language,
+        ),
+        [i18n.language],
     );
 
     const communityUserGroupStats: StatsInfo[] = useMemo(() => {
@@ -273,7 +276,7 @@ function ExploreGroup() {
     return (
         <Page
             title={userGroupData?.name ?? 'Explore Group'}
-            isScrollable={false}
+            scrollable={false}
             showBackButton
         >
             {userGroupDetailPending && (

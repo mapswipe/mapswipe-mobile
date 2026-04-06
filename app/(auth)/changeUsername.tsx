@@ -12,7 +12,7 @@ import Button from '@/components/Button';
 import Page from '@/components/Page';
 import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
-import useFirebaseMutation from '@/hooks/useAsyncHandler';
+import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
 import {
     MIN_USERNAME_LENGTH,
@@ -29,7 +29,10 @@ export default function ChangePassword() {
     const [newUserName, setNewUserName] = useState<string>('');
     const router = useRouter();
     const { t } = useTranslation(['changeUserName', 'signup']);
-    const { handleAsync, loading } = useFirebaseMutation();
+    const {
+        handleAsync,
+        loading,
+    } = useAsyncHandler();
 
     const handleUpdateProfile = useCallback(async () => {
         const isSame = newUserName === user?.displayName;
@@ -64,8 +67,17 @@ export default function ChangePassword() {
             }
             if (!user) return;
 
-            await updateProfile(user, { displayName: newUserName as string });
-            await update(firebaseRef(`v2/users/${user.uid}`), { username: newUserName, usernameKey: newUserName.toLowerCase() });
+            await updateProfile(
+                user,
+                { displayName: newUserName as string },
+            );
+            await update(
+                firebaseRef(`v2/users/${user.uid}`),
+                {
+                    username: newUserName,
+                    usernameKey: newUserName.toLowerCase(),
+                },
+            );
             await user.reload();
             showAlert({
                 title: 'Success',
@@ -75,6 +87,13 @@ export default function ChangePassword() {
             router.back();
             setUser({ ...user });
             setNewUserName('');
+        }).catch((err) => {
+            const message = err instanceof Error ? err.message : 'Unknown error occurred';
+            showAlert({
+                title: t('signup:errorOnSignup'),
+                message,
+                alertType: 'error',
+            });
         });
     }, [newUserName, user, setUser, handleAsync, router, t]);
 

@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
 import {
-    StatusBar as NativeStatusBar,
     StyleSheet,
     View,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 
 import heartIcon from '@/assets/images/custom/heart_icon.png';
 import mmwhiteLogo from '@/assets/images/custom/mmwhite.png';
@@ -17,7 +15,7 @@ import Link from '@/components/Link';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
-import { type AppTheme } from '@/constants/theme';
+import { AppTheme } from '@/constants/theme';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { getProjectProgressForDisplay } from '@/utils/common';
@@ -28,15 +26,6 @@ const PROJECT_CARD_HEIGHT = 220;
 const PROJECT_CARD_WIDTH = SCREEN_WIDTH;
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
-    mainView: {
-        position: 'absolute',
-        top: 0,
-        width: '100%',
-        height: NativeStatusBar.currentHeight,
-        backgroundColor: theme.primaryBlue,
-        opacity: 0.33,
-        zIndex: 1,
-    },
     name: {
         fontSize: 20,
         fontWeight: 'bold',
@@ -70,11 +59,8 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     backButtonContainer: {
         padding: 20,
     },
-    backButton: {
-        color: '#fff',
-    },
     projectDetailsText: {
-        color: '#fff',
+        color: theme.card,
         flexGrow: 1,
         fontWeight: 'bold',
         textAlign: 'center',
@@ -82,7 +68,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     horizontalBar: {
         borderWidth: 0.5,
         borderBottomWidth: 0,
-        borderColor: '#fff',
+        borderColor: theme.card,
     },
     heartIcon: {
         height: 24,
@@ -94,7 +80,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         resizeMode: 'contain',
     },
     contributionText: {
-        color: '#fff',
+        color: theme.card,
     },
     bottomBar: {
         borderTopWidth: 1,
@@ -124,11 +110,7 @@ export default function ProjectDetail() {
 
     return (
         <Page title={project?.name ?? 'Project'}>
-            <StatusBar style="inverted" />
             <BlockListView>
-                <View
-                    style={styles.mainView}
-                />
                 <View>
                     <Image
                         source={project?.image}

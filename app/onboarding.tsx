@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, {
+    useCallback,
+    useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     FlatList,
@@ -120,14 +123,17 @@ export default function Onboarding() {
     const router = useRouter();
     const { t } = useTranslation(['welcomeScreen', 'signup']);
 
-    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const slideIndex = Math.round(
-            event.nativeEvent.contentOffset.x / SCREEN_WIDTH,
-        );
-        setIndex(slideIndex);
-    };
+    const handleScroll = useCallback(
+        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            const slideIndex = Math.round(
+                event.nativeEvent.contentOffset.x / SCREEN_WIDTH,
+            );
+            setIndex(slideIndex);
+        },
+        [],
+    );
 
-    const handleSignUp = async () => {
+    const handleSignUp = useCallback(async () => {
         try {
             await AsyncStorage.setItem('@hasSeenOnboarding', 'true');
             router.replace('/register');
@@ -135,12 +141,12 @@ export default function Onboarding() {
             // eslint-disable-next-line no-console
             console.error('Error saving onboarding state:', error);
         }
-    };
+    }, [router]);
 
     return (
         <Page
             title="onboarding"
-            isScrollable={false}
+            scrollable={false}
         >
             <BlockListView style={styles.container}>
                 <InlineListView style={styles.skip}>
@@ -166,6 +172,7 @@ export default function Onboarding() {
                             style={styles.mainContent}
                             withCenteredContent
                             withPadding
+                            key={item.id}
                         >
                             <Image
                                 style={styles.icon}

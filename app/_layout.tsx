@@ -25,7 +25,6 @@ import { Provider as UrqlProvider } from 'urql';
 import LoadingComponent from '@/components/Loader';
 import Page from '@/components/Page';
 import AuthContext, { AuthContextProps } from '@/contexts/auth';
-import useTheme from '@/hooks/useTheme';
 import { fetchCsrfToken } from '@/utils/csrfToken';
 import { firebaseAuth } from '@/utils/firebase';
 import client from '@/utils/urqlClient';
@@ -110,7 +109,6 @@ export const toastConfig = {
 };
 
 export default function AppLayout() {
-    const theme = useTheme();
     const [user, setUser] = useState<User | null | undefined>();
 
     useEffect(() => {
@@ -168,9 +166,8 @@ export default function AppLayout() {
             <UrqlProvider value={client}>
                 <AuthContext.Provider value={authContextValue}>
                     <StatusBar
-                        backgroundColor={theme.primaryBlue}
-                        translucent={false}
-                        style="light"
+                        style="auto"
+                        animated
                     />
                     <Stack screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="index" />

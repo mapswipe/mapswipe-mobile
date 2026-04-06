@@ -176,8 +176,11 @@ function Profile() {
         load();
     }, []);
 
-    const currentLanguage = (supportedLanguages ?? []).find(
-        (lang: { localeCode: string }) => lang.localeCode === i18n.language,
+    const currentLanguage = useMemo(
+        () => (supportedLanguages ?? []).find(
+            (lang: { localeCode: string }) => lang.localeCode === i18n.language,
+        ),
+        [i18n.language],
     );
 
     const refreshPage = useCallback(() => {
@@ -260,7 +263,7 @@ function Profile() {
 
     const onHandleChangeLanguage = useCallback(() => {
         router.push({
-            pathname: 'languageSelection',
+            pathname: 'languageSelectionList',
             params: { isDarkBackground: String(false) },
         });
     }, [router]);
@@ -443,7 +446,11 @@ function Profile() {
         },
     ];
     return (
-        <Page title="Profile" style={styles.page} isScrollable={false}>
+        <Page
+            title="Profile"
+            style={styles.page}
+            scrollable={false}
+        >
             <InlineListView
                 style={styles.profileCard}
                 withCenteredContent

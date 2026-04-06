@@ -25,7 +25,7 @@ interface Props {
     style?: ViewStyle,
     children: React.ReactNode;
     variant?: 'normal' | 'brand';
-    isScrollable?: boolean
+    scrollable?: boolean
     showBackButton?: boolean;
     headerTitleAlign?: 'left' | 'center';
 }
@@ -36,7 +36,7 @@ function Page(props: Props) {
         children,
         style,
         variant = 'normal',
-        isScrollable = true,
+        scrollable = true,
         showBackButton = false,
         headerTitleAlign = 'left',
     } = props;
@@ -66,7 +66,7 @@ function Page(props: Props) {
             ]}
             edges={showBackButton ? ['bottom'] : undefined}
         >
-            {isScrollable ? (
+            {scrollable ? (
                 <ScrollView>
                     {children}
                 </ScrollView>
