@@ -46,32 +46,28 @@ function InfoCard(props: Props) {
             <Text variant="description">
                 {title}
             </Text>
-            <InlineListView
-                spacing="4xs"
-            >
-                {typeof value === 'string' && (
-                    <Text variant="title">
-                        {value}
-                    </Text>
-                )}
-                {Array.isArray(value) && (
-                    <InlineListView
-                        spacing="4xs"
-                        style={styles.value}
-                    >
-                        {value.map((seg) => (
-                            <Fragment key={seg.unit}>
-                                <Text variant="title">
-                                    {seg.value}
-                                </Text>
-                                <Text variant="label">
-                                    {seg.unit}
-                                </Text>
-                            </Fragment>
-                        ))}
-                    </InlineListView>
-                )}
-            </InlineListView>
+            {typeof value === 'string' && (
+                <Text variant="title">
+                    {value}
+                </Text>
+            )}
+            {Array.isArray(value) && (
+                <InlineListView
+                    spacing="4xs"
+                    style={styles.value}
+                >
+                    {value.map((seg) => (
+                        <Fragment key={seg.unit}>
+                            <Text variant="title">
+                                {seg.value}
+                            </Text>
+                            <Text variant="label">
+                                {seg.unit}
+                            </Text>
+                        </Fragment>
+                    ))}
+                </InlineListView>
+            )}
 
         </BlockListView>
     );

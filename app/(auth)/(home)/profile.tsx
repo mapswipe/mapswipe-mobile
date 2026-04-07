@@ -14,47 +14,34 @@ import {
     Switch,
     View,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { isDefined } from '@togglecorp/fujs';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import { gql } from 'urql';
 
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import { ButtonLayoutProps } from '@/components/ButtonLayout';
-import HeatMap from '@/components/HeatMap';
 import Icon from '@/components/Icon';
-import InfoCard, { StatsInfo } from '@/components/InfoCard';
 import InlineListView from '@/components/InlineListView';
 import Page from '@/components/Page';
-import ProgressBar from '@/components/ProgressBar';
+import ProfileHeader from '@/components/ProfileHeader';
+import ProfileStats from '@/components/ProfileStats';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
 import {
     mapSwipeWebUrl,
     missingMapUrl,
-    publicDashboardUrl,
     supportedLanguages,
 } from '@/constants/common';
-import {
-    FONT_SIZE_SM,
-    SPACING_MD,
-} from '@/constants/dimensions';
+import { SPACING_MD } from '@/constants/dimensions';
 import { AppTheme } from '@/constants/theme';
-import { FbUser } from '@/firebaseGenerated/extended_models';
 import { useUserStatsQuery } from '@/generated/types/graphql';
+import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
-import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
-import useUserGroups from '@/hooks/useUserGroup';
-import { getTimeSegments } from '@/utils/common';
-import {
-    firebaseAuth,
-    firebaseRef,
-} from '@/utils/firebase';
-import getLevelInfo from '@/utils/getLevel';
+import { firebaseAuth } from '@/utils/firebase';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USER_STATS = gql`
@@ -84,47 +71,6 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     page: {
         backgroundColor: theme.backgroundMuted,
     },
-    displayPicture: {
-        width: 100,
-        height: 100,
-        aspectRatio: 1,
-        borderRadius: 50,
-    },
-    profileCard: {
-        backgroundColor: theme.primaryBlue,
-        color: theme.primaryRed,
-        alignItems: 'center',
-    },
-    profileDetail: {
-        backgroundColor: theme.primaryBlue,
-        color: theme.primaryRed,
-        justifyContent: 'center',
-        flex: 2,
-    },
-    profileDetailsText: {
-        color: theme.card,
-        fontWeight: 'bold',
-    },
-    levelText: {
-        color: theme.card,
-        fontSize: FONT_SIZE_SM,
-    },
-    progressText: {
-        color: theme.card,
-        fontSize: FONT_SIZE_SM,
-    },
-    infoCardContainer: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-        gap: 10,
-    },
-    infoCard: {
-        width: '48%',
-        marginBottom: 12,
-    },
     alignCenter: {
         alignItems: 'center',
     },
@@ -142,14 +88,9 @@ function Profile() {
     const styles = useThemedStyles(createStyles);
     const [accessibility, setAccessibility] = useState<string>('disabled');
     const { t, i18n } = useTranslation('profileScreen');
+    const theme = useTheme();
+    const { handleAsync } = useAsyncHandler();
 
-    const userDetailQuery = useMemo(
-        () => (isDefined(user) ? firebaseRef(`v2/users/${user.uid}`) : undefined),
-        [user],
-    );
-    const { data: userDetails } = useFirebaseDatabase<FbUser>({
-        query: userDetailQuery,
-    });
     const [
         { data: userStatsData, fetching: loadingUserStats },
         refetchUserStats,
@@ -157,16 +98,12 @@ function Profile() {
         variables: { firebaseId: user?.uid || '' },
     });
 
-    const { userGroups } = useUserGroups(user?.uid || '');
-
-    const {
-        level, sqkm, swipes, levelData, progress,
-    } = getLevelInfo(userDetails?.taskContributionCount ?? 0);
-
-    const levelProgressText = t('xTasks(sSwipes)UntilTheNextLevel', {
-        sqkm,
-        swipes,
-    });
+    const currentLanguage = useMemo(
+        () => (supportedLanguages ?? []).find(
+            (lang: { localeCode: string }) => lang.localeCode === i18n.language,
+        ),
+        [i18n.language],
+    );
 
     useEffect(() => {
         const load = async () => {
@@ -176,86 +113,13 @@ function Profile() {
         load();
     }, []);
 
-    const currentLanguage = useMemo(
-        () => (supportedLanguages ?? []).find(
-            (lang: { localeCode: string }) => lang.localeCode === i18n.language,
-        ),
-        [i18n.language],
-    );
-
     const refreshPage = useCallback(() => {
         refetchUserStats();
     }, [refetchUserStats]);
 
-    const userStats: StatsInfo[] = useMemo(() => {
-        const stats = userStatsData?.communityUserStats?.stats;
-        const {
-            totalAreaSwiped,
-            totalMappingProjects,
-            totalOrganization,
-            totalSwipeTime,
-            totalSwipes,
-        } = stats ?? {};
-
-        const totalUserGroups = userStatsData?.communityUserStats?.statsLatest?.totalUserGroups;
-
-        const formatter = new Intl.NumberFormat(currentLanguage?.localeCode);
-        const formatNumber = formatter.format;
-        const totalSwipesFormatted = formatNumber(totalSwipes ?? 0);
-        const totalMappingProjectsFormatted = formatNumber(
-            totalMappingProjects ?? 0,
-        );
-
-        const totalSwipeTimeSegments = getTimeSegments(totalSwipeTime ?? 0).map(
-            (segment) => ({
-                value: String(segment.value),
-                unit: segment.unit,
-            }),
-        );
-        const totalSwipeAreaFormatted = formatNumber(
-            Math.round(totalAreaSwiped ?? 0),
-        );
-        const totalOrganizationFormatted = formatNumber(totalOrganization ?? 0);
-        const totalUserGroupsFormatted = formatNumber(totalUserGroups ?? 0);
-
-        return [
-            {
-                title: t('Total swipes'),
-                value: totalSwipesFormatted,
-            },
-            {
-                title: t('Total time spent swiping'),
-                value: totalSwipeTimeSegments,
-            },
-            {
-                title: t('Total area swiped (sq.km)'),
-                value: totalSwipeAreaFormatted,
-            },
-            {
-                title: t('Total projects'),
-                value: totalMappingProjectsFormatted,
-            },
-            {
-                title: t('Organizations supported'),
-                value: totalOrganizationFormatted,
-            },
-            {
-                title: t('User groups joined'),
-                value: totalUserGroupsFormatted,
-            },
-        ];
-    }, [
-        userStatsData?.communityUserStats?.stats,
-        userStatsData?.communityUserStats?.statsLatest?.totalUserGroups,
-        currentLanguage?.localeCode,
-        t,
-    ]);
-
     const handleLogout = useCallback(() => {
         firebaseAuth.signOut();
     }, []);
-
-    const theme = useTheme();
 
     const onHandleChangeUsername = useCallback(() => {
         router.push('(auth)/changeUsername');
@@ -266,13 +130,6 @@ function Profile() {
             pathname: 'languageSelectionList',
             params: { isDarkBackground: String(false) },
         });
-    }, [router]);
-
-    const onHandleExploreGroups = useCallback(() => {
-        router.push('(auth)/exploreGroups');
-    }, [router]);
-    const onHandleUserGroupsClick = useCallback((key?: string) => {
-        router.push(`exploreGroup/${key}`);
     }, [router]);
 
     const onHandleAccessibilityChange = useCallback(async () => {
@@ -322,6 +179,26 @@ function Profile() {
         ]);
     }, [router]);
 
+    const handleResetPress = useCallback(async () => {
+        handleAsync(async () => {
+            if (!user?.email) return;
+            await sendPasswordResetEmail(firebaseAuth, user.email);
+        }).then(() => {
+            showAlert({
+                title: t('signup:success'),
+                message: t('signup:checkYourEmail'),
+                alertType: 'info',
+            });
+        }).catch(() => {
+            showAlert({
+                title: t('signup:errorResetPass'),
+                message: t('signup:problemResettingPassword'),
+                alertType: 'error',
+                shouldHideAfterDelay: false,
+            });
+        });
+    }, [handleAsync, user, t]);
+
     const handleResetPasswordClick = useCallback(() => {
         Alert.alert(
             'Reset Password',
@@ -333,40 +210,11 @@ function Profile() {
                 },
                 {
                     text: 'OK',
-                    onPress: () => {
-                        // auth().sendPasswordResetEmail(auth().currentUser.email);
-                    },
+                    onPress: handleResetPress,
                 },
             ],
         );
-    }, []);
-
-    const handleMoreStatsClick = useCallback(() => {
-        if (user?.uid) {
-            Linking.openURL(`${publicDashboardUrl}/user/${user?.uid}/`);
-        }
-    }, [user]);
-
-    const calendarHeatmapData = useMemo(() => {
-        const contributionStats = userStatsData?.communityUserStats?.filteredStats?.swipeByDate;
-
-        if (!contributionStats) {
-            return {};
-        }
-
-        const contributionStatsMap = contributionStats.reduce(
-            (
-                acc: Record<string, number>,
-                val: { taskDate: string | number; totalSwipes: number },
-            ) => {
-                acc[val.taskDate] = val.totalSwipes;
-                return acc;
-            },
-            {},
-        );
-
-        return contributionStatsMap;
-    }, [userStatsData?.communityUserStats?.filteredStats?.swipeByDate]);
+    }, [handleResetPress]);
 
     const settingItems: ButtonLayoutProps[] = [
         {
@@ -451,41 +299,7 @@ function Profile() {
             style={styles.page}
             scrollable={false}
         >
-            <InlineListView
-                style={styles.profileCard}
-                withCenteredContent
-                withPadding
-                spacing="lg"
-            >
-                <Image
-                    source={levelData.badge}
-                    style={styles.displayPicture}
-                    key={levelData.title}
-                    accessibilityLabel={levelData.title}
-                />
-                <BlockListView
-                    spacing="3xs"
-                    style={styles.profileDetail}
-                >
-                    <Text
-                        variant="title"
-                        style={styles.profileDetailsText}
-                    >
-                        {user?.displayName}
-                    </Text>
-                    <Text
-                        style={styles.levelText}
-                    >
-                        {`${t('levelX', { level })} (${levelData.title})`}
-                    </Text>
-                    <ProgressBar
-                        percentage={progress.percentage}
-                        colorVariant="green"
-                        sizeVariant="large"
-                    />
-                    <Text style={styles.progressText}>{levelProgressText}</Text>
-                </BlockListView>
-            </InlineListView>
+            <ProfileHeader />
             <ScrollView
                 refreshControl={(
                     <RefreshControl
@@ -494,76 +308,9 @@ function Profile() {
                     />
                 )}
             >
-                <BlockListView
-                    withPadding
-                    spacing="xs"
-                >
-                    <Text
-                        variant="label"
-                    >
-                        All the stats are only updated once a day
-                    </Text>
-                    <View style={styles.infoCardContainer}>
-                        {userStats.map((item) => (
-                            <InfoCard
-                                key={item.title}
-                                title={item.title}
-                                value={item.value}
-                                style={styles.infoCard}
-                            />
-                        ))}
-                    </View>
-                </BlockListView>
-                <BlockListView
-                    withPadding
-                    spacing="xs"
-                >
-                    <Text
-                        variant="title"
-                    >
-                        {t('contributionHeatmap')}
-                    </Text>
-                    <HeatMap activityData={calendarHeatmapData} />
-                    <Button
-                        name="MoreStats"
-                        title="More Stats"
-                        onPress={handleMoreStatsClick}
-                        action={<Icon name="sign-out" size={18} color={theme.info} />}
-                        styleVariant="block"
-                    />
-                </BlockListView>
-                <BlockListView
-                    withPadding
-                    spacing="xs"
-                >
-                    <Text variant="title">User Groups</Text>
-                    {userGroups?.length ? (
-                        userGroups.map((group) => (
-                            <Button
-                                key={group.groupId}
-                                name={group.groupId}
-                                title={
-                                    group.archivedAt || group.archivedBy
-                                        ? `${group.name} (Archived)`
-                                        : group.name
-                                }
-                                onPress={onHandleUserGroupsClick}
-                                styleVariant="block"
-                                action={(
-                                    <Icon name="caret-right" size={14} />
-                                )}
-                            />
-                        ))
-                    ) : (
-                        <Text variant="label">No groups yet</Text>)}
-                    <Button
-                        name="exploreGroups"
-                        title={t('exploreGroups')}
-                        onPress={onHandleExploreGroups}
-                        colorVariant="info"
-                        styleVariant="block"
-                    />
-                </BlockListView>
+                <ProfileStats
+                    userStats={userStatsData}
+                />
                 <BlockListView
                     withPadding
                     spacing="xs"
