@@ -3,6 +3,7 @@ import {
     useState,
 } from 'react';
 
+// FIXME: Make this similar to apollo
 export default function useAsyncHandler() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

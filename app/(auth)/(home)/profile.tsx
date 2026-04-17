@@ -89,6 +89,7 @@ function Profile() {
     const [accessibility, setAccessibility] = useState<string>('disabled');
     const { t, i18n } = useTranslation('profileScreen');
     const theme = useTheme();
+    // FIXME: Update the use of this function
     const { handleAsync } = useAsyncHandler();
 
     const [

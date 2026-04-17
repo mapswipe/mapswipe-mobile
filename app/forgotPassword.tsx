@@ -34,6 +34,7 @@ const createStyles = () => StyleSheet.create({
 
 function ForgoPassword() {
     const [email, setEmail] = useState<string>();
+    // FIXME: Update the use of this function
     const { handleAsync, loading } = useAsyncHandler();
     const { t } = useTranslation('signup');
 

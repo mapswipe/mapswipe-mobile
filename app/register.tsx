@@ -74,6 +74,7 @@ function Register() {
     const [usernameError, setUsernameError] = useState<string>();
     const [passwordError, setPasswordError] = useState<string>();
     const { t } = useTranslation('signup');
+    // FIXME: Update the use of this function
     const { handleAsync, loading } = useAsyncHandler();
 
     const router = useRouter();

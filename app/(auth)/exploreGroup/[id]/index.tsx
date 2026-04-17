@@ -32,7 +32,7 @@ import Page from '@/components/Page';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
 import {
-    publicDashboardUrl,
+    managerDashboardUrl,
     supportedLanguages,
 } from '@/constants/common';
 import { SPACING_XS } from '@/constants/dimensions';
@@ -186,7 +186,7 @@ function ExploreGroup() {
 
     const handleMoreStatsClick = useCallback(() => {
         if (userGroupId) {
-            Linking.openURL(`${publicDashboardUrl}/user-group/${userGroupId}/`);
+            Linking.openURL(`${managerDashboardUrl}/user-group/${userGroupId}/`);
         }
     }, [userGroupId]);
 
@@ -290,35 +290,7 @@ function ExploreGroup() {
                     </Text>
                 </BlockListView>
             )}
-            {!userGroupDetailPending && !userGroupData && (
-                <BlockListView
-                    withCenteredContent
-                    withPadding
-                    style={styles.infoText}
-                >
-                    <Text>
-                        {t('Details not available for this User group')}
-                    </Text>
-                </BlockListView>
-            )}
-            {!isUserMember && !isGroupArchived && userGroupData && (
-                <InlineListView
-                    withPadding
-                    spacing="2xs"
-                >
-                    <Button
-                        name="Join"
-                        title={t('userGroupScreen:joinGroup')}
-                        colorVariant="success"
-                        onPress={() => handleUserGroupAction('join')}
-                    />
-                </InlineListView>
-            ) }
-            {isGroupArchived && (
-                <View style={styles.archivedInfo}>
-                    <Text>{t('This group has been archived')}</Text>
-                </View>
-            )}
+
             {!userGroupDetailPending && userGroupData && (
                 <ScrollView
                     refreshControl={(
@@ -331,6 +303,35 @@ function ExploreGroup() {
                         />
                     )}
                 >
+                    {!userGroupDetailPending && !userGroupData && (
+                        <BlockListView
+                            withCenteredContent
+                            withPadding
+                            style={styles.infoText}
+                        >
+                            <Text>
+                                {t('Details not available for this User group')}
+                            </Text>
+                        </BlockListView>
+                    )}
+                    {!isUserMember && !isGroupArchived && userGroupData && (
+                        <InlineListView
+                            withPadding
+                            spacing="2xs"
+                        >
+                            <Button
+                                name="join"
+                                title={t('userGroupScreen:joinGroup')}
+                                colorVariant="success"
+                                onPress={handleUserGroupAction}
+                            />
+                        </InlineListView>
+                    ) }
+                    {isGroupArchived && (
+                        <View style={styles.archivedInfo}>
+                            <Text>{t('This group has been archived')}</Text>
+                        </View>
+                    )}
                     <BlockListView
                         withPadding
                         spacing="xs"
@@ -380,9 +381,9 @@ function ExploreGroup() {
                                 {t('profileScreen:settings')}
                             </Text>
                             <Button
-                                name="leaveGroup"
+                                name="leave"
                                 title={t('userGroupScreen:leaveGroup')}
-                                onPress={() => handleUserGroupAction('leave')}
+                                onPress={handleUserGroupAction}
                                 styleVariant="block"
                                 colorVariant="danger"
                             />

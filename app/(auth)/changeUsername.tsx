@@ -29,6 +29,7 @@ export default function ChangePassword() {
     const [newUserName, setNewUserName] = useState<string>('');
     const router = useRouter();
     const { t } = useTranslation(['changeUserName', 'signup']);
+    // FIXME: Update the use of this function
     const {
         handleAsync,
         loading,
