@@ -8,6 +8,7 @@ import {
     isTruthyString,
 } from '@togglecorp/fujs';
 
+import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
@@ -15,7 +16,7 @@ import BlockListView from './BlockListView';
 
 export type StyleVariant = 'brand' | 'normal';
 
-const createStyles = (theme: AppTheme, { variant } : { variant: StyleVariant }) => (
+const createStyles = (theme: AppTheme, { variant }: { variant: StyleVariant }) => (
     StyleSheet.create({
         inputContainerLayout: {
             flexGrow: 1,
@@ -25,8 +26,7 @@ const createStyles = (theme: AppTheme, { variant } : { variant: StyleVariant }) 
         },
         label: {
             color: variant === 'brand' ? theme.textOnBrand : theme.textPrimary,
-            textTransform: 'uppercase',
-            fontSize: 10,
+            fontSize: FONT_SIZE_XS,
         },
         hint: {
             color: variant === 'brand' ? theme.textOnBrand : theme.textPrimary,

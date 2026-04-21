@@ -1,43 +1,47 @@
 export type AppTheme = {
-    // Brand
-    primaryBlue: string;
-    primaryGreen: string;
-    primaryRed: string;
+  // Brand
+  primaryBlue: string;
+  primaryGreen: string;
+  primaryRed: string;
 
-    // Surfaces
-    background: string;
-    backgroundBrand: string;
-    backgroundMuted: string;
-    backgroundTrack: string;
-    inputBrandBackground: string;
-    card: string;
-    border: string;
-    divider: string;
+  // Surfaces
+  background: string;
+  backgroundBrand: string;
+  backgroundMuted: string;
+  backgroundTrack: string;
+  inputBrandBackground: string;
+  card: string;
+  border: string;
+  divider: string;
 
-    // Text
-    textPrimary: string;
-    textSecondary: string;
-    textMuted: string;
-    textOnPrimary: string;
-    textOnSecondary: string;
-    textOnBrand: string;
+  // Text
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  textOnPrimary: string;
+  textOnSecondary: string;
+  textOnBrand: string;
 
-    // Feedback
-    success: string;
-    successText: string;
-    warning: string;
-    warningText: string;
-    error: string;
-    errorText: string;
-    info: string;
+  // Feedback
+  success: string;
+  successText: string;
+  warning: string;
+  warningText: string;
+  error: string;
+  errorText: string;
+  info: string;
 
-    // MapSwipe-specific states
-    mapSelection: string;
-    mapUncertain: string;
-    mapRejected: string;
-    mapBoundary: string;
-    // Misc
-    overlay: string;
+  // MapSwipe-specific states
+  mapSelection: string;
+  mapUncertain: string;
+  mapRejected: string;
+  mapBoundary: string;
+  // Misc
+  heatMapDayColor1: string;
+  heatMapDayColor2: string;
+  heatMapDayColor3: string;
+  heatMapDayColor4: string;
+  overlay: string;
 };
 
 export const lightTheme: AppTheme = {
@@ -75,6 +79,10 @@ export const lightTheme: AppTheme = {
     mapRejected: '#EF4444',
     mapBoundary: '#9CA3AF',
     // Misc
+    heatMapDayColor1: '#d6e685',
+    heatMapDayColor2: '#8cc665',
+    heatMapDayColor3: '#44a340',
+    heatMapDayColor4: '#1e6823',
     overlay: 'rgba(17, 24, 39, 0.45)',
 };
 
@@ -113,6 +121,10 @@ export const darkTheme: AppTheme = {
     mapRejected: '#EF4444',
     mapBoundary: '#9CA3AF',
     // Misc
+    heatMapDayColor1: '#d6e685',
+    heatMapDayColor2: '#8cc665',
+    heatMapDayColor3: '#44a340',
+    heatMapDayColor4: '#1e6823',
     overlay: 'rgba(17, 24, 39, 0.45)',
 };
 

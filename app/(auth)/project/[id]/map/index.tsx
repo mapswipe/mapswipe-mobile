@@ -81,7 +81,7 @@ function MapProjectIndex() {
             <Page title="Map project">
                 <BlockListView
                     withPadding
-                    style={{ alignItems: 'center' }}
+                    withCenteredContent
                 >
                     <ActivityIndicator size="large" />
                     <Text>

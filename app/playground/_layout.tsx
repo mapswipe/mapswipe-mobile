@@ -16,7 +16,7 @@ export default function PlaygroundLayout() {
                 title: 'Playground',
                 // eslint-disable-next-line react/no-unstable-nested-components
                 headerLeft: () => (
-                    <Pressable onPress={() => router.replace('/')}>
+                    <Pressable onPress={() => router.push('/')}>
                         <Icon name="swipe-left" />
                     </Pressable>
                 ),

@@ -1,14 +1,8 @@
-import {
-    ScrollView,
-    StyleSheet,
-} from 'react-native';
+import { ScrollView } from 'react-native';
 
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import ButtonLayout from '@/components/ButtonLayout';
-
-const styles = StyleSheet.create({
-});
 
 function Playground() {
     return (
@@ -20,7 +14,6 @@ function Playground() {
                 Buttons
                 <Button
                     name="here"
-                    onPress={() => console.log('here')}
                     title="Click me"
                     colorVariant="primaryRed"
                     styleVariant="filled"

@@ -40,7 +40,6 @@ import ImageTile from './ImageTile';
 
 const createStyles = () => StyleSheet.create({
     content: {
-        flex: 1,
         alignItems: 'center',
     },
 });
@@ -237,7 +236,7 @@ function TileGridMappingSession(props: Props) {
                 decelerationRate="fast"
                 showsHorizontalScrollIndicator={false}
                 disableIntervalMomentum
-                snapToOffsets={groupedTasks.map((_, i) => i * tileWidth * 2)}
+                snapToOffsets={groupedTasks.map((_, i) => i * pageWidth)}
                 viewabilityConfig={VIEWABILITY_CONFIG}
                 onScroll={handleScroll}
                 scrollEventThrottle={16}
@@ -252,6 +251,7 @@ function TileGridMappingSession(props: Props) {
                     referenceSize={tileWidth}
                     tileSize={tileWidth}
                     zoomLevel={projectDetails?.zoomLevel}
+                    bottomPadding={40}
                 />
             )}
             <ProgressBar

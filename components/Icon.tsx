@@ -2,12 +2,15 @@ import { isNotDefined } from '@togglecorp/fujs';
 import {
     ArrowClockwiseIcon,
     ArrowLeftIcon,
+    CaretLeftIcon,
+    CaretRightIcon,
     CheckIcon,
     CircleIcon,
     CubeIcon,
     CursorClickIcon,
     EggIcon,
     FlagIcon,
+    GlobeIcon,
     HandIcon,
     HeartIcon,
     type Icon as PhosphorIcon,
@@ -18,6 +21,7 @@ import {
     PlusIcon,
     ProhibitIcon,
     ShapesIcon,
+    SignOutIcon,
     SmileyIcon,
     SmileySadIcon,
     SquareIcon,
@@ -30,38 +34,42 @@ import {
 } from 'phosphor-react-native';
 
 export type IconName =
-| 'add-outline'
-| 'alert-outline'
-| 'ban-outline'
-| 'check'
-| 'checkmark-outline'
-| 'close-outline'
-| 'egg-outline'
-| 'ellipse-outline'
-| 'flag-outline'
-| 'general-tap'
-| 'hand-left-outline'
-| 'hand-right-outline'
-| 'happy-outline'
-| 'heart-outline'
-| 'information-outline'
-| 'prism-outline'
-| 'refresh-outline'
-| 'remove-outline'
-| 'sad-outline'
-| 'search-outline'
-| 'shapes-outline'
-| 'square-outline'
-| 'star-outline'
-| 'swipe-left'
-| 'tap'
-| 'tap-1'
-| 'tap-2'
-| 'tap-3'
-| 'thumbs-down-outline'
-| 'thumbs-up-outline'
-| 'triangle-outline'
-| 'warning-outline';
+    | 'add-outline'
+    | 'alert-outline'
+    | 'ban-outline'
+    | 'check'
+    | 'checkmark-outline'
+    | 'close-outline'
+    | 'egg-outline'
+    | 'ellipse-outline'
+    | 'flag-outline'
+    | 'general-tap'
+    | 'hand-left-outline'
+    | 'hand-right-outline'
+    | 'happy-outline'
+    | 'heart-outline'
+    | 'information-outline'
+    | 'prism-outline'
+    | 'refresh-outline'
+    | 'remove-outline'
+    | 'sad-outline'
+    | 'search-outline'
+    | 'shapes-outline'
+    | 'square-outline'
+    | 'star-outline'
+    | 'swipe-left'
+    | 'tap'
+    | 'tap-1'
+    | 'tap-2'
+    | 'tap-3'
+    | 'thumbs-down-outline'
+    | 'thumbs-up-outline'
+    | 'triangle-outline'
+    | 'caret-right'
+    | 'caret-left'
+    | 'sign-out'
+    | 'globe'
+    | 'warning-outline';
 
 const iconMap: Record<IconName, PhosphorIcon> = {
     'add-outline': PlusIcon,
@@ -96,6 +104,11 @@ const iconMap: Record<IconName, PhosphorIcon> = {
     'thumbs-up-outline': ThumbsUpIcon,
     'triangle-outline': TriangleIcon,
     'warning-outline': WarningIcon,
+    'caret-right': CaretRightIcon,
+    'caret-left': CaretLeftIcon,
+    'sign-out': SignOutIcon,
+    globe: GlobeIcon,
+
 };
 
 interface Props extends IconProps {

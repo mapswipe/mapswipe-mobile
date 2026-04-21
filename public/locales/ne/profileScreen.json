@@ -1,7 +1,7 @@
 {
-  "levelX": "स्तर {{स्तर}}",
+  "levelX": "स्तर {{level}}",
   "youveCompletedXTasks": "तपाईंले {{योगदान}} कार्यहरू पूरा गर्नुभयो!",
-  "xTasks(sSwipes)UntilTheNextLevel": "{{वर्ग किमी}} कार्यहरू ({{स्वाइपहरू}}स्वाइपहरू) अर्को स्तर सम्म",
+  "xTasks(sSwipes)UntilTheNextLevel": "{{sqkm}} कार्यहरू ({{swipes}} स्वाइपहरू) अर्को स्तर सम्म",
   "changeLanguage": "भाषा परिवर्तन गर्नुहोस्",
   "mapswipeWebsite": "नक्सा स्वाइप वेबसाइट",
   "missingmapsWebsite": "छुटेको नक्सा वेबसाइट",

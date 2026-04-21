@@ -151,7 +151,7 @@ function Login() {
                             href={{
                                 pathname: '/register',
                             }}
-                            title={t('createdNewAccount')}
+                            title={t('createNewAccount')}
                         />
                     </BlockListView>
                 </BlockListView>

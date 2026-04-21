@@ -5,6 +5,10 @@ on:
     branches:
       - dev
       - main
+
+env:
+  EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT: './backend/schema.graphql'
+  
 jobs:
   lint_typecheck:
     name: 🚴 Lint + Typecheck 🚴

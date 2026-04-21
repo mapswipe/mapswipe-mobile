@@ -1,48 +1,47 @@
 import { useEffect } from 'react';
-import {
-    ActivityIndicator,
-    StyleSheet,
-    View,
-} from 'react-native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import LoadingComponent from '@/components/Loader';
 import Page from '@/components/Page';
-import Text from '@/components/Text';
 import useAuth from '@/hooks/useAuth';
-
-const styles = StyleSheet.create({
-    mainView: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 10,
-    },
-});
 
 function AppIndex() {
     const {
         authPending,
         isLoggedIn,
+        user,
     } = useAuth();
-
     useEffect(() => {
-        if (!authPending && isLoggedIn) {
-            router.replace('/projects');
-        }
+        const checkNavigation = async () => {
+            if (authPending) return;
+            if (isLoggedIn) {
+                router.replace('/projects');
+                return;
+            }
+            try {
+                const hasSeen = await AsyncStorage.getItem('@hasSeenOnboarding');
+                const hasSelectedLanguage = await AsyncStorage.getItem('@hasSelectedLanguage');
 
-        if (!authPending && !isLoggedIn) {
-            router.replace('/login');
-        }
-    }, [authPending, isLoggedIn]);
+                if (!hasSelectedLanguage) {
+                    router.replace('/languageSplashScreen');
+                    return;
+                }
 
+                if (!hasSeen) {
+                    router.replace('/onboarding');
+                    return;
+                }
+                router.replace('/login');
+            } catch {
+                router.replace('/languageSplashScreen');
+            }
+        };
+        checkNavigation();
+    }, [authPending, isLoggedIn, user]);
     return (
         <Page title="MapSwipe">
-            <View style={styles.mainView}>
-                <ActivityIndicator size="large" />
-                <Text>
-                    Checking user session...
-                </Text>
-            </View>
+            <LoadingComponent label="loading..." />
         </Page>
     );
 }

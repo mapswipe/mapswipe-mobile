@@ -5,8 +5,8 @@ import { type Query } from 'firebase/database';
 import useFirebaseDatabase from './useFirebaseDatabase';
 
 interface Props {
-    query: Query;
-    skip?: boolean;
+  query: Query;
+  skip?: boolean;
 }
 
 function useFirebaseDatabaseList<LIST_ITEM extends object>(props: Props) {
@@ -17,7 +17,10 @@ function useFirebaseDatabaseList<LIST_ITEM extends object>(props: Props) {
             return [];
         }
 
-        return Object.values(data) as LIST_ITEM[];
+        return Object.entries(data).map(([key, value]) => ({
+            key,
+            ...(value as LIST_ITEM),
+        }));
     }, [data]);
 
     return { list, pending };

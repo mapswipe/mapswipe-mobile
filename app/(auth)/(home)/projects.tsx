@@ -20,6 +20,7 @@ import heartIcon from '@/assets/images/custom/heart_icon.png';
 import BlockListView from '@/components/BlockListView';
 import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
+import Page from '@/components/Page';
 import Text from '@/components/Text';
 import { SUPPORTED_PROJECT_TYPES } from '@/constants/common';
 import {
@@ -51,7 +52,7 @@ const createStyles = (theme: AppTheme) => (StyleSheet.create({
     },
     projects: {
         padding: 10,
-        paddingBottom: 10,
+        paddingTop: 0,
         backgroundColor: theme.background,
     },
     projectsContent: {
@@ -261,7 +262,7 @@ function Projects() {
                 ) {
                     if (
                         project.overlayTileServer?.type
-                            === 'raster'
+                        === 'raster'
                     ) {
                         return true;
                     }
@@ -292,34 +293,39 @@ function Projects() {
     const styles = useThemedStyles(createStyles);
 
     return (
-        <FlatList
-            style={styles.projects}
-            data={nonFeaturedProjects}
-            numColumns={2}
-            keyExtractor={(project) => project.projectId}
-            columnWrapperStyle={styles.columnWrapper}
-            contentContainerStyle={styles.projectsContent}
-            ListHeaderComponent={(
-                <View style={styles.featuredProjectsContent}>
-                    {featuredProjects.map((project) => (
+        <Page
+            title="Projects"
+            scrollable={false}
+        >
+            <FlatList
+                style={styles.projects}
+                data={nonFeaturedProjects}
+                numColumns={2}
+                keyExtractor={(project) => project.projectId}
+                columnWrapperStyle={styles.columnWrapper}
+                contentContainerStyle={styles.projectsContent}
+                ListHeaderComponent={(
+                    <View style={styles.featuredProjectsContent}>
+                        {featuredProjects.map((project) => (
+                            <ProjectItem
+                                key={project.projectId}
+                                project={project}
+                                featured
+                            />
+                        ))}
+                    </View>
+                )}
+                renderItem={({ item: project }) => (
+                    <View style={styles.projectItemContainer}>
                         <ProjectItem
                             key={project.projectId}
                             project={project}
-                            featured
+                            featured={false}
                         />
-                    ))}
-                </View>
-            )}
-            renderItem={({ item: project }) => (
-                <View style={styles.projectItemContainer}>
-                    <ProjectItem
-                        key={project.projectId}
-                        project={project}
-                        featured={false}
-                    />
-                </View>
-            )}
-        />
+                    </View>
+                )}
+            />
+        </Page>
     );
 }
 

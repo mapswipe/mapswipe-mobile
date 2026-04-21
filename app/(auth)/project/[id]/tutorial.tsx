@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { isDefined } from '@togglecorp/fujs';
 
 import BlockListView from '@/components/BlockListView';
@@ -41,83 +40,85 @@ function Tutorial() {
     const { data: tutorialDetails } = useFirebaseDatabase<FbTutorial>({ query: tutorialQuery });
 
     return (
-        <>
-            <StatusBar style="auto" />
-            <Page title="Tutorial">
-                <BlockListView withPadding>
-                    <BlockListView spacing="xs">
-                        <Text variant="heading">
-                            {tutorialDetails?.name}
-                        </Text>
-                        <Text variant="description">
-                            {`You are looking for: ${tutorialDetails?.lookFor ?? '--'}`}
-                        </Text>
-                    </BlockListView>
-                    <BlockListView>
-                        {tutorialDetails?.informationPages?.map((page) => (
-                            <BlockListView key={page.pageNumber}>
-                                <Text variant="title">
-                                    {page.title}
-                                </Text>
-                                {page.blocks?.map((block) => {
-                                    if (isDefined(block.textDescription)) {
-                                        return (
-                                            <Text key={block.blockNumber}>
-                                                {block.textDescription}
-                                            </Text>
-                                        );
-                                    }
-
-                                    if (isDefined(block.image)) {
-                                        return (
-                                            <Image
-                                                key={block.blockNumber}
-                                                style={styles.blockNumber}
-                                                source={block.image}
-                                            />
-                                        );
-                                    }
-
-                                    return null;
-                                })}
-                            </BlockListView>
-                        ))}
-                        {tutorialDetails?.screens?.map((screen, i) => (
-                            <BlockListView
-                                // eslint-disable-next-line react/no-array-index-key
-                                key={i}
-                                spacing="3xs"
-                            >
-                                <BlockListView spacing="4xs">
-                                    <Text>
-                                        {screen.hint.title}
-                                    </Text>
-                                    <Text>
-                                        {screen.hint.description}
-                                    </Text>
-                                </BlockListView>
-                                <BlockListView spacing="4xs">
-                                    <Text>
-                                        {screen.success.title}
-                                    </Text>
-                                    <Text>
-                                        {screen.success.description}
-                                    </Text>
-                                </BlockListView>
-                                <BlockListView spacing="4xs">
-                                    <Text>
-                                        {screen.instructions.title}
-                                    </Text>
-                                    <Text>
-                                        {screen.instructions.description}
-                                    </Text>
-                                </BlockListView>
-                            </BlockListView>
-                        ))}
-                    </BlockListView>
+        <Page
+            title="Tutorial"
+            variant="brand"
+            showBackButton
+            headerTitleAlign="center"
+        >
+            <BlockListView withPadding>
+                <BlockListView spacing="xs">
+                    <Text variant="heading">
+                        {tutorialDetails?.name}
+                    </Text>
+                    <Text variant="description">
+                        {`You are looking for: ${tutorialDetails?.lookFor ?? '--'}`}
+                    </Text>
                 </BlockListView>
-            </Page>
-        </>
+                <BlockListView>
+                    {tutorialDetails?.informationPages?.map((page) => (
+                        <BlockListView key={page.pageNumber}>
+                            <Text variant="title">
+                                {page.title}
+                            </Text>
+                            {page.blocks?.map((block) => {
+                                if (isDefined(block.textDescription)) {
+                                    return (
+                                        <Text key={block.blockNumber}>
+                                            {block.textDescription}
+                                        </Text>
+                                    );
+                                }
+
+                                if (isDefined(block.image)) {
+                                    return (
+                                        <Image
+                                            key={block.blockNumber}
+                                            style={styles.blockNumber}
+                                            source={block.image}
+                                        />
+                                    );
+                                }
+
+                                return null;
+                            })}
+                        </BlockListView>
+                    ))}
+                    {tutorialDetails?.screens?.map((screen, i) => (
+                        <BlockListView
+                            // eslint-disable-next-line react/no-array-index-key
+                            key={i}
+                            spacing="3xs"
+                        >
+                            <BlockListView spacing="4xs">
+                                <Text>
+                                    {screen.hint.title}
+                                </Text>
+                                <Text>
+                                    {screen.hint.description}
+                                </Text>
+                            </BlockListView>
+                            <BlockListView spacing="4xs">
+                                <Text>
+                                    {screen.success.title}
+                                </Text>
+                                <Text>
+                                    {screen.success.description}
+                                </Text>
+                            </BlockListView>
+                            <BlockListView spacing="4xs">
+                                <Text>
+                                    {screen.instructions.title}
+                                </Text>
+                                <Text>
+                                    {screen.instructions.description}
+                                </Text>
+                            </BlockListView>
+                        </BlockListView>
+                    ))}
+                </BlockListView>
+            </BlockListView>
+        </Page>
     );
 }
 

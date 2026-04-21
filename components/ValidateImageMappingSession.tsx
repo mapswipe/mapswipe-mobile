@@ -23,7 +23,6 @@ import IconButton from '@/components/IconButton';
 import InlineListView from '@/components/InlineListView';
 import ImageWrapper from '@/components/ValidateImageWrapper';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
-import { type AppTheme } from '@/constants/theme';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
@@ -38,7 +37,7 @@ const viewabilityConfig = {
     viewAreaCoveragePercentThreshold: 50,
 };
 
-const createStyles = (_: AppTheme) => (
+const createStyles = () => (
     StyleSheet.create({
         view: {
             flex: 1,

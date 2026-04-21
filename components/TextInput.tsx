@@ -9,9 +9,10 @@ import InputContainerLayout, {
     type StyleVariant,
 } from '@/components/InputContainerLayout';
 import { type AppTheme } from '@/constants/theme';
+import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
-const createStyles = (theme: AppTheme, { variant } : { variant: StyleVariant }) => (
+const createStyles = (theme: AppTheme, { variant }: { variant: StyleVariant }) => (
     StyleSheet.create({
         textInput: {
             color: variant === 'brand' ? theme.textOnBrand : theme.textPrimary,
@@ -31,6 +32,7 @@ function TextInput(props: Props) {
         ...otherProps
     } = props;
     const styles = useThemedStyles(createStyles, { variant });
+    const theme = useTheme();
 
     return (
         <InputContainerLayout
@@ -42,7 +44,7 @@ function TextInput(props: Props) {
                 <RawTextInput
                     autoCapitalize="none"
                     autoCorrect={false}
-                    placeholderTextColor={variant === 'brand' ? '#fff' : '#000'}
+                    placeholderTextColor={variant === 'brand' ? '#fff' : theme.textMuted}
                     style={styles.textInput}
                     // eslint-disable-next-line react/jsx-props-no-spreading
                     {...otherProps}

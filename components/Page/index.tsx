@@ -1,11 +1,14 @@
+import { useLayoutEffect } from 'react';
 import {
     ScrollView,
     StyleSheet,
     ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from 'expo-router';
 
 import { type AppTheme } from '@/constants/theme';
+import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
 type Variant = 'normal' | 'brand';
@@ -22,7 +25,9 @@ interface Props {
     style?: ViewStyle,
     children: React.ReactNode;
     variant?: 'normal' | 'brand';
-    maxHeight?: boolean;
+    scrollable?: boolean
+    showBackButton?: boolean;
+    headerTitleAlign?: 'left' | 'center';
 }
 
 function Page(props: Props) {
@@ -31,10 +36,27 @@ function Page(props: Props) {
         children,
         style,
         variant = 'normal',
-        maxHeight,
+        scrollable = true,
+        showBackButton = false,
+        headerTitleAlign = 'left',
     } = props;
-
+    const navigation = useNavigation();
+    const theme = useTheme();
     const styles = useThemedStyles(createStyles, { variant });
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            title,
+            headerShown: showBackButton,
+            headerBackVisible: showBackButton,
+            headerStyle: {
+                backgroundColor: theme.backgroundBrand,
+            },
+            headerTintColor: theme.textOnBrand,
+            headerShadowVisible: false,
+            headerTitleAlign,
+        });
+    }, [navigation, title, theme, showBackButton, headerTitleAlign]);
 
     return (
         <SafeAreaView
@@ -42,14 +64,13 @@ function Page(props: Props) {
                 styles.page,
                 style,
             ]}
+            edges={showBackButton ? ['bottom'] : undefined}
         >
-            {maxHeight ? (
-                children
-            ) : (
+            {scrollable ? (
                 <ScrollView>
                     {children}
                 </ScrollView>
-            )}
+            ) : children}
         </SafeAreaView>
     );
 }

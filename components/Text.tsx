@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import {
+    GestureResponderEvent,
     StyleSheet,
     Text as NativeText,
     TextStyle,
@@ -14,9 +15,11 @@ import {
 import useTheme from '@/hooks/useTheme';
 
 interface Props {
-    children: string | null | undefined;
+    children: string | null | undefined | React.ReactNode;
     style?: TextStyle;
     variant?: 'default' | 'heading' | 'title' | 'label' | 'description';
+    onPress?: (event: GestureResponderEvent) => void;
+
     colorVariant?: 'normal' | 'brand';
 }
 
@@ -26,6 +29,7 @@ function Text(props: Props) {
         children,
         colorVariant = 'normal',
         variant = 'default',
+        onPress,
     } = props;
 
     const theme = useTheme();
@@ -60,6 +64,7 @@ function Text(props: Props) {
 
     return (
         <NativeText
+            onPress={onPress}
             style={[
                 variant === 'heading' && styles.heading,
                 variant === 'title' && styles.title,

@@ -2,6 +2,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
+    View,
 } from 'react-native';
 import { isDefined } from '@togglecorp/fujs';
 
@@ -11,7 +12,7 @@ import useThemedStyles from '@/hooks/useThemedStyles';
 import Icon, { type IconName } from './Icon';
 import InlineListView, { type Props as InlineLayoutProps } from './InlineListView';
 
-export type ButtonColorVariant = 'primaryBlue' | 'primaryGreen' | 'primaryRed' | 'success' | 'danger';
+export type ButtonColorVariant = 'primaryBlue' | 'primaryGreen' | 'primaryRed' | 'success' | 'danger' | 'info' | 'white';
 export type ButtonStyleVariant = 'outline' | 'filled' | 'transparent' | 'block' | 'underline' | 'action';
 
 const VARIANT_COLOR: Record<ButtonColorVariant, keyof AppTheme> = {
@@ -20,6 +21,8 @@ const VARIANT_COLOR: Record<ButtonColorVariant, keyof AppTheme> = {
     primaryRed: 'primaryRed',
     success: 'success',
     danger: 'error',
+    info: 'info',
+    white: 'card',
 };
 
 const createStyles = (
@@ -50,7 +53,7 @@ const createStyles = (
             textColor = variantColor;
             break;
         case 'block':
-            backgroundColor = theme.background;
+            backgroundColor = theme.card;
             borderColor = 'transparent';
             textColor = variantColor;
             break;
@@ -70,6 +73,7 @@ const createStyles = (
     return StyleSheet.create({
         buttonLayout: {
             flexDirection: 'row',
+            alignItems: 'center',
             width: fullWidth ? '100%' : undefined,
         },
         text: {
@@ -85,13 +89,16 @@ const createStyles = (
         },
         touchable: {
             width: fullWidth ? '100%' : undefined,
-            borderWidth: (styleVariant === 'underline' || styleVariant === 'action') ? undefined : 2,
+            borderWidth: (styleVariant === 'underline' || styleVariant === 'action' || styleVariant === 'block') ? undefined : 2,
             borderColor,
-            borderRadius: 6,
+            borderRadius: styleVariant === 'block' ? 0 : 6,
             backgroundColor,
         },
         disabled: {
             opacity: 0.4,
+        },
+        rightContent: {
+            marginLeft: 'auto',
         },
     });
 };
@@ -106,6 +113,8 @@ export interface ButtonLayoutProps extends Omit<InlineLayoutProps, 'withPadding'
     fullWidth?: boolean;
     onPress?: () => void;
     children?: React.ReactNode;
+    action?: React.ReactNode
+    accessibilityLabel?: string;
 }
 
 function ButtonLayout(props: ButtonLayoutProps) {
@@ -120,7 +129,9 @@ function ButtonLayout(props: ButtonLayoutProps) {
         onPress,
         spacing = 'sm',
         fullWidth = true,
+        action,
         children,
+        accessibilityLabel,
         ...inlineLayoutProps
     } = props;
 
@@ -142,13 +153,15 @@ function ButtonLayout(props: ButtonLayoutProps) {
                 styles.touchable,
                 disabled && styles.disabled,
             ]}
+            accessibilityLabel={accessibilityLabel ?? title}
+            accessibilityRole="button"
         >
             <InlineListView
                 withPadding={styleVariant === 'underline' ? false : !withoutPadding}
-                spacingOffset={spacingOffset}
                 style={[
                     styles.buttonLayout,
                 ]}
+                spacingOffset={spacingOffset}
                 spacing={spacing}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...inlineLayoutProps}
@@ -166,6 +179,7 @@ function ButtonLayout(props: ButtonLayoutProps) {
                     </Text>
                 )}
                 {children}
+                {action && <View style={styles.rightContent}>{action}</View>}
             </InlineListView>
         </TouchableOpacity>
     );

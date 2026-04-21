@@ -2,28 +2,28 @@ import {
     useCallback,
     useState,
 } from 'react';
+import {
+    Trans,
+    useTranslation,
+} from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import { Checkbox } from 'expo-checkbox';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import {
     isDefined,
     isNotDefined,
-    isTruthyString,
 } from '@togglecorp/fujs';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import {
-    equalTo,
-    get,
-    orderByChild,
-    query,
-    ref,
-} from 'firebase/database';
+    createUserWithEmailAndPassword,
+    updateProfile,
+} from 'firebase/auth';
+import { update } from 'firebase/database';
+import { serverTimestamp } from 'firebase/firestore';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
-import ExternalLink from '@/components/ExternalLink';
 import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
@@ -32,36 +32,16 @@ import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
 import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
+import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useThemedStyles from '@/hooks/useThemedStyles';
-import { validateUserName } from '@/utils/common';
-import { firebaseDatabase } from '@/utils/firebase';
-
-const disclaimer = '* All the data you contribute to MapSwipe is open and available to anyone. Your username is public, but your email and password will never be shared with anyone.';
-const usernameErrorText = 'Username must be at least 4 characters long and cannot contain space and uppercase';
-
-async function usernameExists(username: string) {
-    try {
-        const q = query(
-            ref(firebaseDatabase, 'v2/users'),
-            orderByChild('usernameKey'),
-            equalTo(username),
-        );
-
-        const snap = await get(q);
-        return snap.exists();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        // eslint-disable-next-line no-console
-        console.error('Error checking username:', error);
-
-        showAlert({
-            title: 'Error',
-            message: error?.message || 'Failed to check username',
-            alertType: 'error',
-        });
-        throw error;
-    }
-}
+import {
+    usernameExists,
+    validateUserName,
+} from '@/utils/common';
+import {
+    firebaseAuth,
+    firebaseRef,
+} from '@/utils/firebase';
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
     mainContent: {
@@ -93,66 +73,109 @@ function Register() {
     const [agreeToPrivacy, setAgreeToPrivacy] = useState<boolean>(false);
     const [usernameError, setUsernameError] = useState<string>();
     const [passwordError, setPasswordError] = useState<string>();
-    const [pending, setPending] = useState<boolean>(false);
+    const { t } = useTranslation('signup');
+    // FIXME: Update the use of this function
+    const { handleAsync, loading } = useAsyncHandler();
+
+    const router = useRouter();
 
     const handleUsernameChange = useCallback((newUsername: string) => {
         setUsername(newUsername);
         const isValid = validateUserName(newUsername);
         setUsernameError(
-            !isValid ? usernameErrorText : undefined,
+            !isValid ? t('usernameErrorText') : undefined,
         );
-    }, []);
+    }, [t]);
 
     const handlePasswordChange = useCallback((newPassword: string) => {
         setPassword(newPassword);
         setPasswordError(
-            newPassword.length < 6 ? 'Password must be longer than 6 characters.' : undefined,
+            newPassword.length < 6 ? t('passwordError') : undefined,
         );
-    }, []);
+    }, [t]);
 
-    const handleSignUpPress = useCallback(async () => {
-        const isValid = validateUserName(username);
-        if (isNotDefined(username)) {
-            return;
-        }
-        if (!isValid) {
+    const handleSignUpPress = useCallback(() => {
+        handleAsync(
+            async () => {
+                const isValid = validateUserName(username);
+                if (isNotDefined(username)) {
+                    return;
+                }
+                if (!isValid) {
+                    showAlert({
+                        title: t('errorOnSignup'),
+                        message: t('usernameErrorText'),
+                        alertType: 'error',
+                    });
+                    return;
+                }
+                if (isDefined(username) && username?.indexOf('@') !== -1) {
+                    showAlert({
+                        title: t('errorOnSignup'),
+                        message: t('usernameNotEmail'),
+                        alertType: 'error',
+                        shouldHideAfterDelay: false,
+                    });
+                    return;
+                }
+                const userNameAlreadyExist = await usernameExists(username);
+
+                if (userNameAlreadyExist) {
+                    showAlert({
+                        title: t('errorOnSignup'),
+                        message: t('userNameExistError'),
+                        alertType: 'error',
+                        shouldHideAfterDelay: false,
+                    });
+                    return;
+                }
+
+                const userCredential = await createUserWithEmailAndPassword(
+                    firebaseAuth,
+                    email ?? '',
+                    password ?? '',
+                );
+
+                await updateProfile(userCredential.user, {
+                    displayName: username,
+                });
+
+                const dbPath = `v2/users/${userCredential.user.uid}`;
+
+                await update(firebaseRef(dbPath), {
+                    username,
+                    usernameKey: username.toLowerCase(),
+                    created: serverTimestamp(),
+                    groupContributionCount: 0,
+                    projectContributionCount: 0,
+                    taskContributionCount: 0,
+                });
+                showAlert({
+                    title: t('signup:success'),
+                    message: t('signup:welcomeToMapSwipe', { username }),
+                    alertType: 'info',
+                });
+            },
+        ).catch((err) => {
+            let errorMsg;
+            switch (err.code) {
+                case 'auth/email-already-in-use':
+                    errorMsg = t('signup:emailAlreadyUsed');
+                    break;
+                case 'auth/invalid-email':
+                    errorMsg = t('signup:emailInvalid');
+                    break;
+                default:
+                    errorMsg = t('signup:problemSigningUp');
+            }
             showAlert({
-                title: 'Failed to Register',
-                message: usernameErrorText,
-                alertType: 'error',
-            });
-            return;
-        }
-        if (isDefined(username) && username?.indexOf('@') !== -1) {
-            showAlert({
-                title: 'Failed to Register',
-                message: 'Your username can not be an email',
+                title: t('signup:errorOnSignup'),
+                message: errorMsg,
                 alertType: 'error',
                 shouldHideAfterDelay: false,
             });
-            return;
-        }
-        setPending(true);
-        try {
-            const userNameAlreadyExist = await usernameExists(username);
-
-            if (userNameAlreadyExist) {
-                showAlert({
-                    title: 'Failed to Register',
-                    message: 'Username already exist, Please choose another username',
-                    alertType: 'error',
-                    shouldHideAfterDelay: false,
-                });
-                setPending(false);
-            }
-        } catch (_: unknown) {
-            setPending(false);
-            return;
-        }
-        console.log('handle register here');
-    }, [
-        username,
-    ]);
+        });
+    }, [handleAsync, username, email, password, t]);
 
     const styles = useThemedStyles(createStyles);
 
@@ -178,12 +201,12 @@ function Register() {
                         variant="brand"
                         autoCapitalize="none"
                         autoCorrect={false}
-                        placeholder="Choose your username"
-                        hintText="Your username will be publicly visible"
+                        placeholder={t('chooseUsername')}
+                        hintText={t('usernamePublic')}
                         value={username}
                         errorText={usernameError}
                         onChangeText={handleUsernameChange}
-                        readOnly={pending}
+                        readOnly={loading}
                     />
                     <TextInput
                         variant="brand"
@@ -191,20 +214,20 @@ function Register() {
                         autoCorrect={false}
                         autoComplete="email"
                         keyboardType="email-address"
-                        placeholder="Enter your email"
+                        placeholder={t('enterYourEmail')}
                         value={email}
                         onChangeText={setEmail}
-                        readOnly={pending}
+                        readOnly={loading}
                     />
                     <TextInput
                         variant="brand"
                         autoCapitalize="none"
                         autoCorrect={false}
-                        placeholder="Choose your password"
+                        placeholder={t('choosePassword')}
                         value={password}
                         onChangeText={handlePasswordChange}
                         errorText={passwordError}
-                        readOnly={pending}
+                        readOnly={loading}
                         secureTextEntry
                     />
                     <InlineListView
@@ -214,20 +237,28 @@ function Register() {
                             value={agreeToPrivacy}
                             onValueChange={setAgreeToPrivacy}
                             color={agreeToPrivacy ? '#4630EB' : undefined}
-                            disabled={pending}
+                            disabled={loading}
                         />
                         <Text
                             variant="label"
                             style={styles.text}
                         >
-                            I agree to the
+                            <Trans
+                                i18nKey="signup:IagreeToPrivacyNotice"
+
+                            >
+                                I agree to the
+                                <Text
+                                    style={styles.privacyLink}
+                                    onPress={() => router.push({
+                                        pathname: '/WebviewWindow',
+                                        params: { uri: 'https://mapswipe.org/' },
+                                    })}
+                                >
+                                    Privacy Notice
+                                </Text>
+                            </Trans>
                         </Text>
-                        <ExternalLink
-                            href="https://mapswipe.org/privacy"
-                            style={styles.privacyLink}
-                        >
-                            Privacy Notice
-                        </ExternalLink>
                     </InlineListView>
                 </BlockListView>
                 <BlockListView
@@ -237,13 +268,13 @@ function Register() {
                         variant="label"
                         style={styles.text}
                     >
-                        {disclaimer}
+                        {t('contributionWarningOnSignup')}
                     </Text>
                     <Button
                         name={undefined}
                         onPress={handleSignUpPress}
-                        title="Sign up"
-                        disabled={pending}
+                        title={t('signUp')}
+                        disabled={loading || !agreeToPrivacy}
                         colorVariant="primaryRed"
                         styleVariant="filled"
                     />
@@ -253,14 +284,14 @@ function Register() {
                             href={{
                                 pathname: '/login',
                             }}
-                            title="Log in to an existing account"
+                            title={t('loginExistingAccount')}
                         />
                         <Link
                             spacing="xs"
                             href={{
                                 pathname: '/loginWithOsm',
                             }}
-                            title="Login with OpenStreetMap"
+                            title={t('loginSignupWithOSM')}
                         />
                     </BlockListView>
                 </BlockListView>

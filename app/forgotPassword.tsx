@@ -2,11 +2,10 @@ import {
     useCallback,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { isTruthyString } from '@togglecorp/fujs';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
@@ -15,14 +14,11 @@ import Link from '@/components/Link';
 import Page from '@/components/Page';
 import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
-import { FONT_SIZE_XS } from '@/constants/dimensions';
-import { type AppTheme } from '@/constants/theme';
+import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseAuth } from '@/utils/firebase';
 
-const disclaimer = '* All the data you contribute to MapSwipe is open and available to anyone. Your username is public, but your email and password will never be shared with anyone.';
-
-const createStyles = (theme: AppTheme) => StyleSheet.create({
+const createStyles = () => StyleSheet.create({
     mainContent: {
         flexDirection: 'column',
         gap: 48,
@@ -36,13 +32,42 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     },
 });
 
-function Login() {
+function ForgoPassword() {
     const [email, setEmail] = useState<string>();
-    const [pending, setPending] = useState<boolean>(false);
+    // FIXME: Update the use of this function
+    const { handleAsync, loading } = useAsyncHandler();
+    const { t } = useTranslation('signup');
 
     const handleResetPress = useCallback(async () => {
-        // TODO: Handle forgot password logic
-    }, [email]);
+        handleAsync(async () => {
+            if (!email) return;
+            await sendPasswordResetEmail(firebaseAuth, email);
+        }).then(() => {
+            showAlert({
+                title: t('signup:success'),
+                message: t('signup:checkYourEmail'),
+                alertType: 'info',
+            });
+        }).catch((error) => {
+            let errorMessage;
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    errorMessage = t('signup:noAccountFoundForEmail');
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = t('signup:emailInvalid');
+                    break;
+                default:
+                    errorMessage = t('signup:problemResettingPassword');
+            }
+            showAlert({
+                title: t('signup:errorResetPass'),
+                message: errorMessage,
+                alertType: 'error',
+                shouldHideAfterDelay: false,
+            });
+        });
+    }, [handleAsync, email, t]);
 
     const styles = useThemedStyles(createStyles);
 
@@ -69,11 +94,11 @@ function Login() {
                         autoCorrect={false}
                         autoComplete="email"
                         keyboardType="email-address"
-                        placeholder="Enter your email"
-                        hintText="* We will send you and email to reset your password"
+                        placeholder={t('enterYourEmail')}
+                        hintText={t('sendResetEmailWarning')}
                         value={email}
                         onChangeText={setEmail}
-                        readOnly={pending}
+                        readOnly={loading}
                     />
                 </BlockListView>
                 <BlockListView
@@ -82,8 +107,8 @@ function Login() {
                     <Button
                         name={undefined}
                         onPress={handleResetPress}
-                        title="Send reset email"
-                        disabled={pending}
+                        title={t('sendResetEmail')}
+                        disabled={loading}
                         colorVariant="primaryRed"
                         styleVariant="filled"
                     />
@@ -93,7 +118,7 @@ function Login() {
                             href={{
                                 pathname: '/login',
                             }}
-                            title="Back to login"
+                            title={t('backToLogin')}
                         />
                     </BlockListView>
                 </BlockListView>
@@ -102,4 +127,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default ForgoPassword;
