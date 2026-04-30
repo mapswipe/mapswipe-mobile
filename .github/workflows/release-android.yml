@@ -1,28 +1,31 @@
-name: Build and Release Android APK
+name: Build and Release Android
 
 on:
   push:
+    branches:
+      - 'feat/android-release-workflow'
     tags:
-      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v2.1.3, etc.
-
-env:
-  EXPO_PUBLIC_FIREBASE_API_KEY: ${{ vars.EXPO_PUBLIC_FIREBASE_API_KEY }}
-  EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
-  EXPO_PUBLIC_FIREBASE_DATABASE_URL: ${{ vars.EXPO_PUBLIC_FIREBASE_DATABASE_URL }}
-  EXPO_PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
-  EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-  EXPO_PUBLIC_FIREBASE_APP_ID: ${{ vars.EXPO_PUBLIC_FIREBASE_APP_ID }}
-  EXPO_PUBLIC_GRAPHQL_ENDPOINT: ${{ vars.EXPO_PUBLIC_GRAPHQL_ENDPOINT }}
-  EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT: ${{ vars.EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT }}
+      - 'v*.*.*'
 
 jobs:
-  build-and-release:
-    name: Build Android APK and Create Release
-    environment: 'alpha-2'
+  # ─── JOB 1: STAGING BUILD ───────────────────────────────────────────
+  build-staging:
+    name: Build and Deploy Staging APK
+    # FIXME: Update this to staging later on
+    environment: alpha-2
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
+
+    env:
+      EXPO_PUBLIC_FIREBASE_API_KEY: ${{ vars.EXPO_PUBLIC_FIREBASE_API_KEY }}
+      EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      EXPO_PUBLIC_FIREBASE_DATABASE_URL: ${{ vars.EXPO_PUBLIC_FIREBASE_DATABASE_URL }}
+      EXPO_PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
+      EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      EXPO_PUBLIC_FIREBASE_APP_ID: ${{ vars.EXPO_PUBLIC_FIREBASE_APP_ID }}
+      EXPO_PUBLIC_GRAPHQL_ENDPOINT: ${{ vars.EXPO_PUBLIC_GRAPHQL_ENDPOINT }}
+      EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT: ${{ vars.EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT }}
 
     steps:
       - name: Checkout code
@@ -39,13 +42,15 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
 
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
       - name: Install dependencies
         run: pnpm install
+
+      - name: Create .env.local for codegen
+        run: |
+          echo "EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT=${{ vars.EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT }}" > .env.local
+
+      - name: Generate GraphQL types
+        run: pnpm generate:type
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
@@ -66,49 +71,171 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build Release APK
-        run: pnpm build:release
-
-      - name: Get release info
-        id: release-info
+      - name: Decode staging keystore
         run: |
-          APK_FILE=$(ls generated/app-release-*.apk | head -n 1)
-          APK_NAME=$(basename "$APK_FILE")
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          FILE_SIZE=$(du -h "$APK_FILE" | cut -f1)
+          echo "${{ secrets.ANDROID_STAGING_KEYSTORE_BASE64 }}" | base64 --decode > ${{ runner.temp }}/mapswipe-staging.keystore
 
-          echo "apk_file=$APK_FILE" >> $GITHUB_OUTPUT
-          echo "apk_name=$APK_NAME" >> $GITHUB_OUTPUT
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "file_size=$FILE_SIZE" >> $GITHUB_OUTPUT
+      - name: Expo prebuild (staging)
+        run: APP_ENV=staging npx expo prebuild --platform android --clean
 
-          echo "📦 APK: $APK_NAME ($FILE_SIZE)"
-
-      - name: Create Release with gh CLI
+      - name: Build staging APK
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KEYSTORE_PATH: ${{ runner.temp }}/mapswipe-staging.keystore
+          STORE_PASSWORD: ${{ secrets.ANDROID_STAGING_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_STAGING_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_STAGING_KEY_PASSWORD }}
+        run: |
+          cd android && ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$KEYSTORE_PATH \
+            -Pandroid.injected.signing.store.password=$STORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+
+      - name: Get tag name
+        id: tag
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Rename APK
+        run: |
+          mkdir -p generated
+          cp android/app/build/outputs/apk/release/app-release.apk \
+            generated/mapswipe-staging-${{ steps.tag.outputs.tag }}.apk
+
+      - name: Create staging pre-release
+        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ steps.release-info.outputs.tag_name }} \
-          --title "MapSwipe Mobile ${{ steps.release-info.outputs.tag_name }}" \
-          --notes "## MapSwipe Mobile ${{ steps.release-info.outputs.tag_name }}
+          gh release create ${{ steps.tag.outputs.tag }}-beta \
+            --title "MapSwipe Mobile ${{ steps.tag.outputs.tag }} (Staging)" \
+            --prerelease \
+            --notes "## Staging build for ${{ steps.tag.outputs.tag }}
 
-          ### 📱 Download APK
-          - **File**: \`${{ steps.release-info.outputs.apk_name }}\`
-          - **Size**: ${{ steps.release-info.outputs.file_size }}
+          This is a **staging pre-release** for internal testing only.
 
-          ### 📦 Installation
-          1. Download the APK file below
-          2. Enable \"Install from unknown sources\" in your Android settings
-          3. Open the downloaded APK to install
+          ### 📱 Install
+          1. Download the APK below
+          2. Enable 'Install from unknown sources' in Android settings
+          3. Install and test against the **staging database**
 
-          ### 🔧 Build Information
-          - **Commit**: \`${{ github.sha }}\`
-          - **Build**: #${{ github.run_number }}
-          - **Date**: $(date +'%Y-%m-%d %H:%M:%S UTC')
+          ### 🔧 Build info
+          - Commit: \`${{ github.sha }}\`
+          - Build: #${{ github.run_number }}
+          - Date: $(date +'%Y-%m-%d %H:%M:%S UTC')
+          - Package: \`org.missingmaps.mapswipe.staging\`
 
-          ### ⚙️ Technical Details
-          - Built with Expo SDK 54
-          - React Native 0.81.5
-          - Node.js 22" \
-          ${{ steps.release-info.outputs.apk_file }}
+          ---
+          Once testing is complete, approve the production deployment in GitHub Actions." \
+            generated/mapswipe-staging-${{ steps.tag.outputs.tag }}.apk
+
+  # ─── JOB 2: PRODUCTION BUILD (requires manual approval) ─────────────
+  build-production:
+    name: Build and Deploy Production APK
+    environment: production
+    runs-on: ubuntu-latest
+    needs: build-staging
+    permissions:
+      contents: write
+
+    env:
+      EXPO_PUBLIC_FIREBASE_API_KEY: ${{ vars.EXPO_PUBLIC_FIREBASE_API_KEY }}
+      EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      EXPO_PUBLIC_FIREBASE_DATABASE_URL: ${{ vars.EXPO_PUBLIC_FIREBASE_DATABASE_URL }}
+      EXPO_PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
+      EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      EXPO_PUBLIC_FIREBASE_APP_ID: ${{ vars.EXPO_PUBLIC_FIREBASE_APP_ID }}
+      EXPO_PUBLIC_GRAPHQL_ENDPOINT: ${{ vars.EXPO_PUBLIC_GRAPHQL_ENDPOINT }}
+      EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT: ${{ vars.EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Create .env.local for codegen
+        run: |
+          echo "EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT=${{ vars.EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT }}" > .env.local
+
+      - name: Generate GraphQL types
+        run: pnpm generate:type
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Decode production keystore
+        run: |
+          echo "${{ secrets.ANDROID_PROD_KEYSTORE_BASE64 }}" | base64 --decode > ${{ runner.temp }}/mapswipe-prod.keystore
+
+      - name: Expo prebuild (production)
+        run: npx expo prebuild --platform android --clean
+
+      - name: Build production APK
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/mapswipe-prod.keystore
+          STORE_PASSWORD: ${{ secrets.ANDROID_PROD_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_PROD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_PROD_KEY_PASSWORD }}
+        run: |
+          cd android && ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$KEYSTORE_PATH \
+            -Pandroid.injected.signing.store.password=$STORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+
+      - name: Get tag name
+        id: tag
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Rename APK
+        run: |
+          mkdir -p generated
+          cp android/app/build/outputs/apk/release/app-release.apk \
+            generated/mapswipe-${{ steps.tag.outputs.tag }}.apk
+
+      - name: Publish production release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.tag.outputs.tag }} \
+            --title "MapSwipe Mobile ${{ steps.tag.outputs.tag }}" \
+            --notes "## MapSwipe Mobile ${{ steps.tag.outputs.tag }}
+
+          ### 📱 Install
+          1. Download the APK below
+          2. Enable 'Install from unknown sources' in Android settings
+          3. Install
+
+          ### 🔧 Build info
+          - Commit: \`${{ github.sha }}\`
+          - Build: #${{ github.run_number }}
+          - Date: $(date +'%Y-%m-%d %H:%M:%S UTC')
+          - Package: \`org.missingmaps.mapswipe\`" \
+            generated/mapswipe-${{ steps.tag.outputs.tag }}.apk
