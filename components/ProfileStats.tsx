@@ -11,7 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 
 import {
-    managerDashboardUrl,
+    communityDashboardUrl,
     supportedLanguages,
 } from '@/constants/common';
 import { UserStatsQuery } from '@/generated/types/graphql';
@@ -125,7 +125,7 @@ function ProfileStats({ userStats }: {userStats: UserStatsQuery | undefined}) {
 
     const handleMoreStatsClick = useCallback(() => {
         if (user?.uid) {
-            Linking.openURL(`${managerDashboardUrl}/user/${user?.uid}/`);
+            Linking.openURL(`${communityDashboardUrl}/user/${user?.uid}/`);
         }
     }, [user]);
 

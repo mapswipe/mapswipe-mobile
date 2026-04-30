@@ -32,7 +32,7 @@ import Page from '@/components/Page';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
 import {
-    managerDashboardUrl,
+    communityDashboardUrl,
     supportedLanguages,
 } from '@/constants/common';
 import { SPACING_XS } from '@/constants/dimensions';
@@ -186,7 +186,7 @@ function ExploreGroup() {
 
     const handleMoreStatsClick = useCallback(() => {
         if (userGroupId) {
-            Linking.openURL(`${managerDashboardUrl}/user-group/${userGroupId}/`);
+            Linking.openURL(`${communityDashboardUrl}/user-group/${userGroupId}/`);
         }
     }, [userGroupId]);
 

@@ -14,7 +14,7 @@ export const SUPPORTED_PROJECT_TYPES = [
     PROJECT_TYPE_VALIDATE_IMAGE,
 ];
 
-export const managerDashboardUrl = process.env.EXPO_PUBLIC_MANAGER_DASHBOARD_URL;
+export const communityDashboardUrl = process.env.EXPO_PUBLIC_COMMUNITY_DASHBOARD_URL;
 export const missingMapUrl = 'https://www.missingmaps.org';
 export const mapSwipeWebUrl = 'https://mapswipe.org/';
 export const gqlEndpoint = `${process.env.EXPO_PUBLIC_GRAPHQL_ENDPOINT}/graphql/`;
