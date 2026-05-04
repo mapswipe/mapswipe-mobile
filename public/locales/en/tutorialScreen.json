@@ -1,0 +1,16 @@
+{
+  "pageTitle": "Tutorial",
+  "swipeThroughIntro": "Swipe through the next pages to learn how this tutorial works, practise on a few example tasks, then start mapping for real.",
+  "readyToMap": "You're ready to map {{name}}.",
+  "outroMessage": "Great work! You've finished the tutorial. Head back to the project to start mapping for real.",
+  "backToProject": "Back to project",
+  "unsupportedTitle": "Practice not yet available",
+  "unsupportedDescription": "Interactive practice for this project type is coming soon. Read the hint and tap Submit to continue.",
+  "incorrectTitle": "Incorrect",
+  "noAttemptsLeft": "No attempts left. Tap Show answers to reveal the correct selection.",
+  "tryAgain": "That doesn't look right. Please try again.",
+  "showAnswers": "Show answers",
+  "checkAnswer": "Check answer ({{attempts}}/{{max}})",
+  "compareBefore": "Before",
+  "compareAfter": "After"
+}

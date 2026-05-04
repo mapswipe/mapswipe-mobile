@@ -43,6 +43,7 @@ export interface FbProjectUpdateInput {
     image?: string;
     isFeatured: boolean;
     lookFor?: string;
+    instruction?: string;
     projectInstruction?: string;
     name: string;
     projectDetails: string;
@@ -323,6 +324,7 @@ export interface FbBaseTutorial {
     contributorCount: number;
     informationPages?: FbInformationPage[];
     lookFor?: string;
+    instruction?: string;
     name: string;
     progress: number;
     projectDetails: string;
