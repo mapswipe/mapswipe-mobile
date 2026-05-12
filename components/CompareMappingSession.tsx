@@ -4,10 +4,13 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import {
     FlatList,
+    type NativeScrollEvent,
+    type NativeSyntheticEvent,
     StyleSheet,
     useWindowDimensions,
     View,
@@ -57,6 +60,7 @@ interface Props {
     projectDetails: CompareProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
+    onSessionComplete: () => void;
 }
 
 function CompareMappingSession(props: Props) {
@@ -65,9 +69,11 @@ function CompareMappingSession(props: Props) {
         projectDetails,
         results,
         onResultsChange,
+        onSessionComplete,
     } = props;
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+    const completedRef = useRef(false);
     const styles = useThemedStyles(createStyles);
 
     const {
@@ -111,13 +117,16 @@ function CompareMappingSession(props: Props) {
             return;
         }
 
-        onResultsChange(
-            listToMap(
+        onResultsChange((prev) => {
+            if (Object.keys(prev).length > 0) {
+                return prev;
+            }
+            return listToMap(
                 tasks,
                 ({ taskId }) => taskId,
                 () => options[0].value,
-            ),
-        );
+            );
+        });
     }, [tasks, options, onResultsChange]);
 
     const getNextValue = useCallback((value: number | undefined) => {
@@ -154,6 +163,23 @@ function CompareMappingSession(props: Props) {
         const itemIndex = Math.min(pageIndex * 2, compressedTasks.length - 1);
         setCurrentTaskIndex(itemIndex);
     }, [pageWidth, compressedTasks.length]);
+
+    const handleMomentumScrollEnd = useCallback((
+        event: NativeSyntheticEvent<NativeScrollEvent>,
+    ) => {
+        if (completedRef.current) {
+            return;
+        }
+        const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+        const maxScrollable = contentSize.width - layoutMeasurement.width;
+        if (maxScrollable <= 0) {
+            return;
+        }
+        if (contentOffset.x >= maxScrollable - 1) {
+            completedRef.current = true;
+            onSessionComplete();
+        }
+    }, [onSessionComplete]);
 
     // FIXME: Discuss with Ankit on how to better define this
     const tileWidth = Math.min(pageWidth - 20, pageHeight / 2 - 120);
@@ -218,6 +244,7 @@ function CompareMappingSession(props: Props) {
                 snapToOffsets={compressedTasks.map((_, i) => i * pageWidth)}
                 viewabilityConfig={VIEWABILITY_CONFIG}
                 onScroll={handleScroll}
+                onMomentumScrollEnd={handleMomentumScrollEnd}
             />
             {latitude && (
                 <ScaleBar

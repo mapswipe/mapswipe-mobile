@@ -162,6 +162,7 @@ const resources: Record<string, Record<string, () => Promise<unknown>>> = {
         loadMoreScreen: () => import('./public/locales/en/loadMoreScreen.json'),
         login: () => import('./public/locales/en/login.json'),
         mainHeader: () => import('./public/locales/en/mainHeader.json'),
+        mappingSession: () => import('./public/locales/en/mappingSession.json'),
         mappingHeader: () => import('./public/locales/en/mappingHeader.json'),
         profileScreen: () => import('./public/locales/en/profileScreen.json'),
         projectList: () => import('./public/locales/en/projectList.json'),
