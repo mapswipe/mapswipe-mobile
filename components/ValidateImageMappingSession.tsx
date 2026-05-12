@@ -60,6 +60,7 @@ interface Props {
     projectDetails: ValidateImageProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
+    onSessionComplete: () => void;
 }
 
 function ValidateImageMappingSession(props: Props) {
@@ -68,10 +69,12 @@ function ValidateImageMappingSession(props: Props) {
         projectDetails,
         onResultsChange,
         results,
+        onSessionComplete,
     } = props;
     const styles = useThemedStyles(createStyles);
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+    const completedRef = useRef(false);
     const [imagesLoading, setImagesLoading] = useState<Record<number, boolean>>({});
 
     const taskQuery = useMemo(() => (
@@ -125,8 +128,11 @@ function ValidateImageMappingSession(props: Props) {
                     animated: true,
                 });
             }, 0);
+        } else if (!completedRef.current) {
+            completedRef.current = true;
+            onSessionComplete();
         }
-    }, [currentTask, onResultsChange, maxTasks, currentTaskIndex]);
+    }, [currentTask, onResultsChange, maxTasks, currentTaskIndex, onSessionComplete]);
 
     const selectedValue = isDefined(currentTask)
         ? results[currentTask.taskId]
