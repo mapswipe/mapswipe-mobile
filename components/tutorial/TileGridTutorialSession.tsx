@@ -117,10 +117,13 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
         if (disabled) {
             return;
         }
-        onResultsChange((prev) => ({
-            ...prev,
-            [taskId]: getNextValue(prev[taskId]),
-        }));
+        onResultsChange((prev) => {
+            const prevValue = prev[taskId];
+            return {
+                ...prev,
+                [taskId]: getNextValue(typeof prevValue === 'number' ? prevValue : undefined),
+            };
+        });
     }, [disabled, onResultsChange]);
 
     return (
@@ -130,7 +133,7 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
                     <View key={column.taskX} style={styles.column}>
                         {column.rows.map((task) => {
                             const result = results[task.taskId];
-                            const selectedOption = isDefined(result)
+                            const selectedOption = typeof result === 'number'
                                 ? optionsByValue[result]
                                 : undefined;
 

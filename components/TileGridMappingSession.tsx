@@ -205,10 +205,13 @@ function TileGridMappingSession(props: Props) {
     }, [onSessionComplete]);
 
     const handleTilePress = useCallback((taskId: string) => {
-        onResultsChange((prevResults) => ({
-            ...prevResults,
-            [taskId]: getNextValue(prevResults[taskId]),
-        }));
+        onResultsChange((prevResults) => {
+            const prevValue = prevResults[taskId];
+            return {
+                ...prevResults,
+                [taskId]: getNextValue(typeof prevValue === 'number' ? prevValue : undefined),
+            };
+        });
     }, [getNextValue, onResultsChange]);
 
     const latitude = useMemo(() => {
@@ -232,7 +235,7 @@ function TileGridMappingSession(props: Props) {
                     <View>
                         {groupedTasksFromRenderer.taskList.map((task) => {
                             const result = results[task.taskId];
-                            const selectedOption = isDefined(result)
+                            const selectedOption = typeof result === 'number'
                                 ? optionsByValue[result]
                                 : undefined;
 

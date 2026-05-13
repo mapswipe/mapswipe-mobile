@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
 
 interface Props {
     iconName?: IconName;
-    badgeNumber?: 1 | 2 | 3;
+    badgeNumber?: number;
     badgeColor?: string;
 }
 

@@ -1,6 +1,7 @@
 import { AnyTutorialTask } from '@/utils/tutorial';
 import {
     FbInformationPage,
+    FbObjCustomOption,
     FbScreen,
     FbTutorial,
     Results,
@@ -30,4 +31,5 @@ export interface TutorialSessionProps {
     results: Results;
     onResultsChange: (next: Results | ((prev: Results) => Results)) => void;
     disabled: boolean;
+    projectCustomOptions?: FbObjCustomOption[];
 }

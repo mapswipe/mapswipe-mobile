@@ -12,6 +12,7 @@ import {
 import BlockListView from '@/components/BlockListView';
 import Text from '@/components/Text';
 import CompareInstructions from '@/components/tutorial/CompareInstructions';
+import LocateInstructions from '@/components/tutorial/LocateInstructions';
 import TileGridInstructions from '@/components/tutorial/TileGridInstructions';
 import ValidateInstructions from '@/components/tutorial/ValidateInstructions';
 import {
@@ -20,10 +21,12 @@ import {
     SPACING_XS,
 } from '@/constants/dimensions';
 import {
+    FbObjCustomOption,
     FbTutorial,
     PROJECT_TYPE_COMPARE,
     PROJECT_TYPE_COMPLETENESS,
     PROJECT_TYPE_FIND,
+    PROJECT_TYPE_LOCATE_FEATURES,
     PROJECT_TYPE_VALIDATE,
     PROJECT_TYPE_VALIDATE_IMAGE,
 } from '@/utils/types';
@@ -45,14 +48,19 @@ const styles = StyleSheet.create({
 
 interface Props {
     tutorial: FbTutorial;
+    projectCustomOptions?: FbObjCustomOption[];
 }
 
 function TutorialIntroPage(props: Props) {
-    const { tutorial } = props;
+    const { tutorial, projectCustomOptions } = props;
     const { t } = useTranslation(['instructionsScreen', 'tutorialScreen']);
 
     const instructionLine = (() => {
-        if (isTruthyString(tutorial.instruction)) {
+        if (
+            'instruction' in tutorial
+                && typeof tutorial.instruction === 'string'
+                && isTruthyString(tutorial.instruction)
+        ) {
             return tutorial.instruction;
         }
         if (isTruthyString(tutorial.lookFor)) {
@@ -76,6 +84,8 @@ function TutorialIntroPage(props: Props) {
         );
     } else if (tutorial.projectType === PROJECT_TYPE_COMPARE) {
         typeInstructions = <CompareInstructions />;
+    } else if (tutorial.projectType === PROJECT_TYPE_LOCATE_FEATURES) {
+        typeInstructions = <LocateInstructions customOptions={projectCustomOptions} />;
     }
 
     return (

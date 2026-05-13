@@ -38,6 +38,7 @@ import {
     PROJECT_TYPE_COMPARE,
     PROJECT_TYPE_COMPLETENESS,
     PROJECT_TYPE_FIND,
+    PROJECT_TYPE_LOCATE_FEATURES,
     PROJECT_TYPE_STREET,
     PROJECT_TYPE_VALIDATE,
     PROJECT_TYPE_VALIDATE_IMAGE,
@@ -90,7 +91,6 @@ const createProjectStyles = (_: AppTheme, { featured }: { featured: boolean }) =
             },
             projectImage: {
                 height: 220,
-                aspectRatio: 1,
             },
             overlay: {
                 top: 0,
@@ -147,6 +147,7 @@ const projectTypeTextMapping: Record<FbProject['projectType'], string> = {
     [PROJECT_TYPE_VALIDATE]: 'validate',
     [PROJECT_TYPE_STREET]: 'street',
     [PROJECT_TYPE_VALIDATE_IMAGE]: 'validate image',
+    [PROJECT_TYPE_LOCATE_FEATURES]: 'locate features',
 };
 
 interface ProjectItemProps {

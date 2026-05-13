@@ -10,6 +10,7 @@ import {
     FbTileMapServiceTutorialTask,
     FbValidateImageTutorialTask,
     FbValidateTutorialTask,
+    PROJECT_TYPE_LOCATE_FEATURES,
     PROJECT_TYPE_STREET,
     PROJECT_TYPE_VALIDATE_IMAGE,
     Results,
@@ -85,7 +86,45 @@ function getReferenceForTask(task: AnyTutorialTask): number | undefined {
     return undefined;
 }
 
-export function getReferenceResults(tasks: AnyTutorialTask[]): Results {
+// Locate features stores results as Record<string, number[]> keyed by the
+// tile-level id (taskId_real). Each per-cell tutorial task carries a scalar
+// referenceAnswer plus a taskPartitionIndex telling us which array slot it
+// belongs to. Returns undefined for tasks that aren't locate-shaped.
+function getLocatePartition(
+    task: AnyTutorialTask,
+): { tileKey: string; partitionIndex: number } | undefined {
+    if (!('taskId_real' in task) || typeof task.taskId_real !== 'string') {
+        return undefined;
+    }
+    if (!('taskPartitionIndex' in task) || typeof task.taskPartitionIndex !== 'number') {
+        return undefined;
+    }
+    return { tileKey: task.taskId_real, partitionIndex: task.taskPartitionIndex };
+}
+
+export function getReferenceResults(
+    tasks: AnyTutorialTask[],
+    projectType?: number,
+): Results {
+    if (projectType === PROJECT_TYPE_LOCATE_FEATURES) {
+        const tileResults: Record<string, number[]> = {};
+        tasks.forEach((task) => {
+            const reference = getReferenceForTask(task);
+            const partition = getLocatePartition(task);
+            if (reference === undefined || partition === undefined) {
+                return;
+            }
+            const { tileKey, partitionIndex } = partition;
+            if (!tileResults[tileKey]) {
+                tileResults[tileKey] = [];
+            }
+            while (tileResults[tileKey].length <= partitionIndex) {
+                tileResults[tileKey].push(0);
+            }
+            tileResults[tileKey][partitionIndex] = reference;
+        });
+        return tileResults;
+    }
     const result: Results = {};
     tasks.forEach((task) => {
         const reference = getReferenceForTask(task);
@@ -106,6 +145,23 @@ export function isScenarioCorrect(
     }
     if (tasks.length === 0) {
         return true;
+    }
+    if (projectType === PROJECT_TYPE_LOCATE_FEATURES) {
+        return tasks.every((task) => {
+            const reference = getReferenceForTask(task);
+            if (isNotDefined(reference)) {
+                return true;
+            }
+            const partition = getLocatePartition(task);
+            if (partition === undefined) {
+                return true;
+            }
+            const cells = results[partition.tileKey];
+            if (!Array.isArray(cells)) {
+                return false;
+            }
+            return cells[partition.partitionIndex] === reference;
+        });
     }
     return tasks.every((task) => {
         const reference = getReferenceForTask(task);

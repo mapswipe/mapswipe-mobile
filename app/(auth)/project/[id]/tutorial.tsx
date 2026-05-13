@@ -178,6 +178,11 @@ function Tutorial() {
                     attemptCounts={attemptCounts}
                     onScenarioSubmit={handleScenarioSubmit}
                     onScenarioShowAnswers={handleScenarioShowAnswers}
+                    projectCustomOptions={
+                        projectDetails && 'customOptions' in projectDetails
+                            ? projectDetails.customOptions
+                            : undefined
+                    }
                 />
             )}
         </Page>

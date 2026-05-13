@@ -19,16 +19,19 @@ import {
     TUTORIAL_MAX_ATTEMPTS,
 } from '@/utils/tutorial';
 import {
+    FbObjCustomOption,
     FbScreen,
     FbTutorial,
     PROJECT_TYPE_COMPARE,
     PROJECT_TYPE_COMPLETENESS,
     PROJECT_TYPE_FIND,
+    PROJECT_TYPE_LOCATE_FEATURES,
     PROJECT_TYPE_VALIDATE,
     Results,
 } from '@/utils/types';
 
 import CompareTutorialSession from './CompareTutorialSession';
+import LocateTutorialSession from './LocateTutorialSession';
 import ScenarioFeedback from './ScenarioFeedback';
 import TileGridTutorialSession from './TileGridTutorialSession';
 import { ScenarioState } from './types';
@@ -60,6 +63,7 @@ interface Props {
     attempts: number;
     onScenarioSubmit: (screenIndex: number, correct: boolean) => void;
     onScenarioShowAnswers: (screenIndex: number) => void;
+    projectCustomOptions?: FbObjCustomOption[];
 }
 
 function TutorialScenarioPage(props: Props) {
@@ -74,6 +78,7 @@ function TutorialScenarioPage(props: Props) {
         attempts,
         onScenarioSubmit,
         onScenarioShowAnswers,
+        projectCustomOptions,
     } = props;
 
     const { t } = useTranslation('tutorialScreen');
@@ -100,10 +105,10 @@ function TutorialScenarioPage(props: Props) {
     }, [tutorial.projectType, tasks, results, attempts, screenIndex, onScenarioSubmit, t]);
 
     const handleShowAnswers = useCallback(() => {
-        const referenceResults = getReferenceResults(tasks);
+        const referenceResults = getReferenceResults(tasks, tutorial.projectType);
         onScenarioResultsChange(screenIndex, (prev) => ({ ...prev, ...referenceResults }));
         onScenarioShowAnswers(screenIndex);
-    }, [tasks, screenIndex, onScenarioResultsChange, onScenarioShowAnswers]);
+    }, [tasks, tutorial.projectType, screenIndex, onScenarioResultsChange, onScenarioShowAnswers]);
 
     const disabled = state === 'correct'
         || state === 'skip-unlocked'
@@ -142,6 +147,18 @@ function TutorialScenarioPage(props: Props) {
                     results={results}
                     onResultsChange={handleResultsChange}
                     disabled={disabled}
+                />
+            );
+            break;
+        case PROJECT_TYPE_LOCATE_FEATURES:
+            session = (
+                <LocateTutorialSession
+                    tutorial={tutorial}
+                    tasks={tasks}
+                    results={results}
+                    onResultsChange={handleResultsChange}
+                    disabled={disabled}
+                    projectCustomOptions={projectCustomOptions}
                 />
             );
             break;

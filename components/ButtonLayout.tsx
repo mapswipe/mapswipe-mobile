@@ -97,6 +97,9 @@ const createStyles = (
         disabled: {
             opacity: 0.4,
         },
+        leftContent: {
+            marginRight: 'auto',
+        },
         rightContent: {
             marginLeft: 'auto',
         },
@@ -112,6 +115,7 @@ export interface ButtonLayoutProps extends Omit<InlineLayoutProps, 'withPadding'
     title?: string;
     fullWidth?: boolean;
     onPress?: () => void;
+    icon?: React.ReactNode;
     children?: React.ReactNode;
     action?: React.ReactNode
     accessibilityLabel?: string;
@@ -124,6 +128,7 @@ function ButtonLayout(props: ButtonLayoutProps) {
         spacingOffset = -1,
         withoutPadding = false,
         disabled,
+        icon,
         iconName,
         title,
         onPress,
@@ -167,6 +172,7 @@ function ButtonLayout(props: ButtonLayoutProps) {
                 {...inlineLayoutProps}
                 withCenteredContent={styleVariant !== 'block'}
             >
+                {icon && <View style={styles.leftContent}>{icon}</View>}
                 {isDefined(iconName) && (
                     <Icon
                         style={styles.icon}
