@@ -94,10 +94,13 @@ function CompareTutorialSession(props: TutorialSessionProps) {
         if (disabled) {
             return;
         }
-        onResultsChange((prev) => ({
-            ...prev,
-            [taskId]: getNextValue(prev[taskId]),
-        }));
+        onResultsChange((prev) => {
+            const prevValue = prev[taskId];
+            return {
+                ...prev,
+                [taskId]: getNextValue(typeof prevValue === 'number' ? prevValue : undefined),
+            };
+        });
     }, [disabled, onResultsChange]);
 
     return (
@@ -107,7 +110,7 @@ function CompareTutorialSession(props: TutorialSessionProps) {
                     return null;
                 }
                 const result = results[task.taskId];
-                const selectedOption = isDefined(result)
+                const selectedOption = typeof result === 'number'
                     ? optionsByValue[result]
                     : undefined;
 

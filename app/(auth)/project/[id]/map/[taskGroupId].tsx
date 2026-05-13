@@ -13,6 +13,7 @@ import { isNotDefined } from '@togglecorp/fujs';
 import { set as setToDatabase } from 'firebase/database';
 
 import CompareMappingSession from '@/components/CompareMappingSession';
+import LocateFeaturesMappingSession from '@/components/LocateFeaturesMappingSession';
 import Page from '@/components/Page';
 import SessionOutro, { type ResultSyncStatus } from '@/components/SessionOutro';
 import StreetMappingSession from '@/components/StreetMappingSession';
@@ -27,6 +28,7 @@ import {
     PROJECT_TYPE_COMPARE,
     PROJECT_TYPE_COMPLETENESS,
     PROJECT_TYPE_FIND,
+    PROJECT_TYPE_LOCATE_FEATURES,
     PROJECT_TYPE_STREET,
     PROJECT_TYPE_VALIDATE,
     PROJECT_TYPE_VALIDATE_IMAGE,
@@ -203,6 +205,15 @@ function MapTaskGroup() {
                         <StreetMappingSession
                             taskGroupId={taskGroupId}
                             projectDetails={projectDetails}
+                        />
+                    )}
+                    {projectDetails?.projectType === PROJECT_TYPE_LOCATE_FEATURES && (
+                        <LocateFeaturesMappingSession
+                            taskGroupId={taskGroupId}
+                            projectDetails={projectDetails}
+                            results={results}
+                            onResultsChange={setResults}
+                            onSessionComplete={handleSessionComplete}
                         />
                     )}
                 </>

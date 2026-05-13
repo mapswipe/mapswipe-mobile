@@ -24,7 +24,7 @@ const csrfFetch: typeof fetch = async (
         headers: {
             ...(init?.headers ?? {}),
             'X-CSRFToken': csrfToken ?? '',
-            Referer: referrerEndpoint,
+            Referer: referrerEndpoint ?? '',
         },
     });
 };

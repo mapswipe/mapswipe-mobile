@@ -147,10 +147,13 @@ function CompareMappingSession(props: Props) {
     }, [options]);
 
     const handleTilePress = useCallback((taskId: string) => {
-        onResultsChange((prevResults) => ({
-            ...prevResults,
-            [taskId]: getNextValue(prevResults[taskId]),
-        }));
+        onResultsChange((prevResults) => {
+            const prevValue = prevResults[taskId];
+            return {
+                ...prevResults,
+                [taskId]: getNextValue(typeof prevValue === 'number' ? prevValue : undefined),
+            };
+        });
     }, [getNextValue, onResultsChange]);
 
     const optionsByValue = useMemo(() => (
@@ -203,7 +206,7 @@ function CompareMappingSession(props: Props) {
                 keyExtractor={(task) => task.taskId}
                 renderItem={({ item: task }) => {
                     const result = results[task.taskId];
-                    const selectedOption = isDefined(result)
+                    const selectedOption = typeof result === 'number'
                         ? optionsByValue[result]
                         : undefined;
 

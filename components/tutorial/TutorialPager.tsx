@@ -18,7 +18,7 @@ import {
     SPACING_3XS,
     SPACING_XS,
 } from '@/constants/dimensions';
-import { FbTutorial } from '@/utils/types';
+import { FbObjCustomOption, FbTutorial, Results } from '@/utils/types';
 
 import StageIndicator from './StageIndicator';
 import TutorialInformationPage from './TutorialInformationPage';
@@ -54,15 +54,16 @@ interface Props {
     currentIndex: number;
     onIndexChange: (index: number) => void;
     canAdvanceFrom: (index: number) => boolean;
-    scenarioResults: Record<number, Record<string, number>>;
+    scenarioResults: Record<number, Results>;
     onScenarioResultsChange: (
         screenIndex: number,
-        next: Record<string, number> | ((prev: Record<string, number>) => Record<string, number>),
+        next: Results | ((prev: Results) => Results),
     ) => void;
     scenarioStates: Record<number, ScenarioState>;
     attemptCounts: Record<number, number>;
     onScenarioSubmit: (screenIndex: number, correct: boolean) => void;
     onScenarioShowAnswers: (screenIndex: number) => void;
+    projectCustomOptions?: FbObjCustomOption[];
 }
 
 function TutorialPager(props: Props) {
@@ -79,6 +80,7 @@ function TutorialPager(props: Props) {
         attemptCounts,
         onScenarioSubmit,
         onScenarioShowAnswers,
+        projectCustomOptions,
     } = props;
 
     const { width: pageWidth } = useWindowDimensions();
@@ -99,7 +101,12 @@ function TutorialPager(props: Props) {
         let content: React.ReactNode = null;
 
         if (item.type === 'intro') {
-            content = <TutorialIntroPage tutorial={item.tutorial} />;
+            content = (
+                <TutorialIntroPage
+                    tutorial={item.tutorial}
+                    projectCustomOptions={projectCustomOptions}
+                />
+            );
         } else if (item.type === 'info') {
             content = <TutorialInformationPage page={item.page} />;
         } else if (item.type === 'outro') {
@@ -127,6 +134,7 @@ function TutorialPager(props: Props) {
                     attempts={attempts}
                     onScenarioSubmit={onScenarioSubmit}
                     onScenarioShowAnswers={onScenarioShowAnswers}
+                    projectCustomOptions={projectCustomOptions}
                 />
             );
         }
@@ -146,6 +154,7 @@ function TutorialPager(props: Props) {
         onScenarioResultsChange,
         onScenarioSubmit,
         onScenarioShowAnswers,
+        projectCustomOptions,
     ]);
 
     const scrollEnabled = canAdvanceFrom(currentIndex);
