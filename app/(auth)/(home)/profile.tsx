@@ -6,7 +6,6 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    Alert,
     Linking,
     RefreshControl,
     ScrollView,
@@ -27,6 +26,7 @@ import InlineListView from '@/components/InlineListView';
 import Page from '@/components/Page';
 import ProfileHeader from '@/components/ProfileHeader';
 import ProfileStats from '@/components/ProfileStats';
+import showConfirm from '@/components/showConfirm';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
 import {
@@ -158,26 +158,21 @@ function Profile() {
     }, []);
 
     const onHandleSignoutClick = useCallback(() => {
-        Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-            {
-                text: 'Cancel',
-                style: 'cancel',
-            },
-            {
-                text: 'OK',
-                style: 'destructive',
-                onPress: () => {
-                    firebaseAuth.signOut().catch((error) => {
-                        showAlert({
-                            title: 'Sign out error',
-                            message: error,
-                            alertType: 'error',
-                        });
+        showConfirm({
+            title: 'Sign Out',
+            message: 'Are you sure you want to sign out?',
+            onConfirm: () => {
+                firebaseAuth.signOut().catch((error) => {
+                    showAlert({
+                        title: 'Sign out error',
+                        message: error,
+                        alertType: 'error',
                     });
-                    router.replace('/');
-                },
+                });
+                router.replace('/');
             },
-        ]);
+            destructive: true,
+        });
     }, [router]);
 
     const handleResetPress = useCallback(async () => {
@@ -201,20 +196,11 @@ function Profile() {
     }, [handleAsync, user, t]);
 
     const handleResetPasswordClick = useCallback(() => {
-        Alert.alert(
-            'Reset Password',
-            'An email will be sent to your account with the reset link. Are you sure you want to continue?',
-            [
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                },
-                {
-                    text: 'OK',
-                    onPress: handleResetPress,
-                },
-            ],
-        );
+        showConfirm({
+            title: 'Reset Password',
+            message: 'An email will be sent to your account with the reset link. Are you sure you want to continue?',
+            onConfirm: handleResetPress,
+        });
     }, [handleResetPress]);
 
     const settingItems: ButtonLayoutProps[] = [

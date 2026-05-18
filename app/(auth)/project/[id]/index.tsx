@@ -81,6 +81,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     },
     contributionText: {
         color: theme.card,
+        flexShrink: 1,
     },
     bottomBar: {
         borderTopWidth: 1,
