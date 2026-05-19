@@ -139,7 +139,21 @@ const otherConfig = {
     ...js.configs.recommended,
 };
 
+const nodeConfig = {
+    files: ['app.config.js', 'metro.config.js', 'babel.config.js'],
+    ...js.configs.recommended,
+    languageOptions: {
+        globals: {
+            require: 'readonly',
+            module: 'writable',
+            process: 'readonly',
+            __dirname: 'readonly',
+        },
+    },
+};
+
 export default [
     ...appConfigs,
     otherConfig,
+    nodeConfig,
 ];
