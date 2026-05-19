@@ -4,10 +4,13 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import {
     FlatList,
+    type NativeScrollEvent,
+    type NativeSyntheticEvent,
     StyleSheet,
     useWindowDimensions,
     View,
@@ -53,6 +56,7 @@ interface Props {
     projectDetails: FindProject | CompletenessProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
+    onSessionComplete: () => void;
 }
 
 function TileGridMappingSession(props: Props) {
@@ -61,9 +65,11 @@ function TileGridMappingSession(props: Props) {
         projectDetails,
         results,
         onResultsChange,
+        onSessionComplete,
     } = props;
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+    const completedRef = useRef(false);
 
     const styles = useThemedStyles(createStyles);
 
@@ -123,13 +129,16 @@ function TileGridMappingSession(props: Props) {
             return;
         }
 
-        onResultsChange(
-            listToMap(
+        onResultsChange((prev) => {
+            if (Object.keys(prev).length > 0) {
+                return prev;
+            }
+            return listToMap(
                 tasks,
                 ({ taskId }) => taskId,
                 () => options[0].value,
-            ),
-        );
+            );
+        });
     }, [tasks, options, onResultsChange]);
 
     const groupedTasks = useMemo(() => {
@@ -178,11 +187,31 @@ function TileGridMappingSession(props: Props) {
         setCurrentTaskIndex(itemIndex);
     }, [pageWidth, groupedTasks.length]);
 
+    const handleMomentumScrollEnd = useCallback((
+        event: NativeSyntheticEvent<NativeScrollEvent>,
+    ) => {
+        if (completedRef.current) {
+            return;
+        }
+        const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+        const maxScrollable = contentSize.width - layoutMeasurement.width;
+        if (maxScrollable <= 0) {
+            return;
+        }
+        if (contentOffset.x >= maxScrollable - 1) {
+            completedRef.current = true;
+            onSessionComplete();
+        }
+    }, [onSessionComplete]);
+
     const handleTilePress = useCallback((taskId: string) => {
-        onResultsChange((prevResults) => ({
-            ...prevResults,
-            [taskId]: getNextValue(prevResults[taskId]),
-        }));
+        onResultsChange((prevResults) => {
+            const prevValue = prevResults[taskId];
+            return {
+                ...prevResults,
+                [taskId]: getNextValue(typeof prevValue === 'number' ? prevValue : undefined),
+            };
+        });
     }, [getNextValue, onResultsChange]);
 
     const latitude = useMemo(() => {
@@ -206,7 +235,7 @@ function TileGridMappingSession(props: Props) {
                     <View>
                         {groupedTasksFromRenderer.taskList.map((task) => {
                             const result = results[task.taskId];
-                            const selectedOption = isDefined(result)
+                            const selectedOption = typeof result === 'number'
                                 ? optionsByValue[result]
                                 : undefined;
 
@@ -239,6 +268,7 @@ function TileGridMappingSession(props: Props) {
                 snapToOffsets={groupedTasks.map((_, i) => i * pageWidth)}
                 viewabilityConfig={VIEWABILITY_CONFIG}
                 onScroll={handleScroll}
+                onMomentumScrollEnd={handleMomentumScrollEnd}
                 scrollEventThrottle={16}
                 windowSize={3}
                 initialNumToRender={2}

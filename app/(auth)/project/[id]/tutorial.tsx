@@ -1,123 +1,190 @@
-import { useMemo } from 'react';
-import { StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
+import {
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+    ActivityIndicator,
+    StyleSheet,
+    View,
+} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { isDefined } from '@togglecorp/fujs';
 
-import BlockListView from '@/components/BlockListView';
 import Page from '@/components/Page';
-import Text from '@/components/Text';
-import { IMAGE_SIZE_MD } from '@/constants/dimensions';
+import TutorialPager from '@/components/tutorial/TutorialPager';
+import {
+    ScenarioState,
+    TutorialStage,
+} from '@/components/tutorial/types';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
 import {
+    AnyTutorialTask,
+    decompressTasks,
+    groupTasksByScreen,
+    TUTORIAL_MAX_ATTEMPTS,
+} from '@/utils/tutorial';
+import {
     FbProject,
     FbTutorial,
+    Results,
 } from '@/utils/types';
 
 const styles = StyleSheet.create({
-    blockNumber: {
-        width: '100%',
-        height: IMAGE_SIZE_MD,
+    loaderContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });
 
 function Tutorial() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
+    const { t } = useTranslation('tutorialScreen');
 
     const projectQuery = useMemo(() => (
         firebaseRef(`v2/projects/${projectId}`)
     ), [projectId]);
 
     const { data: projectDetails } = useFirebaseDatabase<FbProject>({ query: projectQuery });
+    const tutorialId = projectDetails?.tutorialId;
 
     const tutorialQuery = useMemo(() => (
-        isDefined(projectDetails?.tutorialId)
-            ? firebaseRef(`v2/projects/${projectDetails?.tutorialId}`)
-            : undefined
-    ), [projectDetails?.tutorialId]);
+        isDefined(tutorialId) ? firebaseRef(`v2/projects/${tutorialId}`) : undefined
+    ), [tutorialId]);
 
     const { data: tutorialDetails } = useFirebaseDatabase<FbTutorial>({ query: tutorialQuery });
 
+    const tasksQuery = useMemo(() => (
+        isDefined(tutorialId) ? firebaseRef(`v2/tasks/${tutorialId}`) : undefined
+    ), [tutorialId]);
+
+    const { data: tasksByGroup } = useFirebaseDatabase<Record<string, unknown>>({
+        query: tasksQuery,
+    });
+
+    const allTasks = useMemo<AnyTutorialTask[]>(() => {
+        if (!tasksByGroup) {
+            return [];
+        }
+        return Object.values(tasksByGroup).flatMap((groupValue) => (
+            decompressTasks<AnyTutorialTask>(groupValue as string | AnyTutorialTask[])
+        ));
+    }, [tasksByGroup]);
+
+    const tasksByScreen = useMemo(() => groupTasksByScreen(allTasks), [allTasks]);
+
+    const stages = useMemo<TutorialStage[]>(() => {
+        if (!tutorialDetails) {
+            return [];
+        }
+        const list: TutorialStage[] = [];
+        list.push({ type: 'intro', tutorial: tutorialDetails });
+        (tutorialDetails.informationPages ?? []).forEach((page) => {
+            list.push({ type: 'info', page });
+        });
+        (tutorialDetails.screens ?? []).forEach((screen, i) => {
+            list.push({
+                type: 'scenario',
+                screen,
+                screenIndex: i,
+                tasks: tasksByScreen[i + 1] ?? tasksByScreen[i] ?? [],
+            });
+        });
+        list.push({ type: 'outro', tutorial: tutorialDetails });
+        return list;
+    }, [tutorialDetails, tasksByScreen]);
+
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [scenarioResults, setScenarioResults] = useState<Record<number, Results>>({});
+    const [scenarioStates, setScenarioStates] = useState<Record<number, ScenarioState>>({});
+    const [attemptCounts, setAttemptCounts] = useState<Record<number, number>>({});
+
+    const handleScenarioResultsChange = useCallback((
+        screenIndex: number,
+        next: Results | ((prev: Results) => Results),
+    ) => {
+        setScenarioResults((prev) => {
+            const previousForScreen = prev[screenIndex] ?? {};
+            const resolved = typeof next === 'function' ? next(previousForScreen) : next;
+            if (resolved === previousForScreen) {
+                return prev;
+            }
+            return { ...prev, [screenIndex]: resolved };
+        });
+    }, []);
+
+    const handleScenarioSubmit = useCallback((screenIndex: number, correct: boolean) => {
+        setAttemptCounts((prev) => {
+            const nextAttempts = (prev[screenIndex] ?? 0) + 1;
+            let nextState: ScenarioState;
+            if (correct) {
+                nextState = 'correct';
+            } else if (nextAttempts >= TUTORIAL_MAX_ATTEMPTS) {
+                nextState = 'skip-unlocked';
+            } else {
+                nextState = 'wrong';
+            }
+            setScenarioStates((prevStates) => ({
+                ...prevStates,
+                [screenIndex]: nextState,
+            }));
+            return { ...prev, [screenIndex]: nextAttempts };
+        });
+    }, []);
+
+    const handleScenarioShowAnswers = useCallback((screenIndex: number) => {
+        setScenarioStates((prev) => ({ ...prev, [screenIndex]: 'answers-shown' }));
+    }, []);
+
+    const canAdvanceFrom = useCallback((index: number) => {
+        const stage = stages[index];
+        if (!stage || stage.type !== 'scenario') {
+            return true;
+        }
+        const state = scenarioStates[stage.screenIndex];
+        return state === 'correct'
+            || state === 'skip-unlocked'
+            || state === 'answers-shown';
+    }, [stages, scenarioStates]);
+
+    const isLoading = !projectDetails || !tutorialDetails;
+
     return (
         <Page
-            title="Tutorial"
+            title={t('pageTitle')}
             variant="brand"
+            scrollable={false}
             showBackButton
             headerTitleAlign="center"
         >
-            <BlockListView withPadding>
-                <BlockListView spacing="xs">
-                    <Text variant="heading">
-                        {tutorialDetails?.name}
-                    </Text>
-                    <Text variant="description">
-                        {`You are looking for: ${tutorialDetails?.lookFor ?? '--'}`}
-                    </Text>
-                </BlockListView>
-                <BlockListView>
-                    {tutorialDetails?.informationPages?.map((page) => (
-                        <BlockListView key={page.pageNumber}>
-                            <Text variant="title">
-                                {page.title}
-                            </Text>
-                            {page.blocks?.map((block) => {
-                                if (isDefined(block.textDescription)) {
-                                    return (
-                                        <Text key={block.blockNumber}>
-                                            {block.textDescription}
-                                        </Text>
-                                    );
-                                }
-
-                                if (isDefined(block.image)) {
-                                    return (
-                                        <Image
-                                            key={block.blockNumber}
-                                            style={styles.blockNumber}
-                                            source={block.image}
-                                        />
-                                    );
-                                }
-
-                                return null;
-                            })}
-                        </BlockListView>
-                    ))}
-                    {tutorialDetails?.screens?.map((screen, i) => (
-                        <BlockListView
-                            // eslint-disable-next-line react/no-array-index-key
-                            key={i}
-                            spacing="3xs"
-                        >
-                            <BlockListView spacing="4xs">
-                                <Text>
-                                    {screen.hint.title}
-                                </Text>
-                                <Text>
-                                    {screen.hint.description}
-                                </Text>
-                            </BlockListView>
-                            <BlockListView spacing="4xs">
-                                <Text>
-                                    {screen.success.title}
-                                </Text>
-                                <Text>
-                                    {screen.success.description}
-                                </Text>
-                            </BlockListView>
-                            <BlockListView spacing="4xs">
-                                <Text>
-                                    {screen.instructions.title}
-                                </Text>
-                                <Text>
-                                    {screen.instructions.description}
-                                </Text>
-                            </BlockListView>
-                        </BlockListView>
-                    ))}
-                </BlockListView>
-            </BlockListView>
+            {isLoading ? (
+                <View style={styles.loaderContainer}>
+                    <ActivityIndicator size="large" color="#ffffff" />
+                </View>
+            ) : (
+                <TutorialPager
+                    projectId={projectId}
+                    tutorial={tutorialDetails}
+                    stages={stages}
+                    currentIndex={currentIndex}
+                    onIndexChange={setCurrentIndex}
+                    canAdvanceFrom={canAdvanceFrom}
+                    scenarioResults={scenarioResults}
+                    onScenarioResultsChange={handleScenarioResultsChange}
+                    scenarioStates={scenarioStates}
+                    attemptCounts={attemptCounts}
+                    onScenarioSubmit={handleScenarioSubmit}
+                    onScenarioShowAnswers={handleScenarioShowAnswers}
+                    projectCustomOptions={
+                        projectDetails && 'customOptions' in projectDetails
+                            ? projectDetails.customOptions
+                            : undefined
+                    }
+                />
+            )}
         </Page>
     );
 }

@@ -1,0 +1,18 @@
+{
+  "sessionCompleteTitle": "Great work!",
+  "sessionCompleteMessage": "You've finished this mapping session. Choose what to do next:",
+  "savingProgress": "Saving your progress…",
+  "saveFailed": "We couldn't save your progress. Please check your connection and try again.",
+  "saveSucceeded": "Your progress has been saved.",
+  "continueMapping": "Continue mapping",
+  "continueMappingHelp": "Save your contributions and start a new group of tasks for this project.",
+  "completeSession": "Complete session",
+  "completeSessionHelp": "Save your contributions and return to the home screen.",
+  "goBack": "Go back",
+  "goBackHelp": "Return to the mapping session to review or change your answers.",
+  "discardSession": "Discard session",
+  "discardSessionHelp": "Throw away your answers from this session and return to the home screen.",
+  "enterSelectionMode": "Enter selection mode",
+  "cycleSelectedCells": "Cycle value of selected cells",
+  "exitSelectionMode": "Exit selection mode"
+}

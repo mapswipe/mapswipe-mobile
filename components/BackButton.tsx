@@ -4,10 +4,9 @@ import {
     ViewStyle,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { ArrowLeftIcon } from 'phosphor-react-native';
 
 import useTheme from '@/hooks/useTheme';
-
-import Icon from './Icon';
 
 interface Props {
     style?: ViewStyle;
@@ -31,9 +30,8 @@ export default function BackButton({ style }: Props) {
             style={style}
             activeOpacity={0.7}
         >
-            <Icon
+            <ArrowLeftIcon
                 color={theme.card}
-                name="swipe-left"
             />
         </TouchableOpacity>
     );

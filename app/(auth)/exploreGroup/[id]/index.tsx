@@ -4,7 +4,6 @@ import React, {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    Alert,
     Linking,
     RefreshControl,
     ScrollView,
@@ -29,6 +28,7 @@ import Icon from '@/components/Icon';
 import InfoCard, { StatsInfo } from '@/components/InfoCard';
 import InlineListView from '@/components/InlineListView';
 import Page from '@/components/Page';
+import showConfirm from '@/components/showConfirm';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
 import {
@@ -239,14 +239,10 @@ function ExploreGroup() {
                     });
                 }
             };
-            Alert.alert(
-                isJoin ? 'Join User Group' : 'Leave User Group',
-                message,
-                [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'OK', onPress: proceed },
-                ],
-            );
+            showConfirm({
+                title: isJoin ? 'Join User Group' : 'Leave User Group',
+                onConfirm: proceed,
+            });
         },
         [userId, userGroupId, router],
     );

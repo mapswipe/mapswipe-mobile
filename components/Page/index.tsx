@@ -2,6 +2,7 @@ import { useLayoutEffect } from 'react';
 import {
     ScrollView,
     StyleSheet,
+    View,
     ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -58,19 +59,21 @@ function Page(props: Props) {
         });
     }, [navigation, title, theme, showBackButton, headerTitleAlign]);
 
+    const content = scrollable ? <ScrollView>{children}</ScrollView> : children;
+
+    if (showBackButton) {
+        // Header is shown — let it handle the top inset
+        return (
+            <View style={[styles.page, style]}>
+                {content}
+            </View>
+        );
+    }
+
+    // No header — apply top safe area ourselves
     return (
-        <SafeAreaView
-            style={[
-                styles.page,
-                style,
-            ]}
-            edges={showBackButton ? ['bottom'] : undefined}
-        >
-            {scrollable ? (
-                <ScrollView>
-                    {children}
-                </ScrollView>
-            ) : children}
+        <SafeAreaView style={[styles.page, style]} edges={['top']}>
+            {content}
         </SafeAreaView>
     );
 }

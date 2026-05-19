@@ -76,13 +76,6 @@ function HomeLayout() {
             }}
         >
             <Tabs.Screen
-                name="index"
-                options={{
-                    headerShown: false,
-                    href: null,
-                }}
-            />
-            <Tabs.Screen
                 name="projects"
                 options={{
                     title: 'Projects',

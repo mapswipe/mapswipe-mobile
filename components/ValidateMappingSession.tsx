@@ -69,6 +69,7 @@ interface Props {
     projectDetails: ValidateProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
+    onSessionComplete: () => void;
 }
 
 function ValidateMappingSession(props: Props) {
@@ -77,9 +78,11 @@ function ValidateMappingSession(props: Props) {
         projectDetails,
         results,
         onResultsChange,
+        onSessionComplete,
     } = props;
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+    const completedRef = useRef(false);
 
     const taskQuery = useMemo(() => (
         firebaseRef(`v2/tasks/${projectDetails.projectId}/${taskGroupId}`)
@@ -131,8 +134,11 @@ function ValidateMappingSession(props: Props) {
                     animated: true,
                 });
             }, 0);
+        } else if (!completedRef.current) {
+            completedRef.current = true;
+            onSessionComplete();
         }
-    }, [currentTask, onResultsChange, maxTasks, currentTaskIndex]);
+    }, [currentTask, onResultsChange, maxTasks, currentTaskIndex, onSessionComplete]);
 
     const selectedValue = isDefined(currentTask)
         ? results[currentTask.taskId]

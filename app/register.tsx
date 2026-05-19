@@ -44,15 +44,11 @@ import {
 } from '@/utils/firebase';
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
-    mainContent: {
-        flexDirection: 'column',
-        gap: 48,
-    },
     icon: {
         width: 128,
         height: 128,
     },
-    page: {
+    logoContainer: {
         paddingTop: 96,
     },
     text: {
@@ -183,12 +179,14 @@ function Register() {
         <Page
             title="Register"
             variant="brand"
-            style={styles.page}
         >
             <BlockListView
                 spacing="sm"
             >
-                <BlockListView withCenteredContent>
+                <BlockListView
+                    withCenteredContent
+                    style={styles.logoContainer}
+                >
                     <Image
                         style={styles.icon}
                         source={logo}

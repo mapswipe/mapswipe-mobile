@@ -3,6 +3,7 @@ import {
     FbMappingGroupTileMapServiceCreateOnlyInput,
     FbObjRasterTileServer,
     FindProject,
+    LocateFeaturesProject,
     PROJECT_TYPE_COMPLETENESS,
     TileTask,
 } from './types';
@@ -86,7 +87,7 @@ export const getTileUrlFromCoordsAndTileserver = (
 };
 
 export const buildTasks = (
-    project: FindProject | CompletenessProject,
+    project: FindProject | CompletenessProject | LocateFeaturesProject,
     group: FbMappingGroupTileMapServiceCreateOnlyInput,
 ) => {
     const xArray = arrayFromMinMax(group.xMin, group.xMax);
