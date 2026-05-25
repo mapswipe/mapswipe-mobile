@@ -12,7 +12,7 @@ jobs:
   build-staging:
     name: Build and Deploy Staging APK
     # FIXME: Update this to staging later on
-    environment: alpha-2
+    environment: staging
     runs-on: ubuntu-latest
     permissions:
       contents: write
