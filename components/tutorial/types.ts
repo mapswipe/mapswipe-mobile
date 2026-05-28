@@ -23,7 +23,8 @@ export type TutorialStage =
         screenIndex: number;
         tasks: AnyTutorialTask[];
     }
-    | { type: 'outro'; tutorial: FbTutorial };
+    | { type: 'outro'; tutorial: FbTutorial }
+    | { type: 'end'; tutorial: FbTutorial };
 
 export interface TutorialSessionProps {
     tutorial: FbTutorial;

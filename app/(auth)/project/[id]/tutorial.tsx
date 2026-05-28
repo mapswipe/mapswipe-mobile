@@ -97,6 +97,7 @@ function Tutorial() {
             });
         });
         list.push({ type: 'outro', tutorial: tutorialDetails });
+        list.push({ type: 'end', tutorial: tutorialDetails });
         return list;
     }, [tutorialDetails, tasksByScreen]);
 

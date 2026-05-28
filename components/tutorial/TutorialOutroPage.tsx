@@ -1,55 +1,51 @@
-import { useCallback } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
 
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import Text from '@/components/Text';
-import { SPACING_MD } from '@/constants/dimensions';
-import { FbTutorial } from '@/utils/types';
+import {
+    FbTutorial,
+    PROJECT_TYPE_COMPARE,
+    PROJECT_TYPE_COMPLETENESS,
+    PROJECT_TYPE_FIND,
+    PROJECT_TYPE_LOCATE_FEATURES,
+    PROJECT_TYPE_VALIDATE,
+    PROJECT_TYPE_VALIDATE_IMAGE,
+} from '@/utils/types';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: SPACING_MD,
-        justifyContent: 'center',
-        gap: SPACING_MD,
-    },
-});
+import BlockListView from '../BlockListView';
+import Text from '../Text';
+import TileGridOutro from './TileGrideOutro';
+import ValidateOutro from './ValidateOutro';
 
 interface Props {
     tutorial: FbTutorial;
-    projectId: string;
 }
 
 function TutorialOutroPage(props: Props) {
-    const { tutorial, projectId } = props;
-    const router = useRouter();
-    const { t } = useTranslation('tutorialScreen');
+    const { tutorial } = props;
+    const { t } = useTranslation('TutorialIntroScreen');
 
-    const handleStartMapping = useCallback(() => {
-        router.replace({
-            pathname: '/project/[id]',
-            params: { id: projectId },
-        });
-    }, [router, projectId]);
-
+    let typeOutro: React.ReactNode = null;
+    if (
+        tutorial.projectType === PROJECT_TYPE_FIND
+        || tutorial.projectType === PROJECT_TYPE_COMPLETENESS
+        || tutorial.projectType === PROJECT_TYPE_LOCATE_FEATURES
+        || tutorial.projectType === PROJECT_TYPE_COMPARE
+    ) {
+        typeOutro = <TileGridOutro />;
+    } else if (
+        tutorial.projectType === PROJECT_TYPE_VALIDATE
+        || tutorial.projectType === PROJECT_TYPE_VALIDATE_IMAGE
+    ) {
+        typeOutro = (
+            <ValidateOutro />
+        );
+    }
     return (
-        <BlockListView style={styles.container} spacing="md">
-            <Text variant="heading" colorVariant="brand">
-                {t('readyToMap', { name: tutorial.name })}
+        <BlockListView withPadding withCenteredContent>
+            {typeOutro}
+            <Text colorVariant="brand" variant="title">
+                {t('SwipeToContinue')}
             </Text>
-            <Text colorVariant="brand">
-                {t('outroMessage')}
-            </Text>
-            <Button
-                name="continue"
-                title={t('backToProject')}
-                colorVariant="primaryGreen"
-                styleVariant="filled"
-                onPress={handleStartMapping}
-            />
         </BlockListView>
     );
 }

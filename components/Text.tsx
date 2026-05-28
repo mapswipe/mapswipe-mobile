@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 
 import {
-    FONT_SIZE_3XL,
+    FONT_SIZE_2XL,
     FONT_SIZE_LG,
     FONT_SIZE_MD,
     FONT_SIZE_SM,
@@ -38,7 +38,7 @@ function Text(props: Props) {
     const styles = useMemo(() => (
         StyleSheet.create({
             heading: {
-                fontSize: FONT_SIZE_3XL,
+                fontSize: FONT_SIZE_2XL,
                 fontWeight: 'bold',
                 color: theme.textPrimary,
                 includeFontPadding: false,

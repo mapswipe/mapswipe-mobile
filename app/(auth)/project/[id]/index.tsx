@@ -26,7 +26,7 @@ import { getProjectProgressForDisplay } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
 import { FbProject } from '@/utils/types';
 
-const PROJECT_CARD_HEIGHT = 220;
+const PROJECT_CARD_HEIGHT = 240;
 const PROJECT_CARD_WIDTH = SCREEN_WIDTH;
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
@@ -43,7 +43,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         left: 0,
         position: 'absolute',
         width: PROJECT_CARD_WIDTH,
-        height: 220,
+        height: PROJECT_CARD_HEIGHT,
         textAlign: 'center',
         backgroundColor: 'rgba(52,52,52,0.7)',
     },

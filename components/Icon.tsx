@@ -12,6 +12,7 @@ import {
     GlobeIcon,
     HandIcon,
     HandSwipeLeftIcon,
+    HandSwipeRightIcon,
     HandTapIcon,
     HeartIcon,
     type Icon as PhosphorIcon,
@@ -59,6 +60,7 @@ export type IconName =
     | 'square-outline'
     | 'star-outline'
     | 'swipe-left'
+    | 'swipe-right'
     | 'tap'
     | 'tap-1'
     | 'tap-2'
@@ -99,6 +101,7 @@ const iconMap: Record<IconName, PhosphorIcon> = {
     'square-outline': SquareIcon,
     'star-outline': StarIcon,
     'swipe-left': HandSwipeLeftIcon,
+    'swipe-right': HandSwipeRightIcon,
     // FIXME: these icons should be updated
     tap: HandTapIcon,
     'tap-1': HandTapIcon,
