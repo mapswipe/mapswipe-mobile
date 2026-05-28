@@ -21,8 +21,7 @@ function TileGridInstructions(props: TileGridInstructionsProps) {
     const { colorVariants = 'brand' } = props;
     const { t } = useTranslation('instructionsScreen');
     const theme = useTheme();
-
-    const iconColor = colorVariants === 'brand' ? '#FFFFFF' : '#000000';
+    const iconColor = colorVariants === 'brand' ? theme.textOnBrand : theme.textPrimary;
 
     return (
         <BlockListView spacing="sm">

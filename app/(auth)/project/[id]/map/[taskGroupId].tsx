@@ -266,7 +266,7 @@ function MapTaskGroup() {
                   && (
                       <LocateInstructions
                           customOptions={projectDetails.customOptions}
-                          //   colorVariants="normal"
+                          colorVariants="normal"
                       />
                   )}
             </Modal>

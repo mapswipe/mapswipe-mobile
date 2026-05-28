@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import BlockListView from '@/components/BlockListView';
 import Icon, { type IconName } from '@/components/Icon';
 import Text, { colorVariant } from '@/components/Text';
+import useTheme from '@/hooks/useTheme';
 import { FbObjCustomOption } from '@/utils/types';
 
 import InstructionRow from './InstructionRow';
@@ -28,6 +29,7 @@ interface Props {
 function ValidateInstructions(props: Props) {
     const { customOptions, colorVariants = 'brand' } = props;
     const { t } = useTranslation('instructionsScreen');
+    const theme = useTheme();
 
     const options = customOptions ?? [];
 
@@ -50,7 +52,7 @@ function ValidateInstructions(props: Props) {
                         >
                             <Icon
                                 name={option.icon as IconName}
-                                color="#FFFFFF"
+                                color={theme.card}
                                 size={28}
                             />
                         </BlockListView>
