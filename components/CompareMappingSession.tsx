@@ -36,6 +36,7 @@ import {
     Results,
 } from '@/utils/types';
 
+import HideTileSelectionButton from './HideTileSelectionButton';
 import ImageTile from './ImageTile';
 
 const createStyles = () => StyleSheet.create({
@@ -74,6 +75,7 @@ function CompareMappingSession(props: Props) {
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const completedRef = useRef(false);
+    const onLastPageRef = useRef(false);
     const styles = useThemedStyles(createStyles);
 
     const {
@@ -163,24 +165,30 @@ function CompareMappingSession(props: Props) {
     const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { x: number } } }) => {
         const offsetX = event.nativeEvent.contentOffset.x;
         const pageIndex = Math.round(offsetX / pageWidth);
-        const itemIndex = Math.min(pageIndex * 2, compressedTasks.length - 1);
+        const itemIndex = Math.min(pageIndex, compressedTasks.length - 1);
         setCurrentTaskIndex(itemIndex);
     }, [pageWidth, compressedTasks.length]);
 
     const handleMomentumScrollEnd = useCallback((
         event: NativeSyntheticEvent<NativeScrollEvent>,
     ) => {
-        if (completedRef.current) {
-            return;
-        }
+        if (completedRef.current) return;
+
         const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
         const maxScrollable = contentSize.width - layoutMeasurement.width;
-        if (maxScrollable <= 0) {
-            return;
-        }
-        if (contentOffset.x >= maxScrollable - 1) {
-            completedRef.current = true;
-            onSessionComplete();
+
+        if (maxScrollable <= 0) return;
+        const arrivedAtEnd = contentOffset.x >= maxScrollable - 1;
+
+        if (arrivedAtEnd) {
+            if (onLastPageRef.current) {
+                completedRef.current = true;
+                onSessionComplete();
+            } else {
+                onLastPageRef.current = true;
+            }
+        } else {
+            onLastPageRef.current = false;
         }
     }, [onSessionComplete]);
 
@@ -197,6 +205,12 @@ function CompareMappingSession(props: Props) {
             ) * (180 / Math.PI)
         );
     }, [projectDetails, groupDetails]);
+
+    const [hideTilePressValue, setHideTilePressValue] = useState(false);
+
+    const handleHideTilePress = useCallback(() => {
+        setHideTilePressValue((prev) => !prev);
+    }, []);
 
     return (
         <>
@@ -224,7 +238,7 @@ function CompareMappingSession(props: Props) {
                                 url={task.url}
                                 urlB={undefined}
                                 width={tileWidth}
-                                tintColor={selectedOption?.color}
+                                tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                 onPress={handleTilePress}
                             />
                             <Text colorVariant="brand">After</Text>
@@ -233,7 +247,7 @@ function CompareMappingSession(props: Props) {
                                 url={task.urlB}
                                 urlB={undefined}
                                 width={tileWidth}
-                                tintColor={selectedOption?.color}
+                                tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                 onPress={handleTilePress}
                             />
                         </View>
@@ -259,9 +273,13 @@ function CompareMappingSession(props: Props) {
                     bottomPadding={0}
                 />
             )}
+            <HideTileSelectionButton
+                isPressed={hideTilePressValue}
+                handleHideTileSelectionPress={handleHideTilePress}
+            />
             <ProgressBar
-                currentValue={Math.floor(currentTaskIndex / 2) + 1}
-                totalValue={Math.ceil(compressedTasks.length / 2)}
+                currentValue={Math.floor(currentTaskIndex + 1)}
+                totalValue={Math.ceil(compressedTasks.length)}
                 colorVariant="brand"
             />
         </>

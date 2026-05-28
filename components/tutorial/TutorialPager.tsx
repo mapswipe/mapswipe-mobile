@@ -18,9 +18,14 @@ import {
     SPACING_3XS,
     SPACING_XS,
 } from '@/constants/dimensions';
-import { FbObjCustomOption, FbTutorial, Results } from '@/utils/types';
+import {
+    FbObjCustomOption,
+    FbTutorial,
+    Results,
+} from '@/utils/types';
 
 import StageIndicator from './StageIndicator';
+import TutorialEndPage from './TutorialEndPage';
 import TutorialInformationPage from './TutorialInformationPage';
 import TutorialIntroPage from './TutorialIntroPage';
 import TutorialOutroPage from './TutorialOutroPage';
@@ -111,7 +116,11 @@ function TutorialPager(props: Props) {
             content = <TutorialInformationPage page={item.page} />;
         } else if (item.type === 'outro') {
             content = (
-                <TutorialOutroPage
+                <TutorialOutroPage tutorial={item.tutorial} />
+            );
+        } else if (item.type === 'end') {
+            content = (
+                <TutorialEndPage
                     tutorial={item.tutorial}
                     projectId={projectId}
                 />

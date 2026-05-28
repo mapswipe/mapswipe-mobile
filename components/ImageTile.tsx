@@ -88,10 +88,10 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
                         style={styles.imageB}
                     />
                 )}
+                <View
+                    style={styles.view}
+                />
             </ImageBackground>
-            <View
-                style={styles.view}
-            />
         </Pressable>
     );
 }

@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import {
     compareNumber,
-    isDefined,
     isNotDefined,
     listToGroupList,
     listToMap,

@@ -241,6 +241,7 @@ function ExploreGroup() {
             };
             showConfirm({
                 title: isJoin ? 'Join User Group' : 'Leave User Group',
+                message,
                 onConfirm: proceed,
             });
         },
@@ -274,6 +275,7 @@ function ExploreGroup() {
             title={userGroupData?.name ?? 'Explore Group'}
             scrollable={false}
             showBackButton
+            headerTitleAlign="left"
         >
             {userGroupDetailPending && (
                 <BlockListView

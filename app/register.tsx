@@ -60,6 +60,9 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         fontSize: FONT_SIZE_XS,
         textDecorationLine: 'underline',
     },
+    privacy: {
+        alignItems: 'center',
+    },
 });
 
 function Register() {
@@ -182,6 +185,7 @@ function Register() {
         >
             <BlockListView
                 spacing="sm"
+                withPadding
             >
                 <BlockListView
                     withCenteredContent
@@ -192,9 +196,7 @@ function Register() {
                         source={logo}
                     />
                 </BlockListView>
-                <BlockListView
-                    withPadding
-                >
+                <BlockListView>
                     <TextInput
                         variant="brand"
                         autoCapitalize="none"
@@ -230,6 +232,7 @@ function Register() {
                     />
                     <InlineListView
                         spacing="3xs"
+                        style={styles.privacy}
                     >
                         <Checkbox
                             value={agreeToPrivacy}
@@ -259,9 +262,7 @@ function Register() {
                         </Text>
                     </InlineListView>
                 </BlockListView>
-                <BlockListView
-                    withPadding
-                >
+                <BlockListView>
                     <Text
                         variant="label"
                         style={styles.text}

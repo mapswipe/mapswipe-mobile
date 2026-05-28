@@ -8,6 +8,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from 'expo-router';
 
+import { FONT_SIZE_SM } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
@@ -29,6 +30,7 @@ interface Props {
     scrollable?: boolean
     showBackButton?: boolean;
     headerTitleAlign?: 'left' | 'center';
+    headerRight?: () => React.ReactNode;
 }
 
 function Page(props: Props) {
@@ -40,6 +42,7 @@ function Page(props: Props) {
         scrollable = true,
         showBackButton = false,
         headerTitleAlign = 'left',
+        headerRight,
     } = props;
     const navigation = useNavigation();
     const theme = useTheme();
@@ -56,8 +59,13 @@ function Page(props: Props) {
             headerTintColor: theme.textOnBrand,
             headerShadowVisible: false,
             headerTitleAlign,
+            headerTitleStyle: {
+                fontSize: FONT_SIZE_SM,
+            },
+            headerRight,
+
         });
-    }, [navigation, title, theme, showBackButton, headerTitleAlign]);
+    }, [navigation, title, theme, showBackButton, headerTitleAlign, headerRight]);
 
     const content = scrollable ? <ScrollView>{children}</ScrollView> : children;
 

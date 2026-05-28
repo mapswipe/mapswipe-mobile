@@ -12,8 +12,13 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { isDefined } from '@togglecorp/fujs';
 
+import BlockListView from '@/components/BlockListView';
+import IconButton from '@/components/IconButton';
+import Modal from '@/components/Modal';
 import Page from '@/components/Page';
+import Text from '@/components/Text';
 import TutorialPager from '@/components/tutorial/TutorialPager';
+import TutorialWelcomeInfo from '@/components/tutorial/TutorialWelcomeInfo';
 import {
     ScenarioState,
     TutorialStage,
@@ -42,8 +47,7 @@ const styles = StyleSheet.create({
 
 function Tutorial() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
-    const { t } = useTranslation('tutorialScreen');
-
+    const { t } = useTranslation(['tutorialScreen', 'Tutorial']);
     const projectQuery = useMemo(() => (
         firebaseRef(`v2/projects/${projectId}`)
     ), [projectId]);
@@ -94,6 +98,7 @@ function Tutorial() {
             });
         });
         list.push({ type: 'outro', tutorial: tutorialDetails });
+        list.push({ type: 'end', tutorial: tutorialDetails });
         return list;
     }, [tutorialDetails, tasksByScreen]);
 
@@ -152,6 +157,15 @@ function Tutorial() {
 
     const isLoading = !projectDetails || !tutorialDetails;
 
+    const [modal, setModal] = useState<boolean>(false);
+
+    const infoButton = () => (
+        <IconButton
+            name={!modal}
+            iconName="information-outline"
+            onPress={setModal}
+        />
+    );
     return (
         <Page
             title={t('pageTitle')}
@@ -159,6 +173,7 @@ function Tutorial() {
             scrollable={false}
             showBackButton
             headerTitleAlign="center"
+            headerRight={infoButton}
         >
             {isLoading ? (
                 <View style={styles.loaderContainer}>
@@ -185,6 +200,14 @@ function Tutorial() {
                     }
                 />
             )}
+            <Modal
+                open={!modal}
+                visible={modal}
+                onClose={setModal}
+                closeButtonName="I understand"
+            >
+                <TutorialWelcomeInfo />
+            </Modal>
         </Page>
     );
 }

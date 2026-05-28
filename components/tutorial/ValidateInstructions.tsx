@@ -3,7 +3,8 @@ import { StyleSheet } from 'react-native';
 
 import BlockListView from '@/components/BlockListView';
 import Icon, { type IconName } from '@/components/Icon';
-import Text from '@/components/Text';
+import Text, { ColorVariant } from '@/components/Text';
+import useTheme from '@/hooks/useTheme';
 import { FbObjCustomOption } from '@/utils/types';
 
 import InstructionRow from './InstructionRow';
@@ -22,25 +23,28 @@ const styles = StyleSheet.create({
 
 interface Props {
     customOptions?: FbObjCustomOption[];
+    colorVariants?: ColorVariant
 }
 
 function ValidateInstructions(props: Props) {
-    const { customOptions } = props;
+    const { customOptions, colorVariants = 'brand' } = props;
     const { t } = useTranslation('instructionsScreen');
+    const theme = useTheme();
 
     const options = customOptions ?? [];
 
     return (
         <BlockListView spacing="sm">
-            <Text colorVariant="brand">
+            <Text colorVariant={colorVariants}>
                 {t('validateUseButtons')}
             </Text>
             {options.length === 0 ? (
-                <Text colorVariant="brand">
+                <Text colorVariant={colorVariants}>
                     {t('validateNoOptions')}
                 </Text>
             ) : options.map((option) => (
                 <InstructionRow
+                    colorVariant={colorVariants}
                     key={option.value}
                     icon={(
                         <BlockListView
@@ -48,7 +52,7 @@ function ValidateInstructions(props: Props) {
                         >
                             <Icon
                                 name={option.icon as IconName}
-                                color="#FFFFFF"
+                                color={theme.card}
                                 size={28}
                             />
                         </BlockListView>

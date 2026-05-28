@@ -37,6 +37,7 @@ interface Props {
     iconName?: IconName;
     badgeNumber?: number;
     badgeColor?: string;
+    iconColor?: string;
 }
 
 function TapBadgeIcon(props: Props) {
@@ -44,13 +45,14 @@ function TapBadgeIcon(props: Props) {
         iconName = 'tap',
         badgeNumber,
         badgeColor,
+        iconColor = '#FFFFFF',
     } = props;
 
     return (
         <View style={styles.wrapper}>
             <Icon
                 name={iconName}
-                color="#FFFFFF"
+                color={iconColor}
                 size={ICON_SIZE}
             />
             {badgeNumber && badgeColor && (

@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 
 import BlockListView from '@/components/BlockListView';
-import Text from '@/components/Text';
+import Text, { ColorVariant } from '@/components/Text';
 import { SPACING_SM } from '@/constants/dimensions';
 
 const styles = StyleSheet.create({
@@ -27,10 +27,13 @@ interface Props {
     icon: React.ReactNode;
     title?: string;
     description: React.ReactNode;
+    colorVariant?: ColorVariant;
 }
 
 function InstructionRow(props: Props) {
-    const { icon, title, description } = props;
+    const {
+        icon, title, description, colorVariant = 'brand',
+    } = props;
 
     return (
         <View style={styles.row}>
@@ -39,11 +42,11 @@ function InstructionRow(props: Props) {
             </View>
             <BlockListView spacing="4xs" style={styles.textColumn}>
                 {title && (
-                    <Text variant="title" colorVariant="brand">
+                    <Text variant="title" colorVariant={colorVariant}>
                         {title}
                     </Text>
                 )}
-                <Text colorVariant="brand">
+                <Text colorVariant={colorVariant}>
                     {description}
                 </Text>
             </BlockListView>

@@ -7,7 +7,8 @@ import {
 
 import BlockListView from '@/components/BlockListView';
 import Icon from '@/components/Icon';
-import Text from '@/components/Text';
+import Text, { ColorVariant } from '@/components/Text';
+import useTheme from '@/hooks/useTheme';
 import { FbObjCustomOption } from '@/utils/types';
 
 import InstructionRow from './InstructionRow';
@@ -21,11 +22,15 @@ const styles = StyleSheet.create({
 
 interface Props {
     customOptions?: FbObjCustomOption[];
+        colorVariants? : ColorVariant
+
 }
 
 function LocateInstructions(props: Props) {
-    const { customOptions } = props;
+    const { customOptions, colorVariants = 'brand' } = props;
     const { t } = useTranslation('instructionsScreen');
+    const theme = useTheme();
+    const iconColor = colorVariants === 'brand' ? theme.textOnBrand : theme.textPrimary;
 
     const tapOptions = (customOptions ?? [])
         .filter((option) => option.value > 0)
@@ -33,17 +38,18 @@ function LocateInstructions(props: Props) {
 
     return (
         <BlockListView spacing="sm">
-            <Text colorVariant="brand">
+            <Text colorVariant={colorVariants}>
                 {t('locateIntro')}
             </Text>
 
             <InstructionRow
-                icon={<Icon name="hand-left-outline" color="#FFFFFF" size={40} />}
+                icon={<Icon name="hand-left-outline" color={iconColor} size={40} />}
                 description={t('locateSwipe')}
             />
 
             {tapOptions.map((option) => (
                 <InstructionRow
+                    colorVariant={colorVariants}
                     key={option.value}
                     icon={(
                         <TapBadgeIcon
@@ -58,21 +64,24 @@ function LocateInstructions(props: Props) {
             ))}
 
             <InstructionRow
-                icon={<Icon name="tap" color="#FFFFFF" size={40} />}
+                colorVariant={colorVariants}
+                icon={<Icon name="tap" color={iconColor} size={40} />}
                 description={t('locateTapReset')}
             />
 
-            <Text colorVariant="brand" style={styles.sectionHeading}>
+            <Text colorVariant={colorVariants} style={styles.sectionHeading}>
                 {t('locateMultiSelectSection')}
             </Text>
 
             <InstructionRow
-                icon={<SelectionIcon color="#FFFFFF" size={40} />}
+                colorVariant={colorVariants}
+                icon={<SelectionIcon color={iconColor} size={40} />}
                 description={t('locateMultiSelectDrag')}
             />
 
             <InstructionRow
-                icon={<CheckIcon color="#FFFFFF" size={40} />}
+                colorVariant={colorVariants}
+                icon={<CheckIcon color={iconColor} size={40} />}
                 description={t('locateMultiSelectConfirm')}
             />
         </BlockListView>

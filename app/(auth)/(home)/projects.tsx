@@ -29,7 +29,6 @@ import {
 } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
-import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { getProjectProgressForDisplay } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
@@ -81,6 +80,7 @@ const createProjectStyles = (_: AppTheme, { featured }: { featured: boolean }) =
                 maxWidth: width,
                 backgroundColor: '#ffffff',
                 width,
+                height: PROJECT_CARD_HEIGHT,
                 boxShadow: [{
                     offsetX: 0,
                     offsetY: 0,
@@ -132,10 +132,6 @@ const createProjectStyles = (_: AppTheme, { featured }: { featured: boolean }) =
                 alignItems: 'center',
                 flexGrow: 0,
             },
-            projectImagePlaceholder: {
-                height: PROJECT_CARD_HEIGHT,
-                aspectRatio: 1,
-            },
         })
     );
 };
@@ -162,7 +158,6 @@ function ProjectItem(props: ProjectItemProps) {
     } = props;
 
     const styles = useThemedStyles(createProjectStyles, { featured });
-    const theme = useTheme();
 
     return (
         <Link
@@ -184,14 +179,6 @@ function ProjectItem(props: ProjectItemProps) {
                     <Image
                         style={styles.projectImage}
                         source={project.image}
-                    />
-                )}
-                {isNotDefined(project.image) && (
-                    <View
-                        style={[
-                            styles.projectImagePlaceholder,
-                            { backgroundColor: theme.backgroundMuted },
-                        ]}
                     />
                 )}
                 <View style={styles.overlay} />

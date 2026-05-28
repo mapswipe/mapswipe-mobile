@@ -7,10 +7,12 @@ import {
     CircleIcon,
     CubeIcon,
     EggIcon,
+    EyeSlashIcon,
     FlagIcon,
     GlobeIcon,
     HandIcon,
     HandSwipeLeftIcon,
+    HandSwipeRightIcon,
     HandTapIcon,
     HeartIcon,
     type Icon as PhosphorIcon,
@@ -58,6 +60,7 @@ export type IconName =
     | 'square-outline'
     | 'star-outline'
     | 'swipe-left'
+    | 'swipe-right'
     | 'tap'
     | 'tap-1'
     | 'tap-2'
@@ -69,7 +72,8 @@ export type IconName =
     | 'caret-left'
     | 'sign-out'
     | 'globe'
-    | 'warning-outline';
+    | 'warning-outline'
+    | 'eye-closed'
 
 const iconMap: Record<IconName, PhosphorIcon> = {
     'add-outline': PlusIcon,
@@ -97,6 +101,7 @@ const iconMap: Record<IconName, PhosphorIcon> = {
     'square-outline': SquareIcon,
     'star-outline': StarIcon,
     'swipe-left': HandSwipeLeftIcon,
+    'swipe-right': HandSwipeRightIcon,
     // FIXME: these icons should be updated
     tap: HandTapIcon,
     'tap-1': HandTapIcon,
@@ -110,6 +115,7 @@ const iconMap: Record<IconName, PhosphorIcon> = {
     'caret-left': CaretLeftIcon,
     'sign-out': SignOutIcon,
     globe: GlobeIcon,
+    'eye-closed': EyeSlashIcon,
 
 };
 

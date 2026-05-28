@@ -24,6 +24,8 @@ import Svg, { Rect } from 'react-native-svg';
 
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 
+import HideTileSelectionButton from './HideTileSelectionButton';
+
 const styles = StyleSheet.create({
     container: {
         flex: 2,
@@ -53,6 +55,11 @@ const styles = StyleSheet.create({
     },
     svg: {
         zIndex: 11,
+    },
+    hideButton: {
+        position: 'absolute',
+        bottom: 10,
+        alignSelf: 'center',
     },
 });
 
@@ -149,7 +156,7 @@ export default function ImageWrapper({
         setLoading(false);
 
         if (item.url) {
-            Image.getSize('https://i.imgur.com/t3WOlrJ.jpeg', (width, height) => {
+            Image.getSize(item.url, (width, height) => {
                 setImageDimensions((prev) => ({
                     ...prev,
                     naturalWidth: width,
@@ -214,6 +221,12 @@ export default function ImageWrapper({
             { translateY: focalY.value },
         ],
     }));
+
+    const [hideShapeSource, setHideShapeSource] = useState<boolean>(false);
+    const handleHideTilePress = useCallback(() => {
+        setHideShapeSource((prev) => !prev);
+    }, []);
+
     return (
         <GestureDetector gesture={pinchGesture}>
             <View onLayout={handleLayout} style={styles.container}>
@@ -227,8 +240,7 @@ export default function ImageWrapper({
                 {!error ? (
                     <Animated.Image
                         key={retryKey}
-                        // TODO: Use actual URL
-                        source={{ uri: 'https://i.imgur.com/t3WOlrJ.jpeg' }}
+                        source={{ uri: item.url }}
                         style={[styles.image, animatedStyle]}
                         onLoadStart={handleLoadStart}
                         onLoadEnd={handleLoadEnd}
@@ -243,7 +255,7 @@ export default function ImageWrapper({
                         </TouchableOpacity>
                     </View>
                 )}
-                {bboxForBox && (
+                {bboxForBox && !hideShapeSource && (
                     <Animated.View
                         style={[StyleSheet.absoluteFill, animatedStyle, styles.svg]}
                         pointerEvents="none"
@@ -265,6 +277,13 @@ export default function ImageWrapper({
                         </Svg>
                     </Animated.View>
                 )}
+                <View style={styles.hideButton}>
+                    <HideTileSelectionButton
+                        isPressed={hideShapeSource}
+                        handleHideTileSelectionPress={handleHideTilePress}
+                        size="large"
+                    />
+                </View>
             </View>
         </GestureDetector>
     );

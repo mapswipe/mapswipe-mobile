@@ -46,6 +46,8 @@ import {
     Results,
 } from '@/utils/types';
 
+import HideTileSelectionButton from './HideTileSelectionButton';
+
 const createStyles = () => StyleSheet.create({
     content: {
         alignItems: 'center',
@@ -95,6 +97,7 @@ function LocateFeaturesMappingSession(props: Props) {
     const [mode, setMode] = useState<'mapping' | 'selection'>('mapping');
     const [selectedCellsByTask, setSelectedCellsByTask] = useState<Record<string, number[]>>({});
     const completedRef = useRef(false);
+    const onLastPageRef = useRef(false);
 
     const theme = useTheme();
     const { t } = useTranslation('mappingSession');
@@ -288,17 +291,23 @@ function LocateFeaturesMappingSession(props: Props) {
     const handleMomentumScrollEnd = useCallback((
         event: NativeSyntheticEvent<NativeScrollEvent>,
     ) => {
-        if (completedRef.current) {
-            return;
-        }
+        if (completedRef.current) return;
+
         const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
         const maxScrollable = contentSize.width - layoutMeasurement.width;
-        if (maxScrollable <= 0) {
-            return;
-        }
-        if (contentOffset.x >= maxScrollable - 1) {
-            completedRef.current = true;
-            onSessionComplete();
+
+        if (maxScrollable <= 0) return;
+        const arrivedAtEnd = contentOffset.x >= maxScrollable - 1;
+
+        if (arrivedAtEnd) {
+            if (onLastPageRef.current) {
+                completedRef.current = true;
+                onSessionComplete();
+            } else {
+                onLastPageRef.current = true;
+            }
+        } else {
+            onLastPageRef.current = false;
         }
     }, [onSessionComplete]);
 
@@ -314,6 +323,12 @@ function LocateFeaturesMappingSession(props: Props) {
             ) * (180 / Math.PI)
         );
     }, [projectDetails, groupDetails]);
+
+    const [hideTilePressValue, setHideTilePressValue] = useState(false);
+
+    const handleHideTilePress = useCallback(() => {
+        setHideTilePressValue((prev) => !prev);
+    }, []);
 
     return (
         <>
@@ -421,6 +436,10 @@ function LocateFeaturesMappingSession(props: Props) {
                     bottomPadding={40}
                 />
             )}
+            <HideTileSelectionButton
+                isPressed={hideTilePressValue}
+                handleHideTileSelectionPress={handleHideTilePress}
+            />
             <ProgressBar
                 currentValue={currentTaskIndex + 1}
                 totalValue={tasks.length}
