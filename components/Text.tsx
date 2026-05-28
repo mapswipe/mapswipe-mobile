@@ -14,14 +14,14 @@ import {
 } from '@/constants/dimensions';
 import useTheme from '@/hooks/useTheme';
 
-export type colorVariant = 'normal' | 'brand'
+export type ColorVariant = 'normal' | 'brand'
 
 interface Props {
     children: string | null | undefined | React.ReactNode;
     style?: TextStyle;
     variant?: 'default' | 'heading' | 'title' | 'label' | 'description';
     onPress?: (event: GestureResponderEvent) => void;
-    colorVariant?: colorVariant;
+    colorVariant?: ColorVariant;
 }
 
 function Text(props: Props) {

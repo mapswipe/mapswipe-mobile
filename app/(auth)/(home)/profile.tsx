@@ -15,8 +15,10 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { off } from 'firebase/database';
+import {
+    deleteUser,
+    sendPasswordResetEmail,
+} from 'firebase/auth';
 import { gql } from 'urql';
 
 import BlockListView from '@/components/BlockListView';
@@ -42,10 +44,7 @@ import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
-import {
-    firebaseAuth,
-    firebaseRef,
-} from '@/utils/firebase';
+import { firebaseAuth } from '@/utils/firebase';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USER_STATS = gql`
@@ -197,27 +196,23 @@ function Profile() {
     }, [handleAsync, user, t]);
 
     const handleDelete = useCallback(async () => {
-        const userRef = firebaseRef(`v2/users/${user?.uid}`);
-        off(userRef, 'value');
-        if (currentUser) {
-            currentUser.delete()
-                .then(() => {
-                    showAlert({
-                        title: t('accountDeleted'),
-                        message: t('accountDeletedSuccessMessage'),
-                        alertType: 'info',
-                    });
-                    router.replace('/(auth)/login');
-                })
-                .catch(() => {
-                    showAlert({
-                        title: t('accountDeletionFailed'),
-                        message: t('accountDeletionFailedMessage'),
-                        alertType: 'error',
-                    });
-                });
+        if (!currentUser) return;
+        try {
+            await deleteUser(currentUser);
+            showAlert({
+                title: t('accountDeleted'),
+                message: t('accountDeletedSuccessMessage'),
+                alertType: 'info',
+            });
+            router.replace('/(auth)/login');
+        } catch {
+            showAlert({
+                title: t('accountDeletionFailed'),
+                message: t('accountDeletionFailedMessage'),
+                alertType: 'error',
+            });
         }
-    }, [user?.uid, currentUser, t, router]);
+    }, [currentUser, t, router]);
 
     const handleResetPasswordClick = useCallback(() => {
         showConfirm({

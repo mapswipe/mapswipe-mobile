@@ -18,6 +18,7 @@ import Modal from '@/components/Modal';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
 import TutorialPager from '@/components/tutorial/TutorialPager';
+import TutorialWelcomeInfo from '@/components/tutorial/TutorialWelcomeInfo';
 import {
     ScenarioState,
     TutorialStage,
@@ -205,12 +206,7 @@ function Tutorial() {
                 onClose={setModal}
                 closeButtonName="I understand"
             >
-                <BlockListView spacing="2xs">
-                    <Text>{t('Tutorial:tutorial1')}</Text>
-                    <Text>{t('Tutorial:tutorial2')}</Text>
-                    <Text>{t('Tutorial:tutorial3')}</Text>
-                    <Text>{t('Tutorial:tutorial4')}</Text>
-                </BlockListView>
+                <TutorialWelcomeInfo />
             </Modal>
         </Page>
     );

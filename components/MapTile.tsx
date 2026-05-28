@@ -44,7 +44,7 @@ const createStyles = () => StyleSheet.create({
     },
     hideButton: {
         position: 'absolute',
-        bottom: -10,
+        bottom: 10,
         alignSelf: 'center',
     },
 });

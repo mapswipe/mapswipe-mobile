@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 
 import BlockListView from '@/components/BlockListView';
-import Text from '@/components/Text';
+import Text, { ColorVariant } from '@/components/Text';
 import { SPACING_SM } from '@/constants/dimensions';
 
 const styles = StyleSheet.create({
@@ -27,7 +27,7 @@ interface Props {
     icon: React.ReactNode;
     title?: string;
     description: React.ReactNode;
-    colorVariant?: 'normal' | 'brand';
+    colorVariant?: ColorVariant;
 }
 
 function InstructionRow(props: Props) {

@@ -5,7 +5,7 @@ import {
 
 import BlockListView from '@/components/BlockListView';
 import Icon from '@/components/Icon';
-import Text, { colorVariant } from '@/components/Text';
+import Text, { ColorVariant } from '@/components/Text';
 import useTheme from '@/hooks/useTheme';
 
 import InstructionRow from './InstructionRow';
@@ -14,7 +14,7 @@ import TapBadgeIcon from './TapBadgeIcon';
 const boldStyle = { fontWeight: 'bold' } as const;
 
 interface TileGridInstructionsProps {
-    colorVariants? : colorVariant
+    colorVariants? : ColorVariant
 }
 
 function TileGridInstructions(props: TileGridInstructionsProps) {

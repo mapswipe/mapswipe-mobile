@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 
 import BlockListView from '@/components/BlockListView';
 import Icon, { type IconName } from '@/components/Icon';
-import Text, { colorVariant } from '@/components/Text';
+import Text, { ColorVariant } from '@/components/Text';
 import useTheme from '@/hooks/useTheme';
 import { FbObjCustomOption } from '@/utils/types';
 
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
 
 interface Props {
     customOptions?: FbObjCustomOption[];
-    colorVariants?: colorVariant
+    colorVariants?: ColorVariant
 }
 
 function ValidateInstructions(props: Props) {

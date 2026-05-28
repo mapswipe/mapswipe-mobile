@@ -21,15 +21,15 @@ const createStyles = (
         width: options.size === 'small' ? 30 : 40,
         borderColor: theme.card,
         borderWidth: 1,
-        opacity: options.isPressed ? 0.3 : 1,
+        opacity: options.isPressed ? 0.5 : 1,
 
     },
 });
 
 interface HideTileSelectionButtonProps {
-    handleHideTileSelectionPress? : () => void
-    size?:sizeVariant
-    isPressed: boolean
+    handleHideTileSelectionPress? : () => void;
+    size?: sizeVariant;
+    isPressed: boolean;
 }
 
 function HideTileSelectionButton(props:HideTileSelectionButtonProps) {
