@@ -3,7 +3,9 @@ import {
     Pressable,
     PressableProps,
     StyleSheet,
+    ViewStyle,
 } from 'react-native';
+import { isDefined } from '@togglecorp/fujs';
 
 import { AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
@@ -20,6 +22,9 @@ interface Props<NAME> extends Omit<PressableProps, 'onPress'> {
     tintColor?: string;
     active?: boolean;
     textColorVariant?: 'brand' | 'normal';
+    stylesContainer?: ViewStyle | ViewStyle[];
+    stylesButton?: ViewStyle | ViewStyle[];
+    size?: string | number;
 }
 
 const createStyles = (theme: AppTheme, { active, tintColor, disabled }:
@@ -37,6 +42,7 @@ const createStyles = (theme: AppTheme, { active, tintColor, disabled }:
         outlineOffset: 3,
         outlineColor: active ? theme.card : 'transparent',
         outlineWidth: active ? 4 : undefined,
+        includeFontPadding: false,
     },
 });
 
@@ -50,6 +56,9 @@ function IconButton<const NAME>(props: Props<NAME>) {
         tintColor,
         active,
         textColorVariant,
+        stylesContainer,
+        stylesButton,
+        size,
         ...pressableProps
     } = props;
 
@@ -62,28 +71,35 @@ function IconButton<const NAME>(props: Props<NAME>) {
         { active, tintColor, disabled: disabled ?? undefined },
     );
 
+    const normalizedButtonStyles = Array.isArray(stylesButton) ? stylesButton : [stylesButton];
+
     return (
         <BlockListView
             spacing="2xs"
             withCenteredContent
+            style={stylesContainer}
         >
             <Pressable
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...pressableProps}
                 onPress={handlePress}
                 disabled={disabled}
-                style={styles.button}
+                style={[styles.button, ...normalizedButtonStyles]}
             >
                 <Icon
                     name={iconName}
                     color="#ffffff"
+                    size={size}
                 />
             </Pressable>
-            <Text
-                colorVariant={textColorVariant}
-            >
-                {title}
-            </Text>
+            {isDefined(title) && (
+                <Text
+                    colorVariant={textColorVariant}
+                >
+                    {title}
+                </Text>
+            ) }
+
         </BlockListView>
     );
 }

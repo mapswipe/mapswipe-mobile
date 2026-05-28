@@ -15,6 +15,8 @@ import useThemedStyles from '@/hooks/useThemedStyles';
 const createStyles = (theme: AppTheme, { variant }: { variant: StyleVariant }) => (
     StyleSheet.create({
         textInput: {
+            includeFontPadding: false,
+            padding: 0,
             color: variant === 'brand' ? theme.textOnBrand : theme.textPrimary,
         },
     })

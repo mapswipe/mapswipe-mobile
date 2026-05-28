@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: SPACING_MD,
-        justifyContent: 'center',
+        paddingTop: 100,
     },
 });
 
@@ -116,7 +116,7 @@ function SessionOutro(props: Props) {
                     disabled={inProgress}
                     onPress={onContinueMapping}
                 />
-                <Text variant="label">
+                <Text variant="label" colorVariant="brand">
                     {t('continueMappingHelp')}
                 </Text>
             </BlockListView>
@@ -130,7 +130,7 @@ function SessionOutro(props: Props) {
                     disabled={inProgress}
                     onPress={onCompleteSession}
                 />
-                <Text variant="label">
+                <Text variant="label" colorVariant="brand">
                     {t('completeSessionHelp')}
                 </Text>
             </BlockListView>
@@ -144,7 +144,7 @@ function SessionOutro(props: Props) {
                     disabled={inProgress}
                     onPress={onGoBack}
                 />
-                <Text variant="label">
+                <Text variant="label" colorVariant="brand">
                     {t('goBackHelp')}
                 </Text>
             </BlockListView>
@@ -158,7 +158,7 @@ function SessionOutro(props: Props) {
                     disabled={inProgress}
                     onPress={onDiscardSession}
                 />
-                <Text variant="label">
+                <Text variant="label" colorVariant="brand">
                     {t('discardSessionHelp')}
                 </Text>
             </BlockListView>

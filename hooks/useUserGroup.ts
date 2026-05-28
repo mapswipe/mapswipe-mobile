@@ -50,7 +50,12 @@ function useUserGroups(userId: string | undefined) {
     const [loadingGroupData, setLoadingGroupData] = useState(true);
 
     useEffect(() => {
-        if (groupKeys.length === 0) return;
+        if (groupKeys.length === 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setUserGroups([]);
+            setLoadingGroupData(false);
+            return;
+        }
 
         // Subscribe to real-time updates for each group and merge into state
         const unsubscribes = groupKeys.map((key) => {
@@ -58,8 +63,12 @@ function useUserGroups(userId: string | undefined) {
 
             return onValue(groupRef, (snapshot) => {
                 const groupData = snapshot.val() as FbUserGroup;
-
-                if (!snapshot.exists() || !groupData.name) return;
+                if (!snapshot.exists()) {
+                    setUserGroups((prev) => prev.filter((group) => group.groupId !== key));
+                    setLoadingGroupData(false);
+                    return;
+                }
+                if (!groupData.name) return;
 
                 setUserGroups((prev) => [
                     ...prev.filter((group) => group.groupId !== key),

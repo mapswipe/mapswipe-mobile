@@ -16,6 +16,7 @@ import {
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { sendPasswordResetEmail } from 'firebase/auth';
+import { off } from 'firebase/database';
 import { gql } from 'urql';
 
 import BlockListView from '@/components/BlockListView';
@@ -41,7 +42,10 @@ import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
-import { firebaseAuth } from '@/utils/firebase';
+import {
+    firebaseAuth,
+    firebaseRef,
+} from '@/utils/firebase';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USER_STATS = gql`
@@ -84,6 +88,7 @@ const ACCESSIBILITY_KEY = '@accessibility';
 
 function Profile() {
     const { user } = useAuth();
+    const { currentUser } = firebaseAuth;
     const router = useRouter();
     const styles = useThemedStyles(createStyles);
     const [accessibility, setAccessibility] = useState<string>('disabled');
@@ -117,10 +122,6 @@ function Profile() {
     const refreshPage = useCallback(() => {
         refetchUserStats();
     }, [refetchUserStats]);
-
-    const handleLogout = useCallback(() => {
-        firebaseAuth.signOut();
-    }, []);
 
     const onHandleChangeUsername = useCallback(() => {
         router.push('(auth)/changeUsername');
@@ -195,6 +196,29 @@ function Profile() {
         });
     }, [handleAsync, user, t]);
 
+    const handleDelete = useCallback(async () => {
+        const userRef = firebaseRef(`v2/users/${user?.uid}`);
+        off(userRef, 'value');
+        if (currentUser) {
+            currentUser.delete()
+                .then(() => {
+                    showAlert({
+                        title: t('accountDeleted'),
+                        message: t('accountDeletedSuccessMessage'),
+                        alertType: 'info',
+                    });
+                    router.replace('/(auth)/login');
+                })
+                .catch(() => {
+                    showAlert({
+                        title: t('accountDeletionFailed'),
+                        message: t('accountDeletionFailedMessage'),
+                        alertType: 'error',
+                    });
+                });
+        }
+    }, [user?.uid, currentUser, t, router]);
+
     const handleResetPasswordClick = useCallback(() => {
         showConfirm({
             title: 'Reset Password',
@@ -202,6 +226,16 @@ function Profile() {
             onConfirm: handleResetPress,
         });
     }, [handleResetPress]);
+
+    const handleDeleteAccountClick = useCallback(() => {
+        showConfirm({
+            title: t('deleteAccountQuestion'),
+            message: t(
+                'Are you sure you want to delete you account? This action cannot be undone!',
+            ),
+            onConfirm: handleDelete,
+        });
+    }, [handleDelete, t]);
 
     const settingItems: ButtonLayoutProps[] = [
         {
@@ -250,7 +284,7 @@ function Profile() {
         },
         {
             title: 'Delete Account',
-            onPress: handleLogout,
+            onPress: handleDeleteAccountClick,
             colorVariant: 'danger',
         },
         { title: 'gap' },

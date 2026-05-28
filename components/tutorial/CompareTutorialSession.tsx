@@ -10,7 +10,6 @@ import {
     View,
 } from 'react-native';
 import {
-    isDefined,
     isNotDefined,
     listToMap,
 } from '@togglecorp/fujs';

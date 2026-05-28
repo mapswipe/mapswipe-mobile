@@ -3,6 +3,7 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
+import { EnrichedMarkdownText } from 'react-native-enriched-markdown';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 
@@ -14,7 +15,10 @@ import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
-import { SCREEN_WIDTH } from '@/constants/dimensions';
+import {
+    FONT_SIZE_SM,
+    SCREEN_WIDTH,
+} from '@/constants/dimensions';
 import { AppTheme } from '@/constants/theme';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useThemedStyles from '@/hooks/useThemedStyles';
@@ -29,9 +33,6 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     name: {
         fontSize: 20,
         fontWeight: 'bold',
-    },
-    detailsContainer: {
-        minHeight: 140,
     },
     image: {
         width: '100%',
@@ -110,8 +111,12 @@ export default function ProjectDetail() {
     const { data: project } = useFirebaseDatabase<FbProject>({ query: projectQuery });
 
     return (
-        <Page title={project?.name ?? 'Project'}>
-            <BlockListView>
+        <Page
+            title={project?.name ?? 'Project'}
+        >
+            <BlockListView
+                spacing="2xs"
+            >
                 <View>
                     <Image
                         source={project?.image}
@@ -149,11 +154,20 @@ export default function ProjectDetail() {
                         </InlineListView>
                     </View>
                 </View>
-                <BlockListView withPadding>
-                    <View style={styles.detailsContainer}>
-                        <Text>
-                            {project?.projectDetails}
-                        </Text>
+                <BlockListView
+                    withPadding
+                    spacing="2xs"
+                >
+                    <View>
+                        <EnrichedMarkdownText
+                            markdown={project?.projectDetails ?? ''}
+                            markdownStyle={{
+                                paragraph: {
+                                    fontSize: FONT_SIZE_SM,
+                                    lineHeight: 20,
+                                },
+                            }}
+                        />
                     </View>
                     <Link
                         href={{

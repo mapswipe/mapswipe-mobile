@@ -12,7 +12,11 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { isDefined } from '@togglecorp/fujs';
 
+import BlockListView from '@/components/BlockListView';
+import IconButton from '@/components/IconButton';
+import Modal from '@/components/Modal';
 import Page from '@/components/Page';
+import Text from '@/components/Text';
 import TutorialPager from '@/components/tutorial/TutorialPager';
 import {
     ScenarioState,
@@ -42,8 +46,7 @@ const styles = StyleSheet.create({
 
 function Tutorial() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
-    const { t } = useTranslation('tutorialScreen');
-
+    const { t } = useTranslation(['tutorialScreen', 'Tutorial']);
     const projectQuery = useMemo(() => (
         firebaseRef(`v2/projects/${projectId}`)
     ), [projectId]);
@@ -152,6 +155,15 @@ function Tutorial() {
 
     const isLoading = !projectDetails || !tutorialDetails;
 
+    const [modal, setModal] = useState<boolean>(false);
+
+    const infoButton = () => (
+        <IconButton
+            name={!modal}
+            iconName="information-outline"
+            onPress={setModal}
+        />
+    );
     return (
         <Page
             title={t('pageTitle')}
@@ -159,6 +171,7 @@ function Tutorial() {
             scrollable={false}
             showBackButton
             headerTitleAlign="center"
+            headerRight={infoButton}
         >
             {isLoading ? (
                 <View style={styles.loaderContainer}>
@@ -185,6 +198,19 @@ function Tutorial() {
                     }
                 />
             )}
+            <Modal
+                open={!modal}
+                visible={modal}
+                onClose={setModal}
+                closeButtonName="I understand"
+            >
+                <BlockListView spacing="2xs">
+                    <Text>{t('Tutorial:tutorial1')}</Text>
+                    <Text>{t('Tutorial:tutorial2')}</Text>
+                    <Text>{t('Tutorial:tutorial3')}</Text>
+                    <Text>{t('Tutorial:tutorial4')}</Text>
+                </BlockListView>
+            </Modal>
         </Page>
     );
 }

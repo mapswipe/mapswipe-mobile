@@ -18,7 +18,11 @@ import {
     SPACING_3XS,
     SPACING_XS,
 } from '@/constants/dimensions';
-import { FbObjCustomOption, FbTutorial, Results } from '@/utils/types';
+import {
+    FbObjCustomOption,
+    FbTutorial,
+    Results,
+} from '@/utils/types';
 
 import StageIndicator from './StageIndicator';
 import TutorialInformationPage from './TutorialInformationPage';

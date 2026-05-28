@@ -13,11 +13,17 @@ import { isNotDefined } from '@togglecorp/fujs';
 import { set as setToDatabase } from 'firebase/database';
 
 import CompareMappingSession from '@/components/CompareMappingSession';
+import IconButton from '@/components/IconButton';
 import LocateFeaturesMappingSession from '@/components/LocateFeaturesMappingSession';
+import Modal from '@/components/Modal';
 import Page from '@/components/Page';
 import SessionOutro, { type ResultSyncStatus } from '@/components/SessionOutro';
 import StreetMappingSession from '@/components/StreetMappingSession';
 import TileGridMappingSession from '@/components/TileGridMappingSession';
+import CompareInstructions from '@/components/tutorial/CompareInstructions';
+import LocateInstructions from '@/components/tutorial/LocateInstructions';
+import TileGridInstructions from '@/components/tutorial/TileGridInstructions';
+import ValidateInstructions from '@/components/tutorial/ValidateInstructions';
 import ValidateImageMappingSession from '@/components/ValidateImageMappingSession';
 import ValidateMappingSession from '@/components/ValidateMappingSession';
 import useAuth from '@/hooks/useAuth';
@@ -138,6 +144,16 @@ function MapTaskGroup() {
         startTimestampRef.current = new Date().toISOString();
     }, []);
 
+    const [modal, setModal] = useState<boolean>(false);
+
+    const infoButton = () => (
+        <IconButton
+            name={!modal}
+            iconName="information-outline"
+            onPress={setModal}
+        />
+    );
+
     return (
         <Page
             title={projectDetails?.projectInstruction ?? 'Map Project'}
@@ -145,6 +161,7 @@ function MapTaskGroup() {
             scrollable={false}
             showBackButton
             headerTitleAlign="center"
+            headerRight={infoButton}
         >
             {completed ? (
                 <SessionOutro
@@ -218,6 +235,41 @@ function MapTaskGroup() {
                     )}
                 </>
             )}
+            <Modal
+                open={!modal}
+                visible={modal}
+                onClose={setModal}
+                closeButtonName="I understand"
+            >
+                {(projectDetails?.projectType === PROJECT_TYPE_FIND
+                 || projectDetails?.projectType === PROJECT_TYPE_COMPLETENESS)
+                  && (
+                      <TileGridInstructions
+                          colorVariants="normal"
+                      />
+                  )}
+                {(projectDetails?.projectType === PROJECT_TYPE_VALIDATE
+                 || projectDetails?.projectType === PROJECT_TYPE_VALIDATE_IMAGE)
+                  && (
+                      <ValidateInstructions
+                          colorVariants="normal"
+                          customOptions={projectDetails.customOptions}
+                      />
+                  )}
+                {(projectDetails?.projectType === PROJECT_TYPE_COMPARE)
+                  && (
+                      <CompareInstructions
+                          colorVariants="normal"
+                      />
+                  )}
+                {(projectDetails?.projectType === PROJECT_TYPE_LOCATE_FEATURES)
+                  && (
+                      <LocateInstructions
+                          customOptions={projectDetails.customOptions}
+                          //   colorVariants="normal"
+                      />
+                  )}
+            </Modal>
         </Page>
     );
 }

@@ -27,12 +27,15 @@ const createStyles = (theme: AppTheme, { variant }: { variant: StyleVariant }) =
         label: {
             color: variant === 'brand' ? theme.textOnBrand : theme.textPrimary,
             fontSize: FONT_SIZE_XS,
+            includeFontPadding: false,
         },
         hint: {
             color: variant === 'brand' ? theme.textOnBrand : theme.textPrimary,
+            includeFontPadding: false,
         },
         error: {
             color: theme.error,
+            includeFontPadding: false,
         },
     })
 );

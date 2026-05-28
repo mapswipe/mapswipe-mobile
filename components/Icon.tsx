@@ -7,6 +7,7 @@ import {
     CircleIcon,
     CubeIcon,
     EggIcon,
+    EyeSlashIcon,
     FlagIcon,
     GlobeIcon,
     HandIcon,
@@ -69,7 +70,8 @@ export type IconName =
     | 'caret-left'
     | 'sign-out'
     | 'globe'
-    | 'warning-outline';
+    | 'warning-outline'
+    | 'eye-closed'
 
 const iconMap: Record<IconName, PhosphorIcon> = {
     'add-outline': PlusIcon,
@@ -110,6 +112,7 @@ const iconMap: Record<IconName, PhosphorIcon> = {
     'caret-left': CaretLeftIcon,
     'sign-out': SignOutIcon,
     globe: GlobeIcon,
+    'eye-closed': EyeSlashIcon,
 
 };
 

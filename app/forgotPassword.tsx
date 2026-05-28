@@ -79,6 +79,7 @@ function ForgoPassword() {
         >
             <BlockListView
                 spacing="sm"
+                withPadding
             >
                 <BlockListView withCenteredContent>
                     <Image
@@ -86,9 +87,7 @@ function ForgoPassword() {
                         source={logo}
                     />
                 </BlockListView>
-                <BlockListView
-                    withPadding
-                >
+                <BlockListView>
                     <TextInput
                         autoCapitalize="none"
                         autoCorrect={false}
@@ -101,9 +100,7 @@ function ForgoPassword() {
                         readOnly={loading}
                     />
                 </BlockListView>
-                <BlockListView
-                    withPadding
-                >
+                <BlockListView>
                     <Button
                         name={undefined}
                         onPress={handleResetPress}

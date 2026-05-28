@@ -183,6 +183,9 @@ export default function AppLayout() {
                         <Stack.Protected guard={!isAuthenticated}>
                             <Stack.Screen name="register" />
                         </Stack.Protected>
+                        <Stack.Protected guard={!isAuthenticated}>
+                            <Stack.Screen name="forgotPassword" />
+                        </Stack.Protected>
                         <Stack.Protected guard={isAuthenticated}>
                             <Stack.Screen name="(auth)" />
                         </Stack.Protected>

@@ -77,6 +77,7 @@ const createStyles = (
             width: fullWidth ? '100%' : undefined,
         },
         text: {
+            includeFontPadding: false,
             fontWeight: styleVariant === 'block' ? 'normal' : 'bold',
             textTransform: styleVariant !== 'underline' ? 'capitalize' : undefined,
             color: textColor,

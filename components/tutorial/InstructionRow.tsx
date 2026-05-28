@@ -27,10 +27,13 @@ interface Props {
     icon: React.ReactNode;
     title?: string;
     description: React.ReactNode;
+    colorVariant?: 'normal' | 'brand';
 }
 
 function InstructionRow(props: Props) {
-    const { icon, title, description } = props;
+    const {
+        icon, title, description, colorVariant = 'brand',
+    } = props;
 
     return (
         <View style={styles.row}>
@@ -39,11 +42,11 @@ function InstructionRow(props: Props) {
             </View>
             <BlockListView spacing="4xs" style={styles.textColumn}>
                 {title && (
-                    <Text variant="title" colorVariant="brand">
+                    <Text variant="title" colorVariant={colorVariant}>
                         {title}
                     </Text>
                 )}
-                <Text colorVariant="brand">
+                <Text colorVariant={colorVariant}>
                     {description}
                 </Text>
             </BlockListView>

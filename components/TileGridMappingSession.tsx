@@ -39,6 +39,7 @@ import {
     Results,
 } from '@/utils/types';
 
+import HideTileSelectionButton from './HideTileSelectionButton';
 import ImageTile from './ImageTile';
 
 const createStyles = () => StyleSheet.create({
@@ -70,6 +71,7 @@ function TileGridMappingSession(props: Props) {
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const completedRef = useRef(false);
+    const onLastPageRef = useRef(false);
 
     const styles = useThemedStyles(createStyles);
 
@@ -190,17 +192,23 @@ function TileGridMappingSession(props: Props) {
     const handleMomentumScrollEnd = useCallback((
         event: NativeSyntheticEvent<NativeScrollEvent>,
     ) => {
-        if (completedRef.current) {
-            return;
-        }
+        if (completedRef.current) return;
+
         const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
         const maxScrollable = contentSize.width - layoutMeasurement.width;
-        if (maxScrollable <= 0) {
-            return;
-        }
-        if (contentOffset.x >= maxScrollable - 1) {
-            completedRef.current = true;
-            onSessionComplete();
+
+        if (maxScrollable <= 0) return;
+        const arrivedAtEnd = contentOffset.x >= maxScrollable - 1;
+
+        if (arrivedAtEnd) {
+            if (onLastPageRef.current) {
+                completedRef.current = true;
+                onSessionComplete();
+            } else {
+                onLastPageRef.current = true;
+            }
+        } else {
+            onLastPageRef.current = false;
         }
     }, [onSessionComplete]);
 
@@ -224,6 +232,12 @@ function TileGridMappingSession(props: Props) {
             ) * (180 / Math.PI)
         );
     }, [projectDetails, groupDetails]);
+
+    const [hideTilePressValue, setHideTilePressValue] = useState(false);
+
+    const handleHideTilePress = useCallback(() => {
+        setHideTilePressValue((prev) => !prev);
+    }, []);
 
     return (
         <>
@@ -253,7 +267,7 @@ function TileGridMappingSession(props: Props) {
                                             : undefined
                                     }
                                     width={tileWidth}
-                                    tintColor={selectedOption?.color}
+                                    tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                     onPress={handleTilePress}
                                 />
                             );
@@ -284,6 +298,10 @@ function TileGridMappingSession(props: Props) {
                     bottomPadding={40}
                 />
             )}
+            <HideTileSelectionButton
+                isPressed={hideTilePressValue}
+                handleHideTileSelectionPress={handleHideTilePress}
+            />
             <ProgressBar
                 currentValue={Math.floor(currentTaskIndex / 2) + 1}
                 totalValue={Math.ceil(groupedTasks.length / 2)}

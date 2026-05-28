@@ -86,6 +86,7 @@ function Login() {
         >
             <BlockListView
                 spacing="sm"
+                withPadding
             >
                 <BlockListView
                     withCenteredContent
@@ -96,9 +97,7 @@ function Login() {
                         source={logo}
                     />
                 </BlockListView>
-                <BlockListView
-                    withPadding
-                >
+                <BlockListView>
                     <TextInput
                         autoCapitalize="none"
                         autoCorrect={false}
@@ -119,9 +118,7 @@ function Login() {
                         secureTextEntry
                     />
                 </BlockListView>
-                <BlockListView
-                    withPadding
-                >
+                <BlockListView>
                     <Text
                         variant="label"
                         style={styles.text}
