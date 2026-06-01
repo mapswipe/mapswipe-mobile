@@ -1,5 +1,6 @@
 {
-  "readyToStart": "You're ready to start MapSwiping!",
+  "readyToMap": "You're ready to map {{name}}.",
   "startMapping": "Start mapping",
+  "backToProject": "Back to project",
   "completedTutorial": "You're now equipped with all you need to contribute to humanitarian mapping using the app. You can come back any time for a refresher."
 }

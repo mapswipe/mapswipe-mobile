@@ -12,11 +12,9 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { isDefined } from '@togglecorp/fujs';
 
-import BlockListView from '@/components/BlockListView';
 import IconButton from '@/components/IconButton';
 import Modal from '@/components/Modal';
 import Page from '@/components/Page';
-import Text from '@/components/Text';
 import TutorialPager from '@/components/tutorial/TutorialPager';
 import TutorialWelcomeInfo from '@/components/tutorial/TutorialWelcomeInfo';
 import {
@@ -42,6 +40,10 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    infoBtn: {
+        padding: 0,
+        margin: 0,
     },
 });
 
@@ -164,6 +166,7 @@ function Tutorial() {
             name={!modal}
             iconName="information-outline"
             onPress={setModal}
+            stylesButton={styles.infoBtn}
         />
     );
     return (
