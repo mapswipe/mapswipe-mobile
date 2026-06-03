@@ -14,7 +14,8 @@ const createStyles = (
 ) => StyleSheet.create({
     container: {
         alignItems: 'flex-end',
-        paddingRight: 14,
+        paddingRight: options.size === 'small' ? 14 : 0,
+        paddingBottom: 20,
     },
     button: {
         backgroundColor: `${theme.backgroundTrack}66`,

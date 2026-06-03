@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     },
     hideButton: {
         position: 'absolute',
-        bottom: 10,
+        bottom: 0,
         alignSelf: 'center',
     },
 });
@@ -233,7 +233,6 @@ export default function ImageWrapper({
                 {loading && (
                     <ActivityIndicator
                         size="large"
-                        color="#fafafa"
                         style={styles.loader}
                     />
                 )}

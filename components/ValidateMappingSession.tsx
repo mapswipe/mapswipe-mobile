@@ -60,6 +60,9 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     loadingContainer: {
+        flex: 1,
+        display: 'flex',
+        justifyContent: 'center',
         alignItems: 'center',
     },
 });
@@ -167,13 +170,16 @@ function ValidateMappingSession(props: Props) {
 
     const disableOptions = currentTaskIndex === undefined || currentTaskIndex === -1;
 
+    if (!currentTask?.geojson) {
+        return (
+            <BlockListView style={styles.loadingContainer}>
+                <ActivityIndicator size="large" />
+            </BlockListView>
+        );
+    }
+
     return (
         <BlockListView style={styles.view}>
-            {isNotDefined(currentTask?.geojson) && (
-                <BlockListView style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" />
-                </BlockListView>
-            )}
             <FlatList
                 style={styles.tasks}
                 ref={flatListRef}
@@ -208,6 +214,7 @@ function ValidateMappingSession(props: Props) {
                         key={option.value}
                         title={option.title}
                         onPress={handleAnswerSelect}
+                        width={50}
                         // FIXME: No casting
                         iconName={option.icon as IconName}
                         tintColor={option.iconColor}

@@ -3,7 +3,10 @@ import {
     useLayoutEffect,
     useMemo,
 } from 'react';
-import { ActivityIndicator } from 'react-native';
+import {
+    ActivityIndicator,
+    StyleSheet,
+} from 'react-native';
 import {
     router,
     useLocalSearchParams,
@@ -25,6 +28,13 @@ import Text from '@/components/Text';
 import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
 import { firebaseRef } from '@/utils/firebase';
 
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
 function MapProjectIndex() {
     const navigation = useNavigation();
 
@@ -78,10 +88,14 @@ function MapProjectIndex() {
 
     if (pending) {
         return (
-            <Page title="Map project">
+            <Page
+                title="Map project"
+                scrollable={false}
+            >
                 <BlockListView
                     withPadding
                     withCenteredContent
+                    style={styles.container}
                 >
                     <ActivityIndicator size="large" />
                     <Text>

@@ -18,6 +18,7 @@ import Text from '@/components/Text';
 import {
     FONT_SIZE_SM,
     SCREEN_WIDTH,
+    SPACING_2XS,
 } from '@/constants/dimensions';
 import { AppTheme } from '@/constants/theme';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
@@ -59,10 +60,18 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     },
     backButtonContainer: {
         padding: 20,
+        position: 'absolute',
+        zIndex: 2,
+    },
+    projectDetails: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexGrow: 1,
     },
     projectDetailsText: {
+        paddingTop: 16,
         color: theme.card,
-        flexGrow: 1,
         fontWeight: 'bold',
         textAlign: 'center',
     },
@@ -97,6 +106,9 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         alignItems: 'center',
         flexGrow: 0,
     },
+    description: {
+        paddingHorizontal: SPACING_2XS,
+    },
 });
 
 export default function ProjectDetail() {
@@ -127,12 +139,14 @@ export default function ProjectDetail() {
                         <View style={styles.backButtonContainer}>
                             <BackButton />
                         </View>
-                        <Text
-                            variant="heading"
-                            style={styles.projectDetailsText}
-                        >
-                            {project?.projectTopic}
-                        </Text>
+                        <View style={styles.projectDetails}>
+                            <Text
+                                variant="heading"
+                                style={styles.projectDetailsText}
+                            >
+                                {project?.projectTopic}
+                            </Text>
+                        </View>
                         <InlineListView
                             style={styles.bottomBar}
                             spacing="3xs"
@@ -155,8 +169,8 @@ export default function ProjectDetail() {
                     </View>
                 </View>
                 <BlockListView
-                    withPadding
-                    spacing="2xs"
+                    spacing="xs"
+                    style={styles.description}
                 >
                     <View>
                         <EnrichedMarkdownText

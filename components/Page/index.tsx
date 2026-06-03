@@ -1,17 +1,21 @@
-import { useLayoutEffect } from 'react';
+import {
+    useCallback,
+    useLayoutEffect,
+} from 'react';
 import {
     ScrollView,
     StyleSheet,
-    View,
     ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from 'expo-router';
 
-import { FONT_SIZE_SM } from '@/constants/dimensions';
+import { FONT_SIZE_MD } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+
+import BackButton from '../BackButton';
 
 type Variant = 'normal' | 'brand';
 
@@ -29,6 +33,7 @@ interface Props {
     variant?: 'normal' | 'brand';
     scrollable?: boolean
     showBackButton?: boolean;
+    onClickBackButton?: () => void;
     headerTitleAlign?: 'left' | 'center';
     headerRight?: () => React.ReactNode;
 }
@@ -41,6 +46,7 @@ function Page(props: Props) {
         variant = 'normal',
         scrollable = true,
         showBackButton = false,
+        onClickBackButton,
         headerTitleAlign = 'left',
         headerRight,
     } = props;
@@ -48,37 +54,54 @@ function Page(props: Props) {
     const theme = useTheme();
     const styles = useThemedStyles(createStyles, { variant });
 
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            title,
-            headerShown: showBackButton,
-            headerBackVisible: showBackButton,
-            headerStyle: {
-                backgroundColor: theme.backgroundBrand,
-            },
-            headerTintColor: theme.textOnBrand,
-            headerShadowVisible: false,
-            headerTitleAlign,
-            headerTitleStyle: {
-                fontSize: FONT_SIZE_SM,
-            },
-            headerRight,
+    const backButton = useCallback(() => (
+        <BackButton
+            onPress={onClickBackButton}
+        />
+    ), [onClickBackButton]);
 
-        });
-    }, [navigation, title, theme, showBackButton, headerTitleAlign, headerRight]);
+    useLayoutEffect(
+        () => {
+            navigation.setOptions({
+                title,
+                headerShown: showBackButton,
+                headerBackVisible: false,
+                headerStyle: {
+                    backgroundColor: theme.backgroundBrand,
+                },
+                headerTintColor: theme.textOnBrand,
+                headerShadowVisible: false,
+                headerTitleAlign,
+                headerTitleStyle: {
+                    fontSize: FONT_SIZE_MD,
+                },
+                headerRight,
+                headerLeft: backButton
+                ,
+            });
+        },
+        [
+            navigation,
+            title,
+            theme,
+            showBackButton,
+            headerTitleAlign,
+            headerRight,
+            onClickBackButton,
+            backButton,
+        ],
+    );
 
     const content = scrollable ? <ScrollView>{children}</ScrollView> : children;
 
     if (showBackButton) {
-        // Header is shown — let it handle the top inset
         return (
-            <View style={[styles.page, style]}>
+            <SafeAreaView style={[styles.page, style]} edges={['bottom']}>
                 {content}
-            </View>
+            </SafeAreaView>
         );
     }
 
-    // No header — apply top safe area ourselves
     return (
         <SafeAreaView style={[styles.page, style]} edges={['top']}>
             {content}

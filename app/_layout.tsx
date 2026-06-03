@@ -189,6 +189,10 @@ export default function AppLayout() {
                         <Stack.Protected guard={isAuthenticated}>
                             <Stack.Screen name="(auth)" />
                         </Stack.Protected>
+                        <Stack.Screen
+                            name="languageSelectionList"
+                            options={{ headerShown: true }}
+                        />
                     </Stack>
                     <Toast config={toastConfig} />
                 </AuthContext.Provider>

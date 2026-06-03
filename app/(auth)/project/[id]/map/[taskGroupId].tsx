@@ -12,6 +12,8 @@ import {
 import { isNotDefined } from '@togglecorp/fujs';
 import { set as setToDatabase } from 'firebase/database';
 
+import BlockListView from '@/components/BlockListView';
+import Button from '@/components/Button';
 import CompareMappingSession from '@/components/CompareMappingSession';
 import IconButton from '@/components/IconButton';
 import LocateFeaturesMappingSession from '@/components/LocateFeaturesMappingSession';
@@ -19,6 +21,7 @@ import Modal from '@/components/Modal';
 import Page from '@/components/Page';
 import SessionOutro, { type ResultSyncStatus } from '@/components/SessionOutro';
 import StreetMappingSession from '@/components/StreetMappingSession';
+import Text from '@/components/Text';
 import TileGridMappingSession from '@/components/TileGridMappingSession';
 import CompareInstructions from '@/components/tutorial/CompareInstructions';
 import LocateInstructions from '@/components/tutorial/LocateInstructions';
@@ -50,6 +53,8 @@ function MapTaskGroup() {
 
     const startTimestampRef = useRef<string | undefined>(undefined);
     const endTimestampRef = useRef<string | undefined>(undefined);
+    const [modal, setModal] = useState<boolean>(false);
+    const [continueModal, setContinueModal] = useState<boolean>(false);
 
     const { user } = useAuth();
 
@@ -144,8 +149,6 @@ function MapTaskGroup() {
         startTimestampRef.current = new Date().toISOString();
     }, []);
 
-    const [modal, setModal] = useState<boolean>(false);
-
     const infoButton = () => (
         <IconButton
             name={!modal}
@@ -153,6 +156,14 @@ function MapTaskGroup() {
             onPress={setModal}
         />
     );
+
+    const handleContinueModalOpen = useCallback(() => {
+        setContinueModal(!continueModal);
+    }, [continueModal]);
+
+    const handleBack = useCallback(() => {
+        router.back();
+    }, [router]);
 
     return (
         <Page
@@ -162,6 +173,7 @@ function MapTaskGroup() {
             showBackButton
             headerTitleAlign="center"
             headerRight={infoButton}
+            onClickBackButton={handleContinueModalOpen}
         >
             {completed ? (
                 <SessionOutro
@@ -269,6 +281,34 @@ function MapTaskGroup() {
                           colorVariants="normal"
                       />
                   )}
+            </Modal>
+            <Modal
+                visible={continueModal}
+                open={!continueModal}
+            >
+                <BlockListView spacing="xs">
+                    <BlockListView spacing="3xs">
+                        <Text variant="title">
+                            Stop Mapping?
+                        </Text>
+                        <Text variant="label">
+                            {'You\'re about to leave the mapping screen.Are you sure you want to return to the menu?'}
+                        </Text>
+                    </BlockListView>
+                    <Button
+                        name="continue-mapping"
+                        spacing="xs"
+                        title="Continue mapping"
+                        onPress={handleContinueModalOpen}
+                    />
+                    <Button
+                        name="back-to-menu"
+                        colorVariant="primaryRed"
+                        spacing="xs"
+                        title="Back to Project"
+                        onPress={handleBack}
+                    />
+                </BlockListView>
             </Modal>
         </Page>
     );

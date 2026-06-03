@@ -86,7 +86,7 @@ function CompareTutorialSession(props: TutorialSessionProps) {
     }, [tasks, onResultsChange]);
 
     const tileWidth = useMemo(() => (
-        Math.max(100, Math.min(pageWidth - 80, pageHeight / 2 - 200))
+        Math.max(100, Math.min(pageWidth - 60, pageHeight / 2 - 180))
     ), [pageWidth, pageHeight]);
 
     const handleTilePress = useCallback((taskId: string) => {

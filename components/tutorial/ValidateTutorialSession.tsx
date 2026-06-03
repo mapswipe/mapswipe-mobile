@@ -84,6 +84,7 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
                         title={option.title}
                         iconName={option.icon as IconName}
                         tintColor={option.iconColor}
+                        width={50}
                         active={selectedValue === option.value}
                         disabled={disabled}
                         textColorVariant="brand"

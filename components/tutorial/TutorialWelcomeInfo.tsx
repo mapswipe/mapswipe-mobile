@@ -8,7 +8,7 @@ function TutorialWelcomeInfo() {
     const { t } = useTranslation('Tutorial');
     return (
         <BlockListView spacing="2xs">
-            <Text>{t('tutorial1')}</Text>
+            <Text variant="title">{t('tutorial1')}</Text>
             <Text>{t('tutorial2')}</Text>
             <Text>{t('tutorial3')}</Text>
             <Text>{t('tutorial4')}</Text>

@@ -47,7 +47,7 @@ const createStyles = () => StyleSheet.create({
     taskContent: {
         alignItems: 'center',
         width: SCREEN_WIDTH,
-        paddingBottom: 40,
+        paddingBottom: 10,
         gap: 10,
     },
 });
@@ -270,7 +270,7 @@ function CompareMappingSession(props: Props) {
                     referenceSize={tileWidth}
                     tileSize={tileWidth}
                     zoomLevel={projectDetails?.zoomLevel}
-                    bottomPadding={0}
+                    bottomPadding={20}
                 />
             )}
             <HideTileSelectionButton

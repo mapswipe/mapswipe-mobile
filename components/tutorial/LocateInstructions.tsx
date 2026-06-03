@@ -43,6 +43,7 @@ function LocateInstructions(props: Props) {
             </Text>
 
             <InstructionRow
+                colorVariant={colorVariants}
                 icon={<Icon name="hand-left-outline" color={iconColor} size={40} />}
                 description={t('locateSwipe')}
             />
@@ -53,6 +54,7 @@ function LocateInstructions(props: Props) {
                     key={option.value}
                     icon={(
                         <TapBadgeIcon
+                            iconColor={iconColor}
                             iconName="tap"
                             badgeNumber={option.value}
                             badgeColor={option.iconColor}

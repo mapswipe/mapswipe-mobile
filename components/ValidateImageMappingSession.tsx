@@ -212,6 +212,7 @@ function ValidateImageMappingSession(props: Props) {
                         key={option.value}
                         title={option.title}
                         onPress={handleAnswerSelect}
+                        width={50}
                         // FIXME: No casting
                         iconName={option.icon as IconName}
                         tintColor={option.iconColor}

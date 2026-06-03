@@ -37,14 +37,16 @@ interface Props {
 const createStyles = () => StyleSheet.create({
     container: {
         position: 'relative',
+        borderRadius: 10,
+        overflow: 'hidden',
     },
     mapView: {
         width: '100%',
-        aspectRatio: 0.8,
+        height: '100%',
     },
     hideButton: {
         position: 'absolute',
-        bottom: 10,
+        bottom: 0,
         alignSelf: 'center',
     },
 });

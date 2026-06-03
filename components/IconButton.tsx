@@ -25,17 +25,25 @@ interface Props<NAME> extends Omit<PressableProps, 'onPress'> {
     stylesContainer?: ViewStyle | ViewStyle[];
     stylesButton?: ViewStyle | ViewStyle[];
     size?: string | number;
+    width?: number | 'auto'
 }
 
-const createStyles = (theme: AppTheme, { active, tintColor, disabled }:
-    { active?: boolean; tintColor?: string; disabled?: boolean }) => StyleSheet.create({
+const createStyles = (theme: AppTheme, {
+    active, tintColor, disabled, width,
+}:
+    {
+        active?: boolean;
+        tintColor?: string;
+        disabled?: boolean,
+        width?: number | 'auto'
+    }) => StyleSheet.create({
     button: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: tintColor,
         opacity: disabled ? 0.5 : 1,
-        width: 50,
+        width,
         aspectRatio: 1,
         borderRadius: '50%',
         outlineStyle: 'dashed',
@@ -59,6 +67,7 @@ function IconButton<const NAME>(props: Props<NAME>) {
         stylesContainer,
         stylesButton,
         size,
+        width = 'auto',
         ...pressableProps
     } = props;
 
@@ -68,7 +77,9 @@ function IconButton<const NAME>(props: Props<NAME>) {
 
     const styles = useThemedStyles(
         createStyles,
-        { active, tintColor, disabled: disabled ?? undefined },
+        {
+            active, tintColor, disabled: disabled ?? undefined, width,
+        },
     );
 
     const normalizedButtonStyles = Array.isArray(stylesButton) ? stylesButton : [stylesButton];
