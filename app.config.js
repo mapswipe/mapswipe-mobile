@@ -1,12 +1,19 @@
 /* eslint-env node */
 
-const isStaging = process.env.APP_ENV === 'staging';
+const APP_ENV = process.env.APP_ENV ?? "development";
 
-const stagingConfig = require('./app.staging.json').expo;
-const prodConfig = require('./app.prod.json').expo;
+const configs = {
+  development: require("./app.dev.json").expo,
+  staging: require("./app.staging.json").expo,
+  production: require("./app.prod.json").expo,
+};
 
-const config = isStaging ? stagingConfig : prodConfig;
+if (!(APP_ENV in configs)) {
+  throw new Error(
+    `Unknown APP_ENV: "${APP_ENV}". Expected one of: ${Object.keys(configs).join(", ")}`,
+  );
+}
 
 module.exports = {
-  expo: config,
+  expo: configs[APP_ENV],
 };

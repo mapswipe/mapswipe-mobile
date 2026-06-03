@@ -288,7 +288,7 @@ function Register() {
                         <Link
                             spacing="xs"
                             href={{
-                                pathname: '/loginWithOsm',
+                                pathname: '/login/osm',
                             }}
                             title={t('loginSignupWithOSM')}
                         />
