@@ -16,7 +16,7 @@ export const SUPPORTED_PROJECT_TYPES = [
     PROJECT_TYPE_LOCATE_FEATURES,
 ];
 
-export const communityDashboardUrl = process.env.EXPO_PUBLIC_COMMUNITY_DASHBOARD_URL;
+export const communityDashboardUrl = process.env.EXPO_PUBLIC_COMMUNITY_DASHBOARD_URL ?? 'https://community.mapswipe.org';
 export const missingMapUrl = 'https://www.missingmaps.org';
 export const mapSwipeWebUrl = 'https://mapswipe.org/';
 export const gqlEndpoint = `${process.env.EXPO_PUBLIC_GRAPHQL_ENDPOINT}/graphql/`;
