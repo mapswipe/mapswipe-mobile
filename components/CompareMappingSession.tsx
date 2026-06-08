@@ -25,6 +25,7 @@ import ProgressBar from '@/components/ProgressBar';
 import ScaleBar from '@/components/ScaleBar';
 import Text from '@/components/Text';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
+import useAccessibility from '@/hooks/useAccessibility';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
@@ -36,6 +37,7 @@ import {
     Results,
 } from '@/utils/types';
 
+import AccessibilityInfoModal from './AccessibilityInfoModal';
 import HideTileSelectionButton from './HideTileSelectionButton';
 import ImageTile from './ImageTile';
 
@@ -50,6 +52,7 @@ const createStyles = () => StyleSheet.create({
         paddingBottom: 10,
         gap: 10,
     },
+
 });
 
 const VIEWABILITY_CONFIG = {
@@ -208,8 +211,23 @@ function CompareMappingSession(props: Props) {
 
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
 
-    const handleHideTilePress = useCallback(() => {
-        setHideTilePressValue((prev) => !prev);
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
+    }, []);
+
+    const { isAccessibilityEnabled } = useAccessibility();
+
+    const getAccessibilityBadge = useCallback((value: number | undefined) => {
+        switch (value) {
+            case 1: return { iconName: 'checkmark-outline', color: '#22C55E' } as const;
+            case 2: return { iconName: 'question-mark', color: '#F59E0B' } as const;
+            case 3: return { iconName: 'ban-outline', color: '#EF4444' } as const;
+            default: return undefined;
+        }
     }, []);
 
     return (
@@ -227,6 +245,12 @@ function CompareMappingSession(props: Props) {
                     if (!task.url || !task.urlB) {
                         return null;
                     }
+                    const badge = isAccessibilityEnabled && !hideTilePressValue
+                        ? getAccessibilityBadge(
+                            typeof result === 'number' ? result : undefined,
+                        )
+                        : undefined;
+
                     return (
                         <View
                             key={task.taskId}
@@ -240,6 +264,8 @@ function CompareMappingSession(props: Props) {
                                 width={tileWidth}
                                 tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                 onPress={handleTilePress}
+                                accessibilityBadgeIconName={badge?.iconName}
+                                accessibilityBadgeColor={badge?.color}
                             />
                             <Text colorVariant="brand">After</Text>
                             <ImageTile
@@ -249,6 +275,8 @@ function CompareMappingSession(props: Props) {
                                 width={tileWidth}
                                 tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                 onPress={handleTilePress}
+                                accessibilityBadgeIconName={badge?.iconName}
+                                accessibilityBadgeColor={badge?.color}
                             />
                         </View>
                     );
@@ -274,14 +302,16 @@ function CompareMappingSession(props: Props) {
                 />
             )}
             <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                handleHideTileSelectionPressOut={handleHideTilePressOut}
                 isPressed={hideTilePressValue}
-                handleHideTileSelectionPress={handleHideTilePress}
             />
             <ProgressBar
                 currentValue={Math.floor(currentTaskIndex + 1)}
                 totalValue={Math.ceil(compressedTasks.length)}
                 colorVariant="brand"
             />
+            {isAccessibilityEnabled && <AccessibilityInfoModal />}
         </>
     );
 }

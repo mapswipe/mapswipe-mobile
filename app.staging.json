@@ -7,16 +7,16 @@
         "icon": "./assets/images/icon.png",
         "scheme": "mapswipemobilestaging",
         "newArchEnabled": true,
-        "backgroundColor": "#ffffff",
+        "backgroundColor": "#0D1949",
         "userInterfaceStyle": "light",
         "splash": {
             "image": "./assets/images/splash-icon.png",
             "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
+            "backgroundColor": "#0D1949"
         },
         "ios": {
             "bundleIdentifier": "org.missingmaps.mapswipe.staging",
-            "backgroundColor": "#ffffff",
+            "backgroundColor": "#0D1949",
             "supportsTablet": true
         },
         "android": {

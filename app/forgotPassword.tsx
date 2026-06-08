@@ -5,12 +5,12 @@ import {
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { sendPasswordResetEmail } from 'firebase/auth';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
-import Link from '@/components/Link';
 import Page from '@/components/Page';
 import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
@@ -37,6 +37,7 @@ function ForgoPassword() {
     // FIXME: Update the use of this function
     const { handleAsync, loading } = useAsyncHandler();
     const { t } = useTranslation('signup');
+    const router = useRouter();
 
     const handleResetPress = useCallback(async () => {
         handleAsync(async () => {
@@ -110,11 +111,9 @@ function ForgoPassword() {
                         styleVariant="filled"
                     />
                     <BlockListView>
-                        <Link
-                            spacing="xs"
-                            href={{
-                                pathname: '/login',
-                            }}
+                        <Button
+                            name={undefined}
+                            onPress={router.back}
                             title={t('backToLogin')}
                         />
                     </BlockListView>

@@ -7,6 +7,7 @@ import {
     CircleIcon,
     CubeIcon,
     EggIcon,
+    EyeIcon,
     EyeSlashIcon,
     FlagIcon,
     GlobeIcon,
@@ -22,6 +23,7 @@ import {
     MinusIcon,
     PlusIcon,
     ProhibitIcon,
+    QuestionIcon,
     ShapesIcon,
     SignOutIcon,
     SmileyIcon,
@@ -74,6 +76,8 @@ export type IconName =
     | 'globe'
     | 'warning-outline'
     | 'eye-closed'
+    | 'eye'
+    | 'question-mark'
 
 const iconMap: Record<IconName, PhosphorIcon> = {
     'add-outline': PlusIcon,
@@ -116,7 +120,8 @@ const iconMap: Record<IconName, PhosphorIcon> = {
     'sign-out': SignOutIcon,
     globe: GlobeIcon,
     'eye-closed': EyeSlashIcon,
-
+    eye: EyeIcon,
+    'question-mark': QuestionIcon,
 };
 
 interface Props extends IconProps {

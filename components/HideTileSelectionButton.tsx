@@ -28,13 +28,20 @@ const createStyles = (
 });
 
 interface HideTileSelectionButtonProps {
-    handleHideTileSelectionPress? : () => void;
+    handleHideTileSelectionPressIn? : () => void;
+    handleHideTileSelectionPressOut? : () => void;
     size?: sizeVariant;
     isPressed: boolean;
 }
 
 function HideTileSelectionButton(props:HideTileSelectionButtonProps) {
-    const { handleHideTileSelectionPress, isPressed, size = 'small' } = props;
+    const {
+        handleHideTileSelectionPressIn,
+        handleHideTileSelectionPressOut,
+        isPressed,
+        size = 'small',
+    } = props;
+
     const styles = useThemedStyles(createStyles, {
         size,
         isPressed,
@@ -42,8 +49,8 @@ function HideTileSelectionButton(props:HideTileSelectionButtonProps) {
 
     return (
         <IconButton
-            onPressIn={handleHideTileSelectionPress}
-            onPressOut={handleHideTileSelectionPress}
+            onPressIn={handleHideTileSelectionPressIn}
+            onPressOut={handleHideTileSelectionPressOut}
             stylesContainer={styles.container}
             stylesButton={styles.button}
             iconName="eye-closed"

@@ -76,8 +76,13 @@ function MapTile(props: Props) {
 
         return [centerX, centerY];
     }, [geoJson]);
-    const handleHideTilePress = useCallback(() => {
-        setHideShapeSource((prev) => !prev);
+
+    const handleHideTilePressIn = useCallback(() => {
+        setHideShapeSource(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideShapeSource(false);
     }, []);
 
     return (
@@ -101,23 +106,22 @@ function MapTile(props: Props) {
                         sourceID="base-raster-source"
                     />
                 </RasterSource>
-                {!hideShapeSource && (
-                    <ShapeSource
-                        id="shape-source"
-                        shape={geoJson}
-                    >
-                        <LineLayer
-                            id="shape-line-layer"
-                            sourceID="shape-source"
-                            // eslint-disable-next-line react-native/no-inline-styles
-                            style={{
-                                lineWidth: 1,
-                                lineOpacity: 0.9,
-                                lineColor: '#ffffff',
-                            }}
-                        />
-                    </ShapeSource>
-                )}
+                <ShapeSource
+                    id="shape-source"
+                    shape={geoJson}
+                >
+                    <LineLayer
+                        id="shape-line-layer"
+                        sourceID="shape-source"
+                        // eslint-disable-next-line react-native/no-inline-styles
+                        style={{
+                            lineWidth: 1,
+                            lineOpacity: 0.9,
+                            lineColor: '#ffffff',
+                            visibility: hideShapeSource ? 'none' : 'visible',
+                        }}
+                    />
+                </ShapeSource>
 
                 {isDefined(center) && (
                     <Camera
@@ -130,7 +134,8 @@ function MapTile(props: Props) {
             <View style={styles.hideButton}>
                 <HideTileSelectionButton
                     isPressed={hideShapeSource}
-                    handleHideTileSelectionPress={handleHideTilePress}
+                    handleHideTileSelectionPressIn={handleHideTilePressIn}
+                    handleHideTileSelectionPressOut={handleHideTilePressOut}
                     size="large"
                 />
             </View>

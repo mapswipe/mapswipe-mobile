@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
 import { FONT_SIZE_MD } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
@@ -92,11 +93,16 @@ function Page(props: Props) {
         ],
     );
 
+    // Header is always brand-colored, so status bar needs light content whenever
+    // the brand background is visible (either as the page bg or as the header).
+    const statusBarStyle = variant === 'brand' || showBackButton ? 'light' : 'dark';
+
     const content = scrollable ? <ScrollView>{children}</ScrollView> : children;
 
     if (showBackButton) {
         return (
             <SafeAreaView style={[styles.page, style]} edges={['bottom']}>
+                <StatusBar style={statusBarStyle} />
                 {content}
             </SafeAreaView>
         );
@@ -104,6 +110,7 @@ function Page(props: Props) {
 
     return (
         <SafeAreaView style={[styles.page, style]} edges={['top']}>
+            <StatusBar style={statusBarStyle} />
             {content}
         </SafeAreaView>
     );

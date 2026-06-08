@@ -26,6 +26,7 @@ import {
 
 import ProgressBar from '@/components/ProgressBar';
 import ScaleBar from '@/components/ScaleBar';
+import useAccessibility from '@/hooks/useAccessibility';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
@@ -39,6 +40,7 @@ import {
     Results,
 } from '@/utils/types';
 
+import AccessibilityInfoModal from './AccessibilityInfoModal';
 import HideTileSelectionButton from './HideTileSelectionButton';
 import ImageTile from './ImageTile';
 
@@ -235,8 +237,23 @@ function TileGridMappingSession(props: Props) {
 
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
 
-    const handleHideTilePress = useCallback(() => {
-        setHideTilePressValue((prev) => !prev);
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
+    }, []);
+
+    const { isAccessibilityEnabled } = useAccessibility();
+
+    const getAccessibilityBadge = useCallback((value: number | undefined) => {
+        switch (value) {
+            case 1: return { iconName: 'checkmark-outline', color: '#22C55E' } as const;
+            case 2: return { iconName: 'question-mark', color: '#F59E0B' } as const;
+            case 3: return { iconName: 'ban-outline', color: '#EF4444' } as const;
+            default: return undefined;
+        }
     }, []);
 
     return (
@@ -256,6 +273,12 @@ function TileGridMappingSession(props: Props) {
                             if (!task.url) {
                                 return null;
                             }
+                            const badge = isAccessibilityEnabled && !hideTilePressValue
+                                ? getAccessibilityBadge(
+                                    typeof result === 'number' ? result : undefined,
+                                )
+                                : undefined;
+
                             return (
                                 <ImageTile
                                     key={task.taskId}
@@ -269,6 +292,8 @@ function TileGridMappingSession(props: Props) {
                                     width={tileWidth}
                                     tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                     onPress={handleTilePress}
+                                    accessibilityBadgeIconName={badge?.iconName}
+                                    accessibilityBadgeColor={badge?.color}
                                 />
                             );
                         })}
@@ -299,14 +324,16 @@ function TileGridMappingSession(props: Props) {
                 />
             )}
             <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                handleHideTileSelectionPressOut={handleHideTilePressOut}
                 isPressed={hideTilePressValue}
-                handleHideTileSelectionPress={handleHideTilePress}
             />
             <ProgressBar
                 currentValue={Math.floor(currentTaskIndex / 2) + 1}
                 totalValue={Math.ceil(groupedTasks.length / 2)}
                 colorVariant="brand"
             />
+            {isAccessibilityEnabled && <AccessibilityInfoModal />}
         </>
     );
 }
