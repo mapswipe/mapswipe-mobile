@@ -121,7 +121,7 @@ jobs:
           - Commit: \`${{ github.sha }}\`
           - Build: #${{ github.run_number }}
           - Date: $(date +'%Y-%m-%d %H:%M:%S UTC')
-          - Package: \`org.missingmaps.mapswipe.staging\`
+          - Package: \`org.missingmaps.mapswipe.dev\`
 
           ---
           Once testing is complete, approve the production deployment in GitHub Actions." \

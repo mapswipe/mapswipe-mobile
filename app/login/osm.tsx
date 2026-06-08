@@ -9,9 +9,12 @@ import {
 import { StyleSheet } from 'react-native';
 import { Checkbox } from 'expo-checkbox';
 import { Image } from 'expo-image';
-import * as Linking from 'expo-linking';
+import {
+    createURL,
+    parse,
+} from 'expo-linking';
 import { useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
+import { openAuthSessionAsync } from 'expo-web-browser';
 import { signInWithCustomToken } from 'firebase/auth';
 
 import logo from '@/assets/images/icon.png';
@@ -63,13 +66,13 @@ function LoginWithOsm() {
 
     const handleLoginPress = useCallback(async () => {
         const authUrl = `${process.env.EXPO_PUBLIC_OSM_AUTH_URL}/redirect`;
-        const redirectUri = Linking.createURL('login/osm');
+        const redirectUri = createURL('login/osm');
         try {
             setPending(true);
-            const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+            const result = await openAuthSessionAsync(authUrl, redirectUri);
             if (result.type === 'success') {
                 const { url } = result;
-                const parsedUrl = Linking.parse(url);
+                const parsedUrl = parse(url);
                 const { token } = parsedUrl.queryParams as { token?: string };
 
                 if (token) {
