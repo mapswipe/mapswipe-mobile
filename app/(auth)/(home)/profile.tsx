@@ -1,6 +1,5 @@
 import {
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -14,7 +13,6 @@ import {
     View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     deleteUser,
     sendPasswordResetEmail,
@@ -40,6 +38,7 @@ import {
 import { SPACING_MD } from '@/constants/dimensions';
 import { AppTheme } from '@/constants/theme';
 import { useUserStatsQuery } from '@/generated/types/graphql';
+import useAccessibility from '@/hooks/useAccessibility';
 import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
 import useTheme from '@/hooks/useTheme';
@@ -83,14 +82,12 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     },
 });
 
-const ACCESSIBILITY_KEY = '@accessibility';
-
 function Profile() {
     const { user } = useAuth();
     const { currentUser } = firebaseAuth;
     const router = useRouter();
     const styles = useThemedStyles(createStyles);
-    const [accessibility, setAccessibility] = useState<string>('disabled');
+    const { isAccessibilityEnabled, setAccessibility } = useAccessibility();
     const { t, i18n } = useTranslation('profileScreen');
     const theme = useTheme();
     // FIXME: Update the use of this function
@@ -110,14 +107,6 @@ function Profile() {
         [i18n.language],
     );
 
-    useEffect(() => {
-        const load = async () => {
-            const value = await AsyncStorage.getItem(ACCESSIBILITY_KEY);
-            setAccessibility(value ?? '');
-        };
-        load();
-    }, []);
-
     const refreshPage = useCallback(() => {
         refetchUserStats();
     }, [refetchUserStats]);
@@ -134,10 +123,22 @@ function Profile() {
     }, [router]);
 
     const onHandleAccessibilityChange = useCallback(async () => {
-        const newValue = accessibility === 'enabled' ? 'disabled' : 'enabled';
-        await AsyncStorage.setItem(ACCESSIBILITY_KEY, newValue);
-        setAccessibility(newValue);
-    }, [accessibility]);
+        try {
+            await setAccessibility(!isAccessibilityEnabled);
+            showAlert({
+                title: 'Accessibility updated',
+                message: isAccessibilityEnabled ? 'Accessibility mode disabled.' : 'Accessibility mode enabled.',
+                alertType: 'success',
+            });
+        } catch {
+            showAlert({
+                title: 'Update failed',
+                message: 'Could not update accessibility setting. Please try again.',
+                alertType: 'error',
+                shouldHideAfterDelay: false,
+            });
+        }
+    }, [isAccessibilityEnabled, setAccessibility]);
 
     const onHandleMissingMapsClick = useCallback(() => {
         router.push({
@@ -264,11 +265,11 @@ function Profile() {
                         true: theme.success,
                     }}
                     thumbColor={
-                        accessibility === 'enabled'
+                        isAccessibilityEnabled
                             ? theme.primaryBlue
                             : theme.backgroundMuted
                     }
-                    value={accessibility === 'enabled'}
+                    value={isAccessibilityEnabled}
                     style={styles.switch}
                 />
             ),

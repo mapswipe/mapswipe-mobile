@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 
+import Icon, { type IconName } from '@/components/Icon';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
@@ -46,6 +47,16 @@ const createStyles = (
         backgroundColor: tintColor,
         opacity: 0.2,
     },
+    accessibilityBadge: {
+        position: 'absolute',
+        top: 4,
+        left: 4,
+        width: 24,
+        height: 24,
+        borderRadius: 4,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 });
 
 interface Props<TASK_ID> {
@@ -55,6 +66,8 @@ interface Props<TASK_ID> {
     urlB: string | undefined;
     width: number;
     tintColor?: string;
+    accessibilityBadgeIconName?: IconName;
+    accessibilityBadgeColor?: string;
 }
 
 function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
@@ -65,6 +78,8 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
         urlB,
         width,
         tintColor,
+        accessibilityBadgeIconName,
+        accessibilityBadgeColor,
     } = props;
 
     const styles = useThemedStyles(createStyles, { width, tintColor });
@@ -91,6 +106,21 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
                 <View
                     style={styles.view}
                 />
+                {accessibilityBadgeIconName && accessibilityBadgeColor && (
+                    <View
+                        style={[
+                            styles.accessibilityBadge,
+                            { backgroundColor: accessibilityBadgeColor },
+                        ]}
+                    >
+                        <Icon
+                            name={accessibilityBadgeIconName}
+                            color="#ffffff"
+                            size={14}
+                            weight="bold"
+                        />
+                    </View>
+                )}
             </ImageBackground>
         </Pressable>
     );

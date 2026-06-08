@@ -25,6 +25,7 @@ import ProgressBar from '@/components/ProgressBar';
 import ScaleBar from '@/components/ScaleBar';
 import Text from '@/components/Text';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
+import useAccessibility from '@/hooks/useAccessibility';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
@@ -36,7 +37,7 @@ import {
     Results,
 } from '@/utils/types';
 
-import HideTileSelectionButton from './HideTileSelectionButton';
+import IconButton from './IconButton';
 import ImageTile from './ImageTile';
 
 const createStyles = () => StyleSheet.create({
@@ -49,6 +50,17 @@ const createStyles = () => StyleSheet.create({
         width: SCREEN_WIDTH,
         paddingBottom: 10,
         gap: 10,
+    },
+    hideButtonContainer: {
+        alignItems: 'flex-end',
+        paddingRight: 14,
+        paddingBottom: 20,
+    },
+    hideButton: {
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        width: 30,
+        borderColor: 'rgba(255,255,255,0.4)',
+        borderWidth: 1,
     },
 });
 
@@ -212,6 +224,17 @@ function CompareMappingSession(props: Props) {
         setHideTilePressValue((prev) => !prev);
     }, []);
 
+    const { isAccessibilityEnabled } = useAccessibility();
+
+    const getAccessibilityBadge = useCallback((value: number | undefined) => {
+        switch (value) {
+            case 1: return { iconName: 'checkmark-outline', color: '#22C55E' } as const;
+            case 2: return { iconName: 'question-mark', color: '#F59E0B' } as const;
+            case 3: return { iconName: 'ban-outline', color: '#EF4444' } as const;
+            default: return undefined;
+        }
+    }, []);
+
     return (
         <>
             <FlatList
@@ -227,6 +250,12 @@ function CompareMappingSession(props: Props) {
                     if (!task.url || !task.urlB) {
                         return null;
                     }
+                    const badge = isAccessibilityEnabled && !hideTilePressValue
+                        ? getAccessibilityBadge(
+                            typeof result === 'number' ? result : undefined,
+                        )
+                        : undefined;
+
                     return (
                         <View
                             key={task.taskId}
@@ -240,6 +269,8 @@ function CompareMappingSession(props: Props) {
                                 width={tileWidth}
                                 tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                 onPress={handleTilePress}
+                                accessibilityBadgeIconName={badge?.iconName}
+                                accessibilityBadgeColor={badge?.color}
                             />
                             <Text colorVariant="brand">After</Text>
                             <ImageTile
@@ -249,6 +280,8 @@ function CompareMappingSession(props: Props) {
                                 width={tileWidth}
                                 tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                 onPress={handleTilePress}
+                                accessibilityBadgeIconName={badge?.iconName}
+                                accessibilityBadgeColor={badge?.color}
                             />
                         </View>
                     );
@@ -273,9 +306,13 @@ function CompareMappingSession(props: Props) {
                     bottomPadding={20}
                 />
             )}
-            <HideTileSelectionButton
-                isPressed={hideTilePressValue}
-                handleHideTileSelectionPress={handleHideTilePress}
+            <IconButton
+                name="hide-overlays"
+                iconName={hideTilePressValue ? 'eye' : 'eye-closed'}
+                onPress={handleHideTilePress}
+                stylesContainer={styles.hideButtonContainer}
+                stylesButton={styles.hideButton}
+                size={16}
             />
             <ProgressBar
                 currentValue={Math.floor(currentTaskIndex + 1)}
