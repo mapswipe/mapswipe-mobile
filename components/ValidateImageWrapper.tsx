@@ -222,9 +222,13 @@ export default function ImageWrapper({
         ],
     }));
 
-    const [hideShapeSource, setHideShapeSource] = useState<boolean>(false);
-    const handleHideTilePress = useCallback(() => {
-        setHideShapeSource((prev) => !prev);
+    const [hideShapeSource, setHideShapeSourceValue] = useState(false);
+    const handleHideTilePressIn = useCallback(() => {
+        setHideShapeSourceValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideShapeSourceValue(false);
     }, []);
 
     return (
@@ -279,7 +283,8 @@ export default function ImageWrapper({
                 <View style={styles.hideButton}>
                     <HideTileSelectionButton
                         isPressed={hideShapeSource}
-                        handleHideTileSelectionPress={handleHideTilePress}
+                        handleHideTileSelectionPressIn={handleHideTilePressIn}
+                        handleHideTileSelectionPressOut={handleHideTilePressOut}
                         size="large"
                     />
                 </View>

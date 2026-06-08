@@ -1,10 +1,8 @@
 import {
     useCallback,
     useMemo,
-    useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     Linking,
     RefreshControl,
@@ -14,12 +12,14 @@ import {
     View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     deleteUser,
     sendPasswordResetEmail,
 } from 'firebase/auth';
 import { gql } from 'urql';
 
+import { ACCESSIBILITY_TUTORIAL_SEEN_KEY } from '@/components/AccessibilityInfoModal';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import { ButtonLayoutProps } from '@/components/ButtonLayout';
@@ -39,7 +39,6 @@ import {
 import { SPACING_MD } from '@/constants/dimensions';
 import { AppTheme } from '@/constants/theme';
 import { useUserStatsQuery } from '@/generated/types/graphql';
-import { ACCESSIBILITY_TUTORIAL_SEEN_KEY } from '@/components/AccessibilityInfoModal';
 import useAccessibility from '@/hooks/useAccessibility';
 import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';

@@ -41,23 +41,12 @@ import {
 } from '@/utils/types';
 
 import AccessibilityInfoModal from './AccessibilityInfoModal';
-import IconButton from './IconButton';
+import HideTileSelectionButton from './HideTileSelectionButton';
 import ImageTile from './ImageTile';
 
 const createStyles = () => StyleSheet.create({
     content: {
         alignItems: 'center',
-    },
-    hideButtonContainer: {
-        alignItems: 'flex-end',
-        paddingRight: 14,
-        paddingBottom: 20,
-    },
-    hideButton: {
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        width: 30,
-        borderColor: 'rgba(255,255,255,0.4)',
-        borderWidth: 1,
     },
 });
 
@@ -248,8 +237,12 @@ function TileGridMappingSession(props: Props) {
 
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
 
-    const handleHideTilePress = useCallback(() => {
-        setHideTilePressValue((prev) => !prev);
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
     }, []);
 
     const { isAccessibilityEnabled } = useAccessibility();
@@ -330,13 +323,10 @@ function TileGridMappingSession(props: Props) {
                     bottomPadding={40}
                 />
             )}
-            <IconButton
-                name="hide-overlays"
-                iconName={hideTilePressValue ? 'eye' : 'eye-closed'}
-                onPress={handleHideTilePress}
-                stylesContainer={styles.hideButtonContainer}
-                stylesButton={styles.hideButton}
-                size={16}
+            <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                handleHideTileSelectionPressOut={handleHideTilePressOut}
+                isPressed={hideTilePressValue}
             />
             <ProgressBar
                 currentValue={Math.floor(currentTaskIndex / 2) + 1}

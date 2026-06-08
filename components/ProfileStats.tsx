@@ -123,7 +123,6 @@ function ProfileStats({ userStats }: {userStats: UserStatsQuery | undefined}) {
         t,
     ]);
 
-    console.log('here url', `${communityDashboardUrl}/user/${user?.uid}/`);
     const handleMoreStatsClick = useCallback(() => {
         if (user?.uid) {
             Linking.openURL(`${communityDashboardUrl}/user/${user?.uid}/`);

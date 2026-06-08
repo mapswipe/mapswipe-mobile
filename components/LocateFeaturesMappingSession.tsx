@@ -326,8 +326,12 @@ function LocateFeaturesMappingSession(props: Props) {
 
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
 
-    const handleHideTilePress = useCallback(() => {
-        setHideTilePressValue((prev) => !prev);
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
     }, []);
 
     return (
@@ -399,7 +403,10 @@ function LocateFeaturesMappingSession(props: Props) {
                                 width={tileWidth}
                                 gridSize={gridSize}
                                 cellValues={cellValues}
-                                optionsByValue={optionsByValue}
+                                optionsByValue={
+                                    hideTilePressValue
+                                        ? {} as Record<number, ResultOption> : optionsByValue
+                                }
                                 selectedCells={selectedCells}
                                 selectionMode={mode === 'selection'}
                                 onCellPress={(cellIndex) => (
@@ -437,8 +444,9 @@ function LocateFeaturesMappingSession(props: Props) {
                 />
             )}
             <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                handleHideTileSelectionPressOut={handleHideTilePressOut}
                 isPressed={hideTilePressValue}
-                handleHideTileSelectionPress={handleHideTilePress}
             />
             <ProgressBar
                 currentValue={currentTaskIndex + 1}
