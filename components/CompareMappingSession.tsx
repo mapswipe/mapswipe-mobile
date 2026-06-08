@@ -37,6 +37,7 @@ import {
     Results,
 } from '@/utils/types';
 
+import AccessibilityInfoModal from './AccessibilityInfoModal';
 import IconButton from './IconButton';
 import ImageTile from './ImageTile';
 
@@ -319,6 +320,7 @@ function CompareMappingSession(props: Props) {
                 totalValue={Math.ceil(compressedTasks.length)}
                 colorVariant="brand"
             />
+            {isAccessibilityEnabled && <AccessibilityInfoModal />}
         </>
     );
 }

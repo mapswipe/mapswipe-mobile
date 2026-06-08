@@ -5,5 +5,6 @@
   "questionMarkIconInfo": "Tap twice to turn the tile yellow and show a question icon",
   "badImageIconInfo": "Tap thrice to turn the tile red and show a bad imagery icon",
   "turnOnOff": "How to turn on/off:",
-  "turnOnOffDescription": "Turn on/off the feature by visiting the Settings section under Profile"
+  "turnOnOffDescription": "Turn on/off the feature by visiting the Settings section under Profile",
+  "dontShowAgain": "Don't show me this again"
 }

@@ -40,6 +40,7 @@ import {
     Results,
 } from '@/utils/types';
 
+import AccessibilityInfoModal from './AccessibilityInfoModal';
 import IconButton from './IconButton';
 import ImageTile from './ImageTile';
 
@@ -342,6 +343,7 @@ function TileGridMappingSession(props: Props) {
                 totalValue={Math.ceil(groupedTasks.length / 2)}
                 colorVariant="brand"
             />
+            {isAccessibilityEnabled && <AccessibilityInfoModal />}
         </>
     );
 }

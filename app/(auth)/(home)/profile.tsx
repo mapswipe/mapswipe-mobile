@@ -4,6 +4,7 @@ import {
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     Linking,
     RefreshControl,
@@ -38,6 +39,7 @@ import {
 import { SPACING_MD } from '@/constants/dimensions';
 import { AppTheme } from '@/constants/theme';
 import { useUserStatsQuery } from '@/generated/types/graphql';
+import { ACCESSIBILITY_TUTORIAL_SEEN_KEY } from '@/components/AccessibilityInfoModal';
 import useAccessibility from '@/hooks/useAccessibility';
 import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
@@ -125,6 +127,7 @@ function Profile() {
     const onHandleAccessibilityChange = useCallback(async () => {
         try {
             await setAccessibility(!isAccessibilityEnabled);
+            await AsyncStorage.removeItem(ACCESSIBILITY_TUTORIAL_SEEN_KEY);
             showAlert({
                 title: 'Accessibility updated',
                 message: isAccessibilityEnabled ? 'Accessibility mode disabled.' : 'Accessibility mode enabled.',
