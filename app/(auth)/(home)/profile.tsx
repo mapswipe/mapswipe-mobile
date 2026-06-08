@@ -207,7 +207,7 @@ function Profile() {
                 message: t('accountDeletedSuccessMessage'),
                 alertType: 'info',
             });
-            router.replace('/(auth)/login');
+            router.replace('/login');
         } catch {
             showAlert({
                 title: t('accountDeletionFailed'),

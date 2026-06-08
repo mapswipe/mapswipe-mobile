@@ -9,18 +9,27 @@ import {
 import { StyleSheet } from 'react-native';
 import { Checkbox } from 'expo-checkbox';
 import { Image } from 'expo-image';
+import {
+    createURL,
+    parse,
+} from 'expo-linking';
 import { useRouter } from 'expo-router';
+import { openAuthSessionAsync } from 'expo-web-browser';
+import { signInWithCustomToken } from 'firebase/auth';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
+import LoadingComponent from '@/components/Loader';
 import Page from '@/components/Page';
 import Text from '@/components/Text';
+import { showAlert } from '@/components/Toast';
 import { FONT_SIZE_XS } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import { firebaseAuth } from '@/utils/firebase';
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
     mainContent: {
@@ -38,6 +47,9 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         color: theme.textOnBrand,
         fontSize: FONT_SIZE_XS,
     },
+    privacy: {
+        alignItems: 'center',
+    },
     privacyLink: {
         color: theme.textOnBrand,
         fontSize: FONT_SIZE_XS,
@@ -45,26 +57,63 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     },
 });
 
-function Register() {
+function LoginWithOsm() {
     const [agreeToPrivacy, setAgreeToPrivacy] = useState<boolean>(false);
+    const [pending, setPending] = useState<boolean>(false);
 
     const { t } = useTranslation('signup');
     const router = useRouter();
 
     const handleLoginPress = useCallback(async () => {
-        // FIXME: Handle this properly
-    }, []);
+        const authUrl = `${process.env.EXPO_PUBLIC_OSM_AUTH_URL}/redirect`;
+        const redirectUri = createURL('login/osm');
+        try {
+            setPending(true);
+            const result = await openAuthSessionAsync(authUrl, redirectUri);
+            if (result.type === 'success') {
+                const { url } = result;
+                const parsedUrl = parse(url);
+                const { token } = parsedUrl.queryParams as { token?: string };
+
+                if (token) {
+                    await signInWithCustomToken(firebaseAuth, token);
+                    router.replace('/');
+                } else {
+                    showAlert({
+                        title: 'Login Failed',
+                        message: 'No token received from OSM',
+                        alertType: 'error',
+                    });
+                }
+            }
+            setPending(false);
+        } catch (error) {
+            setPending(false);
+            showAlert({
+                title: 'Login Failed',
+                message: 'An error occurred during OSM login',
+                alertType: 'error',
+            });
+            // eslint-disable-next-line no-console
+            console.error(error);
+        }
+    }, [router]);
 
     const styles = useThemedStyles(createStyles);
 
+    if (pending) {
+        return (<LoadingComponent label="Signing in..." />);
+    }
+
     return (
         <Page
-            title="Register"
+            title={t('loginSignupWithOSM')}
             variant="brand"
             style={styles.page}
         >
             <BlockListView
                 spacing="sm"
+                withPadding
             >
                 <BlockListView withCenteredContent>
                     <Image
@@ -72,9 +121,7 @@ function Register() {
                         source={logo}
                     />
                 </BlockListView>
-                <BlockListView
-                    withPadding
-                >
+                <BlockListView spacing="sm">
                     <Text
                         variant="label"
                         style={styles.text}
@@ -83,11 +130,13 @@ function Register() {
                     </Text>
                     <InlineListView
                         spacing="3xs"
+                        style={styles.privacy}
                     >
                         <Checkbox
                             value={agreeToPrivacy}
                             onValueChange={setAgreeToPrivacy}
                             color={agreeToPrivacy ? '#4630EB' : undefined}
+                            disabled={pending}
                         />
                         <Text
                             variant="label"
@@ -121,7 +170,7 @@ function Register() {
                         title={t('loginSignupWithOSM')}
                         colorVariant="primaryRed"
                         styleVariant="filled"
-                        disabled={!agreeToPrivacy}
+                        disabled={!agreeToPrivacy || pending}
                     />
                     <BlockListView>
                         <Link
@@ -138,4 +187,4 @@ function Register() {
     );
 }
 
-export default Register;
+export default LoginWithOsm;
