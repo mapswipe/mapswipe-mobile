@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  # FIXME: Remove workflow_dispatch once CI is stable
   workflow_dispatch:
 
 # Single build — one IPA, one bundle ID (org.missingmaps.mapswipe).
@@ -55,11 +56,13 @@ jobs:
       - name: Generate GraphQL types
         run: pnpm generate:type
 
-      # Using staging config for now (staging credentials).
+      # Prebuild with production config so the bundle ID (org.missingmaps.mapswipe)
+      # matches the provisioning profile. The EXPO_PUBLIC_* env vars from the
+      # staging environment still get baked in for backend URLs.
       # TODO: Once runtime stage/prod switching is implemented, this will
       # bake in both sets of config and select at launch based on receipt.
       - name: Expo prebuild
-        run: APP_ENV=staging npx expo prebuild --platform ios --clean
+        run: npx expo prebuild --platform ios --clean
 
       - name: Detect Xcode workspace and scheme
         id: xcode
@@ -134,6 +137,7 @@ jobs:
             -destination "generic/platform=iOS" \
             archive \
             CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME"
 
