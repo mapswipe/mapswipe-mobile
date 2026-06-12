@@ -32,6 +32,21 @@ jobs:
       EXPO_PUBLIC_OSM_AUTH_URL: ${{ vars.EXPO_PUBLIC_OSM_AUTH_URL }}
 
     steps:
+      - name: Select Xcode with iOS 26 SDK
+        run: |
+          echo "Available Xcode versions:"
+          ls -d /Applications/Xcode*.app 2>/dev/null || true
+          # Pick the latest Xcode 26.x installed on the runner
+          XCODE_PATH=$(ls -d /Applications/Xcode_26.*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE_PATH" ]; then
+            echo "::error::No Xcode 26.x found on this runner"
+            exit 1
+          fi
+          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          echo "Selected: $XCODE_PATH"
+          xcodebuild -version
+          xcodebuild -showsdks | grep iphoneos
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
