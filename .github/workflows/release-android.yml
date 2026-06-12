@@ -6,6 +6,8 @@ on:
     #   - 'feat/android-release-workflow'
     tags:
       - 'v*.*.*'
+  # FIXME: Remove workflow_dispatch once CI is stable
+  workflow_dispatch:
 
 jobs:
   # ─── JOB 1: STAGING BUILD ───────────────────────────────────────────
