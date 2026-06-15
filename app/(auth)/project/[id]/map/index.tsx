@@ -67,9 +67,12 @@ function MapProjectIndex() {
         skip: isDefined(taskGroupId),
     });
 
-    const selectedTaskGroupId = useMemo(() => {
+    useEffect(() => {
+        if (isDefined(taskGroupId)) {
+            return;
+        }
         if (isNotDefined(leastMappedTaskGroups) || leastMappedTaskGroups.length === 0) {
-            return undefined;
+            return;
         }
 
         const candidates = previousGroupId
@@ -78,21 +81,17 @@ function MapProjectIndex() {
 
         const pool = candidates.length > 0 ? candidates : leastMappedTaskGroups;
         const index = Math.floor(Math.random() * pool.length);
-        return pool[index].groupId;
-    }, [leastMappedTaskGroups, previousGroupId]);
+        const selectedTaskGroupId = pool[index].groupId;
 
-    useEffect(() => {
-        if (isNotDefined(taskGroupId) && isDefined(selectedTaskGroupId)) {
-            router.replace({
-                pathname: '/project/[id]/map/[taskGroupId]',
-                params: {
-                    id: projectId,
-                    taskGroupId: selectedTaskGroupId,
-                    projectInstruction,
-                },
-            });
-        }
-    }, [projectId, taskGroupId, selectedTaskGroupId, projectInstruction]);
+        router.replace({
+            pathname: '/project/[id]/map/[taskGroupId]',
+            params: {
+                id: projectId,
+                taskGroupId: selectedTaskGroupId,
+                projectInstruction,
+            },
+        });
+    }, [projectId, taskGroupId, leastMappedTaskGroups, previousGroupId, projectInstruction]);
 
     useLayoutEffect(() => {
         navigation.setOptions({

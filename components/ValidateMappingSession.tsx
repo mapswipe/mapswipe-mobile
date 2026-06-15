@@ -177,7 +177,7 @@ function ValidateMappingSession(props: Props) {
         () => (isDefined(currentTask?.geojson)
             ? getBbox(currentTask.geojson as FeatureGeoJson)
             : undefined),
-        [currentTask?.geojson],
+        [currentTask],
     );
 
     const latitude = useMemo(
