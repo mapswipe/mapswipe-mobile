@@ -42,17 +42,19 @@ function MapProjectIndex() {
         id: projectId,
         taskGroupId,
         projectInstruction,
+        previousGroupId,
     } = useLocalSearchParams<{
         id: string;
         taskGroupId: string;
         projectInstruction: string;
+        previousGroupId: string;
     }>();
 
     const leastMappedGroupQuery = useMemo(
         () => query(
             firebaseRef(`v2/groups/${projectId}`),
             orderByChild('requiredCount'),
-            limitToLast(1),
+            limitToLast(10),
         ),
         [projectId],
     );
@@ -65,20 +67,32 @@ function MapProjectIndex() {
         skip: isDefined(taskGroupId),
     });
 
-    const leastMappedTaskGroupId = leastMappedTaskGroups?.[0]?.groupId;
+    const selectedTaskGroupId = useMemo(() => {
+        if (isNotDefined(leastMappedTaskGroups) || leastMappedTaskGroups.length === 0) {
+            return undefined;
+        }
+
+        const candidates = previousGroupId
+            ? leastMappedTaskGroups.filter((g) => g.groupId !== previousGroupId)
+            : leastMappedTaskGroups;
+
+        const pool = candidates.length > 0 ? candidates : leastMappedTaskGroups;
+        const index = Math.floor(Math.random() * pool.length);
+        return pool[index].groupId;
+    }, [leastMappedTaskGroups, previousGroupId]);
 
     useEffect(() => {
-        if (isNotDefined(taskGroupId) && isDefined(leastMappedTaskGroupId)) {
+        if (isNotDefined(taskGroupId) && isDefined(selectedTaskGroupId)) {
             router.replace({
                 pathname: '/project/[id]/map/[taskGroupId]',
                 params: {
                     id: projectId,
-                    taskGroupId: leastMappedTaskGroupId,
+                    taskGroupId: selectedTaskGroupId,
                     projectInstruction,
                 },
             });
         }
-    }, [projectId, taskGroupId, leastMappedTaskGroupId, projectInstruction]);
+    }, [projectId, taskGroupId, selectedTaskGroupId, projectInstruction]);
 
     useLayoutEffect(() => {
         navigation.setOptions({

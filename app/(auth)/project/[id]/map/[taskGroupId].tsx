@@ -130,6 +130,7 @@ function MapTaskGroup() {
             params: {
                 id: projectId,
                 projectInstruction: projectDetails?.projectInstruction,
+                previousGroupId: taskGroupId,
             },
         });
     }, [saveResults, router, projectId, projectDetails?.projectInstruction]);
