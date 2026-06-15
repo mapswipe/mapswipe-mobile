@@ -11,13 +11,12 @@
         "eslint-plugin-react-hooks",
         "eslint-plugin-react-native",
         "eslint-plugin-simple-import-sort",
-        // FIXME: Remove this after type fixes are made
-        "firebase-admin",
-        // FIXME: Remove this after type fixes are made
         "expo-splash-screen",
-        // FIXME: Remove this after type fixes are made
+        // Implicit Expo dependency detected by knip's expo plugin
         "expo-updates",
-        "@typescript-eslint/eslint-plugin"
+        "@typescript-eslint/eslint-plugin",
+        // Used via --require dotenv/config in generate:type script
+        "dotenv"
     ],
     "ignoreExportsUsedInFile": true,
     "entry": [

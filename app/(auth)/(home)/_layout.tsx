@@ -8,7 +8,6 @@ import {
     Tabs,
     usePathname,
 } from 'expo-router';
-import type { PlatformPressable } from '@react-navigation/elements';
 import {
     MapPinIcon,
     UserIcon,
@@ -16,16 +15,13 @@ import {
 
 import useTheme from '@/hooks/useTheme';
 
-export type BottomTabBarButtonProps = Omit<
-    React.ComponentProps<typeof PlatformPressable>,
-    'style'
-> & {
+interface TabBarButtonProps {
     href?: string;
     children: React.ReactNode;
     onPress?: (
-        e: React.MouseEvent<HTMLAnchorElement, MouseEvent> | GestureResponderEvent
+        e: GestureResponderEvent
     ) => void;
-};
+}
 
 const styles = StyleSheet.create({
     tabButton: {
@@ -40,7 +36,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function TabBarButton({ children, onPress, href }: BottomTabBarButtonProps) {
+function TabBarButton({ children, onPress, href }: TabBarButtonProps) {
     const pathname = usePathname();
     const focused = pathname === href || pathname.startsWith(`${href}/`);
 
@@ -70,9 +66,15 @@ function HomeLayout() {
 
                 tabBarActiveTintColor: '#ffffff',
                 tabBarInactiveTintColor: '#9CA3AF',
-                // eslint-disable-next-line max-len
-                // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unstable-nested-components
-                tabBarButton: (props) => <TabBarButton {...props} />,
+                // eslint-disable-next-line react/no-unstable-nested-components
+                tabBarButton: (props: TabBarButtonProps) => (
+                    <TabBarButton
+                        href={props.href}
+                        onPress={props.onPress}
+                    >
+                        {props.children}
+                    </TabBarButton>
+                ),
             }}
         >
             <Tabs.Screen
@@ -82,7 +84,7 @@ function HomeLayout() {
                     // eslint-disable-next-line react/no-unstable-nested-components
                     tabBarIcon: ({ focused, color }) => (
                         <MapPinIcon
-                            color={focused ? theme.textOnBrand : color}
+                            color={focused ? theme.textOnBrand : String(color)}
                             weight={focused ? 'fill' : 'regular'}
                         />
                     ),
@@ -95,7 +97,7 @@ function HomeLayout() {
                     // eslint-disable-next-line react/no-unstable-nested-components
                     tabBarIcon: ({ focused, color }) => (
                         <UserIcon
-                            color={focused ? theme.textOnBrand : color}
+                            color={focused ? theme.textOnBrand : String(color)}
                             weight={focused ? 'fill' : 'regular'}
                         />
                     ),
