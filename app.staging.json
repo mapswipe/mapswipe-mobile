@@ -1,6 +1,6 @@
 {
     "expo": {
-        "name": "MapSwipe Staging",
+        "name": "MapSwipe Dev",
         "slug": "mapswipe-mobile-staging",
         "version": "3.0.0",
         "orientation": "portrait",
@@ -15,7 +15,7 @@
             "backgroundColor": "#0D1949"
         },
         "ios": {
-            "bundleIdentifier": "org.missingmaps.mapswipe.dev",
+            "bundleIdentifier": "org.missingmaps.mapswipe-dev",
             "backgroundColor": "#0D1949",
             "supportsTablet": true,
             "infoPlist": {
