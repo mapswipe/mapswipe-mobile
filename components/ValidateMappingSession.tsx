@@ -22,9 +22,14 @@ import { inflate } from 'pako';
 import BlockListView from '@/components/BlockListView';
 import InlineListView from '@/components/InlineListView';
 import MapTile from '@/components/MapTile';
+import ScaleBar from '@/components/ScaleBar';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
+import {
+    getBbox,
+    getOptimalZoomLevel,
+} from '@/utils/geo';
 import {
     FeatureGeoJson,
     Results,
@@ -168,6 +173,29 @@ function ValidateMappingSession(props: Props) {
 
     const limitedTasks = [...(taskList ?? [])].slice(0, totalSwipedTasks + 1);
 
+    const currentBbox = useMemo(
+        () => (isDefined(currentTask?.geojson)
+            ? getBbox(currentTask.geojson as FeatureGeoJson)
+            : undefined),
+        [currentTask?.geojson],
+    );
+
+    const latitude = useMemo(
+        () => (isDefined(currentBbox)
+            ? (currentBbox[1] + currentBbox[3]) / 2
+            : undefined),
+        [currentBbox],
+    );
+
+    const zoomLevel = useMemo(
+        () => (isDefined(currentBbox)
+            ? getOptimalZoomLevel(currentBbox)
+            : undefined),
+        [currentBbox],
+    );
+
+    const tileWidth = SCREEN_WIDTH - 40;
+
     const disableOptions = currentTaskIndex === undefined || currentTaskIndex === -1;
 
     if (!currentTask?.geojson) {
@@ -204,6 +232,16 @@ function ValidateMappingSession(props: Props) {
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
             />
+            {isDefined(latitude) && isDefined(zoomLevel) && (
+                <ScaleBar
+                    latitude={latitude}
+                    position="bottom"
+                    referenceSize={tileWidth}
+                    tileSize={tileWidth}
+                    zoomLevel={zoomLevel}
+                    bottomPadding={40}
+                />
+            )}
             <InlineListView
                 withCenteredContent
                 style={styles.buttons}

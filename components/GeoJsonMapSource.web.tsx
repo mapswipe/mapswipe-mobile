@@ -5,15 +5,14 @@ import {
     lazy,
     useMemo,
 } from 'react';
-import { pointToTileFraction } from '@mapbox/tilebelt';
 import {
     isDefined,
     isNotDefined,
 } from '@togglecorp/fujs';
 
 import {
-    BoundingBox,
     getBbox,
+    getOptimalZoomLevel,
 } from '@/utils/geo';
 import { FeatureGeoJson } from '@/utils/types';
 
@@ -36,41 +35,6 @@ const MapSourceLazy = lazy(async () => {
     const mod = await import('@togglecorp/re-map');
     return { default: mod.MapSource };
 });
-
-function getTileZ(bbox: BoundingBox) {
-    // check for if bounding box fits into a single tile in width and height
-    // at a given zoom level
-    // start to check for zoom level 19 and
-    // then go to lower levels when needed
-    // zoom level 19 is considered here as the maximum zoom that we support
-    // zoom level 14 is the minimum zoom level
-    let tileZ = 19;
-    while (tileZ >= 14) {
-        // get the tiles for the bbox coordinates
-        const tileAFraction = pointToTileFraction(
-            bbox[0],
-            bbox[1],
-            tileZ,
-        );
-        const tileBFraction = pointToTileFraction(
-            bbox[2],
-            bbox[3],
-            tileZ,
-        );
-
-        // check if bbox fits into one tile at this zoom level
-        // need to check in x and y dimensions
-        const yDifference = Math.abs(tileAFraction[0] - tileBFraction[0]);
-        const xDifference = Math.abs(tileAFraction[1] - tileBFraction[1]);
-
-        if (yDifference < 1 && xDifference < 1) {
-            // x dimension and y dimension fit into a box with the size of one tile
-            break;
-        }
-        tileZ -= 1;
-    }
-    return tileZ;
-}
 
 const geoJsonSourceOptions: Omit<maplibregl.GeoJSONSourceSpecification, 'data'> = {
     type: 'geojson',
@@ -132,7 +96,7 @@ function GeoJsonMapSource(props: Props) {
             }
 
             if (isDefined(bounds)) {
-                return getTileZ(bounds) - 1;
+                return getOptimalZoomLevel(bounds) - 1;
             }
 
             return undefined;
