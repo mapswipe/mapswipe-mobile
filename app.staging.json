@@ -1,8 +1,8 @@
 {
     "expo": {
-        "name": "MapSwipe Staging",
+        "name": "MapSwipe Dev",
         "slug": "mapswipe-mobile-staging",
-        "version": "0.0.1",
+        "version": "3.0.0",
         "orientation": "portrait",
         "icon": "./assets/images/icon.png",
         "scheme": "devmapswipe",
@@ -15,9 +15,13 @@
             "backgroundColor": "#0D1949"
         },
         "ios": {
-            "bundleIdentifier": "org.missingmaps.mapswipe.dev",
+            "bundleIdentifier": "org.missingmaps.mapswipe-dev",
             "backgroundColor": "#0D1949",
-            "supportsTablet": true
+            "supportsTablet": true,
+            "infoPlist": {
+                "ITSAppUsesNonExemptEncryption": false,
+                "NSLocationWhenInUseUsageDescription": "MapSwipe uses your location to show your position on the map while mapping."
+            }
         },
         "android": {
             "adaptiveIcon": {
@@ -37,7 +41,8 @@
         "plugins": [
             "expo-router",
             "expo-system-ui",
-            "@maplibre/maplibre-react-native"
+            "@maplibre/maplibre-react-native",
+            "./plugins/disable-liquid-glass.cjs"
         ],
         "experiments": {
             "typedRoutes": true

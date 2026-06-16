@@ -316,6 +316,7 @@ function Profile() {
         <Page
             title="Profile"
             style={styles.page}
+            variant="brand"
             scrollable={false}
         >
             <ProfileHeader />

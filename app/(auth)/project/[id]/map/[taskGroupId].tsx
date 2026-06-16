@@ -130,9 +130,10 @@ function MapTaskGroup() {
             params: {
                 id: projectId,
                 projectInstruction: projectDetails?.projectInstruction,
+                previousGroupId: taskGroupId,
             },
         });
-    }, [saveResults, router, projectId, projectDetails?.projectInstruction]);
+    }, [saveResults, router, projectId, projectDetails?.projectInstruction, taskGroupId]);
 
     const handleGoBack = useCallback(() => {
         setCompleted(false);

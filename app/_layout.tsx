@@ -1,5 +1,5 @@
 import 'react-native-reanimated';
-import '../i18n.ts';
+import '../i18n';
 
 import {
     useEffect,

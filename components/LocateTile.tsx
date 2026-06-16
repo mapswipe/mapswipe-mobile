@@ -65,14 +65,14 @@ const createCellStyles = (
         position: 'relative',
     },
     tint: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         backgroundColor: color,
         borderColor: 'rgba(255, 255, 255, 1)',
         borderWidth: 0.5,
         opacity: 0.6,
     },
     selectionIndicator: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         borderColor: isSelected ? 'rgba(255, 255, 255, 0.5)' : 'transparent',
         borderWidth: isSelected ? 5 : 0,
     },

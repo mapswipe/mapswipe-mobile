@@ -42,17 +42,19 @@ function MapProjectIndex() {
         id: projectId,
         taskGroupId,
         projectInstruction,
+        previousGroupId,
     } = useLocalSearchParams<{
         id: string;
         taskGroupId: string;
         projectInstruction: string;
+        previousGroupId: string;
     }>();
 
     const leastMappedGroupQuery = useMemo(
         () => query(
             firebaseRef(`v2/groups/${projectId}`),
             orderByChild('requiredCount'),
-            limitToLast(1),
+            limitToLast(10),
         ),
         [projectId],
     );
@@ -65,20 +67,31 @@ function MapProjectIndex() {
         skip: isDefined(taskGroupId),
     });
 
-    const leastMappedTaskGroupId = leastMappedTaskGroups?.[0]?.groupId;
-
     useEffect(() => {
-        if (isNotDefined(taskGroupId) && isDefined(leastMappedTaskGroupId)) {
-            router.replace({
-                pathname: '/project/[id]/map/[taskGroupId]',
-                params: {
-                    id: projectId,
-                    taskGroupId: leastMappedTaskGroupId,
-                    projectInstruction,
-                },
-            });
+        if (isDefined(taskGroupId)) {
+            return;
         }
-    }, [projectId, taskGroupId, leastMappedTaskGroupId, projectInstruction]);
+        if (isNotDefined(leastMappedTaskGroups) || leastMappedTaskGroups.length === 0) {
+            return;
+        }
+
+        const candidates = previousGroupId
+            ? leastMappedTaskGroups.filter((g) => g.groupId !== previousGroupId)
+            : leastMappedTaskGroups;
+
+        const pool = candidates.length > 0 ? candidates : leastMappedTaskGroups;
+        const index = Math.floor(Math.random() * pool.length);
+        const selectedTaskGroupId = pool[index].groupId;
+
+        router.replace({
+            pathname: '/project/[id]/map/[taskGroupId]',
+            params: {
+                id: projectId,
+                taskGroupId: selectedTaskGroupId,
+                projectInstruction,
+            },
+        });
+    }, [projectId, taskGroupId, leastMappedTaskGroups, previousGroupId, projectInstruction]);
 
     useLayoutEffect(() => {
         navigation.setOptions({

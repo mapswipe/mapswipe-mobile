@@ -1,5 +1,6 @@
 import {
     bboxToTile,
+    pointToTileFraction,
     tileToGeoJSON,
 } from '@mapbox/tilebelt';
 import {
@@ -37,6 +38,20 @@ export function getZoomLevelFromBbox(bbox: BoundingBox | undefined) {
 
     const tile = bboxToTile(bbox);
     return tile[2];
+}
+
+export function getOptimalZoomLevel(bbox: BoundingBox): number {
+    let z = 19;
+    while (z >= 14) {
+        const tileA = pointToTileFraction(bbox[0], bbox[1], z);
+        const tileB = pointToTileFraction(bbox[2], bbox[3], z);
+
+        if (Math.abs(tileA[0] - tileB[0]) < 1 && Math.abs(tileA[1] - tileB[1]) < 1) {
+            break;
+        }
+        z -= 1;
+    }
+    return z;
 }
 
 export function standardizeQuadKey(url: string) {

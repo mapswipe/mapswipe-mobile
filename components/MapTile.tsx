@@ -23,6 +23,7 @@ import {
 import useThemedStyles from '@/hooks/useThemedStyles';
 import {
     getBbox,
+    getOptimalZoomLevel,
     standardizeQuadKey,
 } from '@/utils/geo';
 import { FbObjRasterTileServer } from '@/utils/types';
@@ -59,23 +60,20 @@ function MapTile(props: Props) {
     const styles = useThemedStyles(createStyles);
     const [hideShapeSource, setHideShapeSource] = useState<boolean>(false);
 
-    const center = useMemo<[number, number] | undefined>(() => {
-        const bounds = getBbox(geoJson);
+    const bounds = useMemo(() => getBbox(geoJson), [geoJson]);
 
+    const center = useMemo<[number, number] | undefined>(() => {
         if (isNotDefined(bounds)) {
             return undefined;
         }
 
-        const x1 = bounds[0];
-        const y1 = bounds[1];
-        const x2 = bounds[2];
-        const y2 = bounds[3];
+        return [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2];
+    }, [bounds]);
 
-        const centerX = (x1 + x2) / 2;
-        const centerY = (y1 + y2) / 2;
-
-        return [centerX, centerY];
-    }, [geoJson]);
+    const zoomLevel = useMemo(
+        () => (isDefined(bounds) ? getOptimalZoomLevel(bounds) : 18),
+        [bounds],
+    );
 
     const handleHideTilePressIn = useCallback(() => {
         setHideShapeSource(true);
@@ -125,7 +123,7 @@ function MapTile(props: Props) {
 
                 {isDefined(center) && (
                     <Camera
-                        zoomLevel={18}
+                        zoomLevel={zoomLevel}
                         centerCoordinate={center}
                         animationDuration={100}
                     />
