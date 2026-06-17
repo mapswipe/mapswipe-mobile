@@ -60,7 +60,6 @@ const styles = StyleSheet.create({
     tasks: {
         flex: 2,
         flexGrow: 1,
-        width: SCREEN_WIDTH,
     },
     task: {
         width: SCREEN_WIDTH,
@@ -87,7 +86,6 @@ const styles = StyleSheet.create({
     buttons: {
         flexGrow: 0,
         flexShrink: 0,
-        padding: 20,
     },
     loadingContainer: {
         flex: 1,
