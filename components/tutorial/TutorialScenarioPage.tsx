@@ -27,6 +27,7 @@ import {
     PROJECT_TYPE_FIND,
     PROJECT_TYPE_LOCATE_FEATURES,
     PROJECT_TYPE_VALIDATE,
+    PROJECT_TYPE_VALIDATE_IMAGE,
     Results,
 } from '@/utils/types';
 
@@ -36,6 +37,7 @@ import ScenarioFeedback from './ScenarioFeedback';
 import TileGridTutorialSession from './TileGridTutorialSession';
 import { ScenarioState } from './types';
 import UnsupportedTutorialSession from './UnsupportedTutorialSession';
+import ValidateImageTutorialSession from './ValidateImageTutorialSession';
 import ValidateTutorialSession from './ValidateTutorialSession';
 
 const styles = StyleSheet.create({
@@ -139,6 +141,19 @@ function TutorialScenarioPage(props: Props) {
                 />
             );
             break;
+
+        case PROJECT_TYPE_VALIDATE_IMAGE:
+            session = (
+                <ValidateImageTutorialSession
+                    tutorial={tutorial}
+                    tasks={tasks}
+                    results={results}
+                    onResultsChange={handleResultsChange}
+                    disabled={disabled}
+                />
+            );
+            break;
+
         case PROJECT_TYPE_VALIDATE:
             session = (
                 <ValidateTutorialSession

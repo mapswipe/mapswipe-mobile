@@ -108,7 +108,7 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
 
     const tileWidth = useMemo(() => {
         const horizontalBudget = (pageWidth - 24) / numCols;
-        const verticalBudget = (pageHeight * 0.65) / numRows;
+        const verticalBudget = (pageHeight * 0.60) / numRows;
         return Math.max(80, Math.min(horizontalBudget, verticalBudget));
     }, [pageWidth, pageHeight, numCols, numRows]);
 
