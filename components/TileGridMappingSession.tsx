@@ -11,6 +11,7 @@ import {
     FlatList,
     type NativeScrollEvent,
     type NativeSyntheticEvent,
+    PanResponder,
     StyleSheet,
     useWindowDimensions,
     View,
@@ -47,6 +48,9 @@ import ImageTile from './ImageTile';
 const createStyles = () => StyleSheet.create({
     content: {
         alignItems: 'center',
+    },
+    tileGridWrapper: {
+        flex: 1,
     },
 });
 
@@ -245,6 +249,37 @@ function TileGridMappingSession(props: Props) {
         setHideTilePressValue(false);
     }, []);
 
+    const BAD_IMAGERY_VALUE = 3;
+
+    const markVisibleTilesAsWrong = useCallback(() => {
+        onResultsChange((prevResults) => {
+            const newResults = { ...prevResults };
+            const startIdx = currentTaskIndex;
+            const endIdx = Math.min(
+                currentTaskIndex + 1,
+                groupedTasks.length - 1,
+            );
+            for (let i = startIdx; i <= endIdx; i += 1) {
+                groupedTasks[i].taskList.forEach((task) => {
+                    newResults[task.taskId] = BAD_IMAGERY_VALUE;
+                });
+            }
+            return newResults;
+        });
+    }, [currentTaskIndex, groupedTasks, onResultsChange]);
+
+    const swipeResponder = useMemo(() => PanResponder.create({
+        onStartShouldSetPanResponderCapture: () => false,
+        onMoveShouldSetPanResponderCapture: (_, { dy, dx }) => (
+            dy > 50 && Math.abs(dy) > Math.abs(dx) * 2
+        ),
+        onPanResponderRelease: (_, { dy }) => {
+            if (dy > 80) {
+                markVisibleTilesAsWrong();
+            }
+        },
+    }), [markVisibleTilesAsWrong]);
+
     const { isAccessibilityEnabled } = useAccessibility();
 
     const getAccessibilityBadge = useCallback((value: number | undefined) => {
@@ -258,61 +293,64 @@ function TileGridMappingSession(props: Props) {
 
     return (
         <>
-            <FlatList
-                data={groupedTasks}
-                contentContainerStyle={styles.content}
-                keyExtractor={(groupedTaskItem) => groupedTaskItem.taskX}
-                renderItem={({ item: groupedTasksFromRenderer }) => (
-                    <View>
-                        {groupedTasksFromRenderer.taskList.map((task) => {
-                            const result = results[task.taskId];
-                            const selectedOption = typeof result === 'number'
-                                ? optionsByValue[result]
-                                : undefined;
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            <View style={styles.tileGridWrapper} {...swipeResponder.panHandlers}>
+                <FlatList
+                    data={groupedTasks}
+                    contentContainerStyle={styles.content}
+                    keyExtractor={(groupedTaskItem) => groupedTaskItem.taskX}
+                    renderItem={({ item: groupedTasksFromRenderer }) => (
+                        <View>
+                            {groupedTasksFromRenderer.taskList.map((task) => {
+                                const result = results[task.taskId];
+                                const selectedOption = typeof result === 'number'
+                                    ? optionsByValue[result]
+                                    : undefined;
 
-                            if (!task.url) {
-                                return null;
-                            }
-                            const badge = isAccessibilityEnabled && !hideTilePressValue
-                                ? getAccessibilityBadge(
-                                    typeof result === 'number' ? result : undefined,
-                                )
-                                : undefined;
+                                if (!task.url) {
+                                    return null;
+                                }
+                                const badge = isAccessibilityEnabled && !hideTilePressValue
+                                    ? getAccessibilityBadge(
+                                        typeof result === 'number' ? result : undefined,
+                                    )
+                                    : undefined;
 
-                            return (
-                                <ImageTile
-                                    key={task.taskId}
-                                    taskId={task.taskId}
-                                    url={task.url}
-                                    urlB={
-                                        projectDetails.projectType === PROJECT_TYPE_COMPLETENESS
-                                            ? task.urlB
-                                            : undefined
-                                    }
-                                    width={tileWidth}
-                                    tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
-                                    onPress={handleTilePress}
-                                    accessibilityBadgeIconName={badge?.iconName}
-                                    accessibilityBadgeColor={badge?.color}
-                                />
-                            );
-                        })}
-                    </View>
-                )}
-                horizontal
-                pagingEnabled
-                decelerationRate="fast"
-                showsHorizontalScrollIndicator={false}
-                disableIntervalMomentum
-                snapToOffsets={groupedTasks.map((_, i) => i * pageWidth)}
-                viewabilityConfig={VIEWABILITY_CONFIG}
-                onScroll={handleScroll}
-                onMomentumScrollEnd={handleMomentumScrollEnd}
-                scrollEventThrottle={16}
-                windowSize={3}
-                initialNumToRender={2}
-                // removeClippedSubviews
-            />
+                                return (
+                                    <ImageTile
+                                        key={task.taskId}
+                                        taskId={task.taskId}
+                                        url={task.url}
+                                        urlB={
+                                            projectDetails.projectType === PROJECT_TYPE_COMPLETENESS
+                                                ? task.urlB
+                                                : undefined
+                                        }
+                                        width={tileWidth}
+                                        tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
+                                        onPress={handleTilePress}
+                                        accessibilityBadgeIconName={badge?.iconName}
+                                        accessibilityBadgeColor={badge?.color}
+                                    />
+                                );
+                            })}
+                        </View>
+                    )}
+                    horizontal
+                    pagingEnabled
+                    decelerationRate="fast"
+                    showsHorizontalScrollIndicator={false}
+                    disableIntervalMomentum
+                    snapToOffsets={groupedTasks.map((_, i) => i * pageWidth)}
+                    viewabilityConfig={VIEWABILITY_CONFIG}
+                    onScroll={handleScroll}
+                    onMomentumScrollEnd={handleMomentumScrollEnd}
+                    scrollEventThrottle={16}
+                    windowSize={3}
+                    initialNumToRender={2}
+                    // removeClippedSubviews
+                />
+            </View>
             {latitude && (
                 <ScaleBar
                     latitude={latitude}

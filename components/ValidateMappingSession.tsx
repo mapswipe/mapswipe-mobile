@@ -1,6 +1,6 @@
 import {
-    Dispatch,
-    SetStateAction,
+    type Dispatch,
+    type SetStateAction,
     useCallback,
     useMemo,
     useRef,
@@ -22,6 +22,7 @@ import { inflate } from 'pako';
 import BlockListView from '@/components/BlockListView';
 import InlineListView from '@/components/InlineListView';
 import MapTile from '@/components/MapTile';
+import ProgressBar from '@/components/ProgressBar';
 import ScaleBar from '@/components/ScaleBar';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
@@ -37,6 +38,7 @@ import {
     ValidateTask,
 } from '@/utils/types';
 
+import HideTileSelectionButton from './HideTileSelectionButton';
 import { type IconName } from './Icon';
 import IconButton from './IconButton';
 
@@ -50,6 +52,9 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
     },
+    tileArea: {
+        flex: 1,
+    },
     tasks: {
         flex: 2,
         flexGrow: 1,
@@ -58,6 +63,17 @@ const styles = StyleSheet.create({
     task: {
         width: SCREEN_WIDTH,
         padding: 20,
+    },
+    scaleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingLeft: 20,
+    },
+    scaleBarArea: {
+        flex: 1,
+    },
+    hideButtonWrapper: {
+        paddingRight: 6,
     },
     buttons: {
         flexGrow: 0,
@@ -90,6 +106,7 @@ function ValidateMappingSession(props: Props) {
     } = props;
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+    const [hideTilePressValue, setHideTilePressValue] = useState(false);
     const completedRef = useRef(false);
 
     const taskQuery = useMemo(() => (
@@ -196,6 +213,14 @@ function ValidateMappingSession(props: Props) {
 
     const tileWidth = SCREEN_WIDTH - 40;
 
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
+    }, []);
+
     const disableOptions = currentTaskIndex === undefined || currentTaskIndex === -1;
 
     if (!currentTask?.geojson) {
@@ -208,40 +233,54 @@ function ValidateMappingSession(props: Props) {
 
     return (
         <BlockListView style={styles.view}>
-            <FlatList
-                style={styles.tasks}
-                ref={flatListRef}
-                data={limitedTasks}
-                keyExtractor={(_, index) => index.toString()}
-                renderItem={({ item }) => (
-                    <View style={styles.task}>
-                        <MapTile
-                            geoJson={item.geojson as FeatureGeoJson}
-                            tileServer={projectDetails.tileServer}
-                        />
-                    </View>
-                )}
-                onViewableItemsChanged={onViewableItemsChanged}
-                viewabilityConfig={viewabilityConfig}
-                horizontal
-                getItemLayout={(_, index) => ({
-                    length: SCREEN_WIDTH,
-                    offset: SCREEN_WIDTH * index,
-                    index,
-                })}
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-            />
-            {isDefined(latitude) && isDefined(zoomLevel) && (
-                <ScaleBar
-                    latitude={latitude}
-                    position="bottom"
-                    referenceSize={tileWidth}
-                    tileSize={tileWidth}
-                    zoomLevel={zoomLevel}
-                    bottomPadding={40}
+            <View style={styles.tileArea}>
+                <FlatList
+                    style={styles.tasks}
+                    ref={flatListRef}
+                    data={limitedTasks}
+                    keyExtractor={(_, index) => index.toString()}
+                    extraData={hideTilePressValue}
+                    renderItem={({ item }) => (
+                        <View style={styles.task}>
+                            <MapTile
+                                geoJson={item.geojson as FeatureGeoJson}
+                                tileServer={projectDetails.tileServer}
+                                hideLines={hideTilePressValue}
+                            />
+                        </View>
+                    )}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    viewabilityConfig={viewabilityConfig}
+                    horizontal
+                    getItemLayout={(_, index) => ({
+                        length: SCREEN_WIDTH,
+                        offset: SCREEN_WIDTH * index,
+                        index,
+                    })}
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
                 />
-            )}
+            </View>
+            <View style={styles.scaleRow}>
+                <View style={styles.scaleBarArea}>
+                    {isDefined(latitude) && isDefined(zoomLevel) && (
+                        <ScaleBar
+                            latitude={latitude}
+                            referenceSize={tileWidth}
+                            tileSize={tileWidth}
+                            zoomLevel={zoomLevel}
+                            inline
+                        />
+                    )}
+                </View>
+                <View style={styles.hideButtonWrapper}>
+                    <HideTileSelectionButton
+                        handleHideTileSelectionPressIn={handleHideTilePressIn}
+                        handleHideTileSelectionPressOut={handleHideTilePressOut}
+                        isPressed={hideTilePressValue}
+                    />
+                </View>
+            </View>
             <InlineListView
                 withCenteredContent
                 style={styles.buttons}
@@ -262,6 +301,11 @@ function ValidateMappingSession(props: Props) {
                     />
                 ))}
             </InlineListView>
+            <ProgressBar
+                currentValue={currentTaskIndex + 1}
+                totalValue={maxTasks}
+                colorVariant="brand"
+            />
         </BlockListView>
     );
 }

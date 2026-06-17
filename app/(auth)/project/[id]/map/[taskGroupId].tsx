@@ -5,6 +5,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import { StyleSheet } from 'react-native';
 import {
     useLocalSearchParams,
     useRouter,
@@ -43,6 +44,12 @@ import {
     PROJECT_TYPE_VALIDATE_IMAGE,
     Results,
 } from '@/utils/types';
+
+const styles = StyleSheet.create({
+    headerButtonPadding: {
+        padding: 8,
+    },
+});
 
 function MapTaskGroup() {
     const {
@@ -155,6 +162,7 @@ function MapTaskGroup() {
             name={!modal}
             iconName="information-outline"
             onPress={setModal}
+            stylesContainer={styles.headerButtonPadding}
         />
     );
 

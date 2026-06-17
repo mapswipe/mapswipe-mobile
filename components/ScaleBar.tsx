@@ -11,17 +11,22 @@ import Svg, {
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
-const createStyles = (_theme: AppTheme, { bottomPadding, position, visible }: {
+const createStyles = (_theme: AppTheme, {
+    bottomPadding, position, visible, inline,
+}: {
     position: 'bottom' | 'top';
     visible: boolean;
-    bottomPadding: number,
+    bottomPadding: number;
+    inline: boolean;
 }) => StyleSheet.create({
     container: {
         opacity: visible ? 0.5 : 0,
-        position: 'absolute',
-        left: 10,
-        bottom: position === 'bottom' ? bottomPadding : undefined,
-        top: position === 'top' ? 20 : undefined,
+        ...(inline ? {} : {
+            position: 'absolute' as const,
+            left: 10,
+            bottom: position === 'bottom' ? bottomPadding : undefined,
+            top: position === 'top' ? 20 : undefined,
+        }),
     },
 });
 
@@ -57,6 +62,7 @@ interface Props {
     zoomLevel: number;
     tileSize: number;
     bottomPadding?: number;
+    inline?: boolean;
 }
 
 function ScaleBar(props: Props) {
@@ -68,9 +74,12 @@ function ScaleBar(props: Props) {
         zoomLevel,
         tileSize,
         bottomPadding = 20,
+        inline = false,
     } = props;
 
-    const styles = useThemedStyles(createStyles, { bottomPadding, position, visible });
+    const styles = useThemedStyles(createStyles, {
+        bottomPadding, position, visible, inline,
+    });
 
     const { meters, feet, tileWidthInMeters } = useMemo(() => {
         const tileWidth = (Math.cos(latitude * (Math.PI / 180)) * 2 * Math.PI * 6378137)

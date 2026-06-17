@@ -21,6 +21,7 @@ import BlockListView from '@/components/BlockListView';
 import { type IconName } from '@/components/Icon';
 import IconButton from '@/components/IconButton';
 import InlineListView from '@/components/InlineListView';
+import ProgressBar from '@/components/ProgressBar';
 import ImageWrapper from '@/components/ValidateImageWrapper';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
@@ -222,6 +223,11 @@ function ValidateImageMappingSession(props: Props) {
                     />
                 ))}
             </InlineListView>
+            <ProgressBar
+                currentValue={currentTaskIndex + 1}
+                totalValue={maxTasks}
+                colorVariant="brand"
+            />
         </BlockListView>
     );
 }
