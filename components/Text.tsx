@@ -22,6 +22,7 @@ interface Props {
     variant?: 'default' | 'heading' | 'title' | 'label' | 'description';
     onPress?: (event: GestureResponderEvent) => void;
     colorVariant?: ColorVariant;
+    numberOfLines?: number;
 }
 
 function Text(props: Props) {
@@ -31,6 +32,7 @@ function Text(props: Props) {
         colorVariant = 'normal',
         variant = 'default',
         onPress,
+        numberOfLines,
     } = props;
 
     const theme = useTheme();
@@ -71,6 +73,7 @@ function Text(props: Props) {
     return (
         <NativeText
             onPress={onPress}
+            numberOfLines={numberOfLines}
             style={[
                 variant === 'heading' && styles.heading,
                 variant === 'title' && styles.title,

@@ -8,8 +8,14 @@ import {
     ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import {
+    useFocusEffect,
+    useNavigation,
+} from 'expo-router';
+import {
+    setStatusBarStyle,
+    StatusBar,
+} from 'expo-status-bar';
 
 import { FONT_SIZE_MD } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
@@ -77,8 +83,7 @@ function Page(props: Props) {
                     fontSize: FONT_SIZE_MD,
                 },
                 headerRight,
-                headerLeft: backButton
-                ,
+                headerLeft: backButton,
             });
         },
         [
@@ -96,6 +101,14 @@ function Page(props: Props) {
     // Header is always brand-colored, so status bar needs light content whenever
     // the brand background is visible (either as the page bg or as the header).
     const statusBarStyle = variant === 'brand' || showBackButton ? 'light' : 'dark';
+
+    // In tab navigators both screens stay mounted, so the declarative <StatusBar>
+    // from a sibling tab can override ours. Re-apply imperatively on focus.
+    useFocusEffect(
+        useCallback(() => {
+            setStatusBarStyle(statusBarStyle);
+        }, [statusBarStyle]),
+    );
 
     const content = scrollable ? <ScrollView>{children}</ScrollView> : children;
 

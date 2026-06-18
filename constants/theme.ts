@@ -36,6 +36,8 @@ export type AppTheme = {
   mapUncertain: string;
   mapRejected: string;
   mapBoundary: string;
+  // Accent
+  accentRed: string;
   // Misc
   heatMapDayColor1: string;
   heatMapDayColor2: string;
@@ -78,6 +80,8 @@ export const lightTheme: AppTheme = {
     mapUncertain: '#3B82F6',
     mapRejected: '#EF4444',
     mapBoundary: '#9CA3AF',
+    // Accent
+    accentRed: '#E5484D',
     // Misc
     heatMapDayColor1: '#d6e685',
     heatMapDayColor2: '#8cc665',
@@ -120,6 +124,8 @@ export const darkTheme: AppTheme = {
     mapUncertain: '#3B82F6',
     mapRejected: '#EF4444',
     mapBoundary: '#9CA3AF',
+    // Accent
+    accentRed: '#E5484D',
     // Misc
     heatMapDayColor1: '#d6e685',
     heatMapDayColor2: '#8cc665',

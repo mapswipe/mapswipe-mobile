@@ -15,7 +15,7 @@ interface Props {
 }
 const styles = StyleSheet.create({
     button: {
-        paddingRight: 16,
+        padding: 8,
     },
 });
 

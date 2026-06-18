@@ -1,8 +1,4 @@
-import {
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import { useMemo } from 'react';
 import {
     StyleSheet,
     View,
@@ -28,11 +24,10 @@ import {
 } from '@/utils/geo';
 import { FbObjRasterTileServer } from '@/utils/types';
 
-import HideTileSelectionButton from './HideTileSelectionButton';
-
 interface Props {
     geoJson: GeoJSON.GeoJSON;
     tileServer: FbObjRasterTileServer;
+    hideLines?: boolean;
 }
 
 const createStyles = () => StyleSheet.create({
@@ -45,20 +40,16 @@ const createStyles = () => StyleSheet.create({
         width: '100%',
         height: '100%',
     },
-    hideButton: {
-        position: 'absolute',
-        bottom: 0,
-        alignSelf: 'center',
-    },
 });
+
 function MapTile(props: Props) {
     const {
         geoJson,
         tileServer,
+        hideLines = false,
     } = props;
 
     const styles = useThemedStyles(createStyles);
-    const [hideShapeSource, setHideShapeSource] = useState<boolean>(false);
 
     const bounds = useMemo(() => getBbox(geoJson), [geoJson]);
 
@@ -66,7 +57,6 @@ function MapTile(props: Props) {
         if (isNotDefined(bounds)) {
             return undefined;
         }
-
         return [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2];
     }, [bounds]);
 
@@ -75,18 +65,16 @@ function MapTile(props: Props) {
         [bounds],
     );
 
-    const handleHideTilePressIn = useCallback(() => {
-        setHideShapeSource(true);
-    }, []);
-
-    const handleHideTilePressOut = useCallback(() => {
-        setHideShapeSource(false);
-    }, []);
+    const lineLayerStyle = useMemo(() => ({
+        lineWidth: 1,
+        lineOpacity: hideLines ? 0 : 0.9,
+        lineColor: '#ffffff' as string,
+    }), [hideLines]);
 
     return (
         <View style={styles.container}>
             <MapView
-            // FIXME: use pre-defined values
+                // FIXME: use pre-defined values
                 style={styles.mapView}
                 attributionEnabled={false}
                 scrollEnabled={false}
@@ -111,16 +99,9 @@ function MapTile(props: Props) {
                     <LineLayer
                         id="shape-line-layer"
                         sourceID="shape-source"
-                        // eslint-disable-next-line react-native/no-inline-styles
-                        style={{
-                            lineWidth: 1,
-                            lineOpacity: 0.9,
-                            lineColor: '#ffffff',
-                            visibility: hideShapeSource ? 'none' : 'visible',
-                        }}
+                        style={lineLayerStyle}
                     />
                 </ShapeSource>
-
                 {isDefined(center) && (
                     <Camera
                         zoomLevel={zoomLevel}
@@ -129,14 +110,6 @@ function MapTile(props: Props) {
                     />
                 )}
             </MapView>
-            <View style={styles.hideButton}>
-                <HideTileSelectionButton
-                    isPressed={hideShapeSource}
-                    handleHideTileSelectionPressIn={handleHideTilePressIn}
-                    handleHideTileSelectionPressOut={handleHideTilePressOut}
-                    size="large"
-                />
-            </View>
         </View>
     );
 }

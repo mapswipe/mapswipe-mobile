@@ -1,4 +1,7 @@
-import { lazy } from 'react';
+import {
+    lazy,
+    useMemo,
+} from 'react';
 import {
     StyleSheet,
     useWindowDimensions,
@@ -23,6 +26,7 @@ const MapContainerLazy = lazy(async () => {
 interface Props {
     geoJson: FeatureGeoJson;
     tileServer: FbObjRasterTileServer;
+    hideLines?: boolean;
 }
 
 const createStyles = (theme: AppTheme, { height }:
@@ -42,9 +46,24 @@ function MapTile(props: Props) {
     const {
         geoJson,
         tileServer,
+        hideLines = false,
     } = props;
+
     const { height } = useWindowDimensions();
     const styles = useThemedStyles(createStyles, { height });
+
+    const layerOptions = useMemo(() => ({
+        type: 'line' as const,
+        paint: {
+            'line-color': '#ffffff',
+            'line-width': 2,
+            'line-opacity': hideLines ? 0 : 1,
+        },
+        layout: {
+            visibility: 'visible' as const,
+        },
+    }), [hideLines]);
+
     return (
         <View
             style={styles.mainContent}
@@ -54,6 +73,7 @@ function MapTile(props: Props) {
                     geoJson={geoJson}
                     sourceKey="shape-source"
                     layerKey="shape-line-layer"
+                    layerOptions={layerOptions}
                 />
                 <MapContainerLazy
                     style={styles.mapContainerLazy}

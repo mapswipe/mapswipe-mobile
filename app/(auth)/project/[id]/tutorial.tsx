@@ -45,6 +45,9 @@ const styles = StyleSheet.create({
         padding: 0,
         margin: 0,
     },
+    headerButtonPadding: {
+        padding: 8,
+    },
 });
 
 function Tutorial() {
@@ -167,6 +170,7 @@ function Tutorial() {
             iconName="information-outline"
             onPress={setModal}
             stylesButton={styles.infoBtn}
+            stylesContainer={styles.headerButtonPadding}
         />
     );
     return (
