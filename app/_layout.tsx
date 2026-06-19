@@ -17,7 +17,6 @@ import Toast, {
     type ToastProps,
 } from 'react-native-toast-message';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { isDefined } from '@togglecorp/fujs';
 import { User } from 'firebase/auth';
 import { Provider as UrqlProvider } from 'urql';
@@ -165,10 +164,7 @@ export default function AppLayout() {
         <GestureHandlerRootView style={styles.gestureHandlerRoot}>
             <UrqlProvider value={client}>
                 <AuthContext.Provider value={authContextValue}>
-                    <StatusBar
-                        style="auto"
-                        animated
-                    />
+
                     <Stack screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="index" />
                         <Stack.Protected guard={!isAuthenticated}>
