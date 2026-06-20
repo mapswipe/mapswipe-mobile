@@ -1,17 +1,15 @@
 import {
     Dispatch,
+    type ReactNode,
     SetStateAction,
     useCallback,
     useEffect,
     useMemo,
-    useRef,
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     FlatList,
-    type NativeScrollEvent,
-    type NativeSyntheticEvent,
     StyleSheet,
     useWindowDimensions,
     View,
@@ -66,6 +64,10 @@ const createStyles = () => StyleSheet.create({
         zIndex: 10,
         elevation: 10,
     },
+    // Hide the selection-mode controls on the completion page.
+    hidden: {
+        display: 'none',
+    },
 });
 
 const VIEWABILITY_CONFIG = {
@@ -81,7 +83,10 @@ interface Props {
     projectDetails: LocateFeaturesProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
-    onSessionComplete: () => void;
+    // Project completion screen, rendered as the final swipeable page.
+    completionPage: ReactNode;
+    // Fired once the user scrolls onto the completion page (mapping finished).
+    onReachedEnd?: () => void;
 }
 
 function LocateFeaturesMappingSession(props: Props) {
@@ -90,14 +95,19 @@ function LocateFeaturesMappingSession(props: Props) {
         projectDetails,
         results,
         onResultsChange,
-        onSessionComplete,
+        completionPage,
+        onReachedEnd,
     } = props;
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const [mode, setMode] = useState<'mapping' | 'selection'>('mapping');
     const [selectedCellsByTask, setSelectedCellsByTask] = useState<Record<string, number[]>>({});
-    const completedRef = useRef(false);
-    const onLastPageRef = useRef(false);
+    // True while the swipeable completion page is showing, so the session
+    // chrome (scale bar, progress bar, hide-tiles button) can be hidden there.
+    const [atCompletion, setAtCompletion] = useState(false);
+    // Height of the scroll viewport, so the completion page can fill it and
+    // anchor its action buttons to the bottom.
+    const [viewportHeight, setViewportHeight] = useState(0);
 
     const theme = useTheme();
     const { t } = useTranslation('mappingSession');
@@ -286,30 +296,12 @@ function LocateFeaturesMappingSession(props: Props) {
         const offsetX = event.nativeEvent.contentOffset.x;
         const pageIndex = Math.round(offsetX / pageWidth);
         setCurrentTaskIndex(Math.min(pageIndex, tasks.length - 1));
-    }, [pageWidth, tasks.length]);
-
-    const handleMomentumScrollEnd = useCallback((
-        event: NativeSyntheticEvent<NativeScrollEvent>,
-    ) => {
-        if (completedRef.current) return;
-
-        const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-        const maxScrollable = contentSize.width - layoutMeasurement.width;
-
-        if (maxScrollable <= 0) return;
-        const arrivedAtEnd = contentOffset.x >= maxScrollable - 1;
-
-        if (arrivedAtEnd) {
-            if (onLastPageRef.current) {
-                completedRef.current = true;
-                onSessionComplete();
-            } else {
-                onLastPageRef.current = true;
-            }
-        } else {
-            onLastPageRef.current = false;
+        const onCompletionPage = pageIndex >= tasks.length;
+        setAtCompletion(onCompletionPage);
+        if (onCompletionPage) {
+            onReachedEnd?.();
         }
-    }, [onSessionComplete]);
+    }, [pageWidth, tasks.length, onReachedEnd]);
 
     const tileWidth = Math.min(pageWidth - 20, pageHeight / 2);
 
@@ -336,7 +328,7 @@ function LocateFeaturesMappingSession(props: Props) {
 
     return (
         <>
-            <View>
+            <View style={atCompletion ? styles.hidden : undefined}>
                 <InlineListView
                     style={styles.controls}
                     spacing="sm"
@@ -419,40 +411,58 @@ function LocateFeaturesMappingSession(props: Props) {
                         </View>
                     );
                 }}
+                onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
+                ListFooterComponent={tasks.length > 0 ? (
+                    <View
+                        // eslint-disable-next-line react-native/no-inline-styles
+                        style={{
+                            width: SCREEN_WIDTH,
+                            height: viewportHeight || undefined,
+                        }}
+                    >
+                        {completionPage}
+                    </View>
+                ) : null}
                 horizontal
                 pagingEnabled
                 scrollEnabled={mode !== 'selection'}
                 decelerationRate="fast"
                 showsHorizontalScrollIndicator={false}
                 disableIntervalMomentum
-                snapToOffsets={tasks.map((_, i) => i * pageWidth)}
+                snapToOffsets={Array.from(
+                    { length: tasks.length + 1 },
+                    (_, i) => i * pageWidth,
+                )}
                 viewabilityConfig={VIEWABILITY_CONFIG}
                 onScroll={handleScroll}
-                onMomentumScrollEnd={handleMomentumScrollEnd}
                 scrollEventThrottle={16}
                 windowSize={3}
                 initialNumToRender={2}
             />
-            {latitude && (
-                <ScaleBar
-                    latitude={latitude}
-                    position="bottom"
-                    referenceSize={tileWidth}
-                    tileSize={tileWidth}
-                    zoomLevel={projectDetails.zoomLevel}
-                    bottomPadding={40}
-                />
+            {!atCompletion && (
+                <>
+                    {latitude && (
+                        <ScaleBar
+                            latitude={latitude}
+                            position="bottom"
+                            referenceSize={tileWidth}
+                            tileSize={tileWidth}
+                            zoomLevel={projectDetails.zoomLevel}
+                            bottomPadding={40}
+                        />
+                    )}
+                    <HideTileSelectionButton
+                        handleHideTileSelectionPressIn={handleHideTilePressIn}
+                        handleHideTileSelectionPressOut={handleHideTilePressOut}
+                        isPressed={hideTilePressValue}
+                    />
+                    <ProgressBar
+                        currentValue={currentTaskIndex + 1}
+                        totalValue={tasks.length}
+                        colorVariant="brand"
+                    />
+                </>
             )}
-            <HideTileSelectionButton
-                handleHideTileSelectionPressIn={handleHideTilePressIn}
-                handleHideTileSelectionPressOut={handleHideTilePressOut}
-                isPressed={hideTilePressValue}
-            />
-            <ProgressBar
-                currentValue={currentTaskIndex + 1}
-                totalValue={tasks.length}
-                colorVariant="brand"
-            />
         </>
     );
 }

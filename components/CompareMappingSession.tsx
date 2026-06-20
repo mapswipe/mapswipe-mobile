@@ -1,16 +1,14 @@
 import {
     Dispatch,
+    type ReactNode,
     SetStateAction,
     useCallback,
     useEffect,
     useMemo,
-    useRef,
     useState,
 } from 'react';
 import {
     FlatList,
-    type NativeScrollEvent,
-    type NativeSyntheticEvent,
     StyleSheet,
     useWindowDimensions,
     View,
@@ -64,7 +62,10 @@ interface Props {
     projectDetails: CompareProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
-    onSessionComplete: () => void;
+    // Project completion screen, rendered as the final swipeable page.
+    completionPage: ReactNode;
+    // Fired once the user scrolls onto the completion page (mapping finished).
+    onReachedEnd?: () => void;
 }
 
 function CompareMappingSession(props: Props) {
@@ -73,12 +74,17 @@ function CompareMappingSession(props: Props) {
         projectDetails,
         results,
         onResultsChange,
-        onSessionComplete,
+        completionPage,
+        onReachedEnd,
     } = props;
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
-    const completedRef = useRef(false);
-    const onLastPageRef = useRef(false);
+    // True while the swipeable completion page is showing, so the session
+    // chrome (scale bar, progress bar, hide-tiles button) can be hidden there.
+    const [atCompletion, setAtCompletion] = useState(false);
+    // Height of the scroll viewport, so the completion page can fill it and
+    // anchor its action buttons to the bottom.
+    const [viewportHeight, setViewportHeight] = useState(0);
     const styles = useThemedStyles(createStyles);
 
     const {
@@ -170,30 +176,12 @@ function CompareMappingSession(props: Props) {
         const pageIndex = Math.round(offsetX / pageWidth);
         const itemIndex = Math.min(pageIndex, compressedTasks.length - 1);
         setCurrentTaskIndex(itemIndex);
-    }, [pageWidth, compressedTasks.length]);
-
-    const handleMomentumScrollEnd = useCallback((
-        event: NativeSyntheticEvent<NativeScrollEvent>,
-    ) => {
-        if (completedRef.current) return;
-
-        const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-        const maxScrollable = contentSize.width - layoutMeasurement.width;
-
-        if (maxScrollable <= 0) return;
-        const arrivedAtEnd = contentOffset.x >= maxScrollable - 1;
-
-        if (arrivedAtEnd) {
-            if (onLastPageRef.current) {
-                completedRef.current = true;
-                onSessionComplete();
-            } else {
-                onLastPageRef.current = true;
-            }
-        } else {
-            onLastPageRef.current = false;
+        const onCompletionPage = pageIndex >= compressedTasks.length;
+        setAtCompletion(onCompletionPage);
+        if (onCompletionPage) {
+            onReachedEnd?.();
         }
-    }, [onSessionComplete]);
+    }, [pageWidth, compressedTasks.length, onReachedEnd]);
 
     // FIXME: Discuss with Ankit on how to better define this
     const tileWidth = Math.min(pageWidth - 20, pageHeight / 2 - 120);
@@ -281,36 +269,54 @@ function CompareMappingSession(props: Props) {
                         </View>
                     );
                 }}
+                onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
+                ListFooterComponent={compressedTasks.length > 0 ? (
+                    <View
+                        // eslint-disable-next-line react-native/no-inline-styles
+                        style={{
+                            width: SCREEN_WIDTH,
+                            height: viewportHeight || undefined,
+                        }}
+                    >
+                        {completionPage}
+                    </View>
+                ) : null}
                 horizontal
                 pagingEnabled
                 decelerationRate="fast"
                 showsHorizontalScrollIndicator={false}
                 disableIntervalMomentum
-                snapToOffsets={compressedTasks.map((_, i) => i * pageWidth)}
+                snapToOffsets={Array.from(
+                    { length: compressedTasks.length + 1 },
+                    (_, i) => i * pageWidth,
+                )}
                 viewabilityConfig={VIEWABILITY_CONFIG}
                 onScroll={handleScroll}
-                onMomentumScrollEnd={handleMomentumScrollEnd}
             />
-            {latitude && (
-                <ScaleBar
-                    latitude={latitude}
-                    position="bottom"
-                    referenceSize={tileWidth}
-                    tileSize={tileWidth}
-                    zoomLevel={projectDetails?.zoomLevel}
-                    bottomPadding={20}
-                />
+            {!atCompletion && (
+                <>
+                    {latitude && (
+                        <ScaleBar
+                            latitude={latitude}
+                            position="bottom"
+                            referenceSize={tileWidth}
+                            tileSize={tileWidth}
+                            zoomLevel={projectDetails?.zoomLevel}
+                            bottomPadding={20}
+                        />
+                    )}
+                    <HideTileSelectionButton
+                        handleHideTileSelectionPressIn={handleHideTilePressIn}
+                        handleHideTileSelectionPressOut={handleHideTilePressOut}
+                        isPressed={hideTilePressValue}
+                    />
+                    <ProgressBar
+                        currentValue={Math.floor(currentTaskIndex + 1)}
+                        totalValue={Math.ceil(compressedTasks.length)}
+                        colorVariant="brand"
+                    />
+                </>
             )}
-            <HideTileSelectionButton
-                handleHideTileSelectionPressIn={handleHideTilePressIn}
-                handleHideTileSelectionPressOut={handleHideTilePressOut}
-                isPressed={hideTilePressValue}
-            />
-            <ProgressBar
-                currentValue={Math.floor(currentTaskIndex + 1)}
-                totalValue={Math.ceil(compressedTasks.length)}
-                colorVariant="brand"
-            />
             {isAccessibilityEnabled && <AccessibilityInfoModal />}
         </>
     );

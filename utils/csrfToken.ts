@@ -23,8 +23,11 @@ export async function fetchCsrfToken() {
         }
         return null;
     } catch (err) {
+        // A failed CSRF fetch is expected and recoverable (offline, backend
+        // unreachable, or native where document.cookie is unavailable). Warn
+        // instead of error so it does not raise a red-box LogBox in dev.
         // eslint-disable-next-line no-console
-        console.error('Failed to fetch CSRF token', err);
+        console.warn('Failed to fetch CSRF token', err);
         return null;
     }
 }
