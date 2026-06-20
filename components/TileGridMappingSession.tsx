@@ -341,12 +341,11 @@ function TileGridMappingSession(props: Props) {
                     onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
                     ListFooterComponent={groupedTasks.length > 0 ? (
                         <View
-                            // eslint-disable-next-line react-native/no-inline-styles
-                            style={{
+                            style={StyleSheet.flatten({
                                 width: pageWidth,
                                 marginLeft: completionLeftFiller,
                                 height: viewportHeight || undefined,
-                            }}
+                            })}
                         >
                             {completionPage}
                         </View>

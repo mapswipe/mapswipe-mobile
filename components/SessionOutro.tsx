@@ -235,31 +235,32 @@ function SessionOutro(props: Props) {
                 <View style={styles.card}>
                     {visibleAnswers.length > 0 && (
                         <View style={styles.statsList}>
-                            {visibleAnswers.map((answer) => (
-                                <View
-                                    key={answer.value}
-                                    style={styles.statRow}
-                                >
-                                    <View style={styles.statRowLeft}>
-                                        <View
-                                            // eslint-disable-next-line react-native/no-inline-styles
-                                            style={[styles.dot, {
-                                                backgroundColor: getDisplayColor(answer.color, theme),
-                                            }]}
-                                        />
-                                        <Text variant="description" colorVariant="brand">
-                                            {answer.label}
+                            {visibleAnswers.map((answer) => {
+                                const answerColor = getDisplayColor(answer.color, theme);
+                                return (
+                                    <View key={answer.value} style={styles.statRow}>
+                                        <View style={styles.statRowLeft}>
+                                            <View
+                                                style={StyleSheet.flatten([
+                                                    styles.dot,
+                                                    { backgroundColor: answerColor },
+                                                ])}
+                                            />
+                                            <Text variant="description" colorVariant="brand">
+                                                {answer.label}
+                                            </Text>
+                                        </View>
+                                        <Text
+                                            style={StyleSheet.flatten([
+                                                styles.statCount,
+                                                { color: answerColor },
+                                            ])}
+                                        >
+                                            {String(answer.count)}
                                         </Text>
                                     </View>
-                                    <Text
-                                        style={StyleSheet.flatten([styles.statCount, {
-                                            color: getDisplayColor(answer.color, theme),
-                                        }])}
-                                    >
-                                        {String(answer.count)}
-                                    </Text>
-                                </View>
-                            ))}
+                                );
+                            })}
                         </View>
                     )}
                     {visibleAnswers.length > 0 && <View style={styles.horizontalDivider} />}

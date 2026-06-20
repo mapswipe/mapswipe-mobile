@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import {
     FlatList,
     StyleSheet,
+    TouchableOpacity,
     useWindowDimensions,
     View,
 } from 'react-native';
@@ -23,7 +24,6 @@ import {
 import {
     CheckIcon,
     SelectionIcon,
-    SkipForwardIcon,
 } from 'phosphor-react-native';
 
 import Button from '@/components/Button';
@@ -31,6 +31,7 @@ import InlineListView from '@/components/InlineListView';
 import LocateTile from '@/components/LocateTile';
 import ProgressBar from '@/components/ProgressBar';
 import ScaleBar from '@/components/ScaleBar';
+import Text from '@/components/Text';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useTheme from '@/hooks/useTheme';
@@ -55,18 +56,67 @@ const createStyles = () => StyleSheet.create({
         width: SCREEN_WIDTH,
         paddingBottom: 40,
     },
-    controls: {
+    // Fill the content area so the tile is genuinely vertically centered and the
+    // measured height equals the full viewport (the bars are positioned against
+    // it). Without this the list is content-sized and the bars sit too high.
+    list: {
+        flex: 1,
+        width: '100%',
+    },
+    // Selection controls (enter / done) sit just above the centered tile, top-
+    // right aligned, mirroring the options bar below it. The bar spans the gap
+    // above the tile and bottom-aligns its content.
+    controlsBar: {
         position: 'absolute',
-        top: 10,
+        top: 0,
+        left: 0,
         right: 0,
-        paddingHorizontal: 10,
-        justifyContent: 'center',
-        zIndex: 10,
-        elevation: 10,
+        alignItems: 'flex-end',
+        justifyContent: 'flex-end',
+        paddingBottom: 8,
+        paddingHorizontal: 16,
+        zIndex: 20,
+        elevation: 20,
     },
     // Hide the selection-mode controls on the completion page.
     hidden: {
         display: 'none',
+    },
+    // Floating, centered options bar shown in selection mode. The container is
+    // full-width but box-none so the corner chrome stays tappable; only the
+    // centered pill receives touches.
+    optionsBarContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        zIndex: 20,
+        elevation: 20,
+    },
+    optionsBar: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 16,
+        borderWidth: 1,
+        maxWidth: '92%',
+    },
+    optionChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        borderRadius: 999,
+    },
+    optionDot: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
     },
 });
 
@@ -260,7 +310,9 @@ function LocateFeaturesMappingSession(props: Props) {
         }
     }, [currentTaskId]);
 
-    const handleCycleSelected = useCallback(() => {
+    // Applies the chosen option's value to every selected cell, then clears the
+    // selection so the next batch can be selected fresh.
+    const handleApplyOptionToSelected = useCallback((value: number) => {
         if (isNotDefined(currentTaskId)) {
             return;
         }
@@ -275,12 +327,20 @@ function LocateFeaturesMappingSession(props: Props) {
                 : new Array<number>(cellsPerTile).fill(defaultCellValue);
             const nextCells = [...prevCells];
             selected.forEach((idx) => {
-                nextCells[idx] = getNextValue(prevCells[idx]);
+                nextCells[idx] = value;
             });
             const next: CellResults = {
                 ...(prev as CellResults),
                 [currentTaskId]: nextCells,
             };
+            return next;
+        });
+        setSelectedCellsByTask((prev) => {
+            if (isNotDefined(prev[currentTaskId])) {
+                return prev;
+            }
+            const next = { ...prev };
+            delete next[currentTaskId];
             return next;
         });
     }, [
@@ -289,8 +349,11 @@ function LocateFeaturesMappingSession(props: Props) {
         onResultsChange,
         cellsPerTile,
         defaultCellValue,
-        getNextValue,
     ]);
+
+    const selectedCount = isDefined(currentTaskId)
+        ? (selectedCellsByTask[currentTaskId]?.length ?? 0)
+        : 0;
 
     const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { x: number } } }) => {
         const offsetX = event.nativeEvent.contentOffset.x;
@@ -304,6 +367,18 @@ function LocateFeaturesMappingSession(props: Props) {
     }, [pageWidth, tasks.length, onReachedEnd]);
 
     const tileWidth = Math.min(pageWidth - 20, pageHeight / 2);
+    // The tile is vertically centered in the viewport, so its bottom edge sits
+    // at (viewportHeight + tileHeight) / 2. Anchor the options bar just below
+    // it, clear of the scale bar / progress bar / hide-tiles button.
+    const optionsBarTop = (viewportHeight + tileWidth) / 2;
+    // Mirror that above the tile: the controls bar spans the gap above the tile
+    // (height = the top gap) with its content bottom-aligned, so the selection
+    // controls sit just above the tile. Fall back to pageHeight before the
+    // viewport is measured so the control is visible from the first frame.
+    const controlsBarHeight = Math.max(
+        0,
+        ((viewportHeight || pageHeight) - tileWidth) / 2 - 16,
+    );
 
     const latitude = useMemo(() => {
         if (!groupDetails) {
@@ -328,9 +403,15 @@ function LocateFeaturesMappingSession(props: Props) {
 
     return (
         <>
-            <View style={atCompletion ? styles.hidden : undefined}>
+            <View
+                style={StyleSheet.flatten([
+                    styles.controlsBar,
+                    { height: controlsBarHeight },
+                    atCompletion && styles.hidden,
+                ])}
+                pointerEvents="box-none"
+            >
                 <InlineListView
-                    style={styles.controls}
                     spacing="sm"
                     withoutWrap
                 >
@@ -346,33 +427,22 @@ function LocateFeaturesMappingSession(props: Props) {
                         </Button>
                     )}
                     {mode === 'selection' && (
-                        <>
-                            <Button
-                                name="cycle-selected"
-                                accessibilityLabel={t('cycleSelectedCells')}
-                                colorVariant="white"
-                                styleVariant="action"
-                                fullWidth={false}
-                                onPress={handleCycleSelected}
-                            >
-                                <SkipForwardIcon color={theme.textOnBrand} />
-                            </Button>
-                            <Button
-                                name="exit-selection"
-                                accessibilityLabel={t('exitSelectionMode')}
-                                colorVariant="primaryRed"
-                                styleVariant="action"
-                                fullWidth={false}
-                                onPress={handleExitSelectionMode}
-                            >
-                                <CheckIcon color={theme.textOnBrand} />
-                            </Button>
-                        </>
+                        <Button
+                            name="exit-selection"
+                            accessibilityLabel={t('exitSelectionMode')}
+                            colorVariant="primaryRed"
+                            styleVariant="action"
+                            fullWidth={false}
+                            onPress={handleExitSelectionMode}
+                        >
+                            <CheckIcon color={theme.textOnBrand} />
+                        </Button>
                     )}
                 </InlineListView>
             </View>
             <FlatList
                 data={tasks}
+                style={styles.list}
                 contentContainerStyle={styles.content}
                 keyExtractor={(task) => task.taskId}
                 renderItem={({ item: task }) => {
@@ -414,11 +484,10 @@ function LocateFeaturesMappingSession(props: Props) {
                 onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
                 ListFooterComponent={tasks.length > 0 ? (
                     <View
-                        // eslint-disable-next-line react-native/no-inline-styles
-                        style={{
+                        style={StyleSheet.flatten({
                             width: SCREEN_WIDTH,
                             height: viewportHeight || undefined,
-                        }}
+                        })}
                     >
                         {completionPage}
                     </View>
@@ -462,6 +531,57 @@ function LocateFeaturesMappingSession(props: Props) {
                         colorVariant="brand"
                     />
                 </>
+            )}
+            {mode === 'selection' && !atCompletion && (
+                <View
+                    style={StyleSheet.flatten([
+                        styles.optionsBarContainer,
+                        { top: optionsBarTop },
+                    ])}
+                    pointerEvents="box-none"
+                >
+                    <View
+                        style={StyleSheet.flatten([
+                            styles.optionsBar,
+                            {
+                                backgroundColor: theme.backgroundBrand,
+                                borderColor: theme.divider,
+                            },
+                        ])}
+                    >
+                        {options.map((option) => {
+                            const dotColor = option.color === 'transparent'
+                                ? theme.textMuted
+                                : option.color;
+                            return (
+                                <TouchableOpacity
+                                    key={option.value}
+                                    style={StyleSheet.flatten([
+                                        styles.optionChip,
+                                        {
+                                            backgroundColor: theme.inputBrandBackground,
+                                            opacity: selectedCount === 0 ? 0.5 : 1,
+                                        },
+                                    ])}
+                                    onPress={() => handleApplyOptionToSelected(option.value)}
+                                    disabled={selectedCount === 0}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={option.label}
+                                >
+                                    <View
+                                        style={StyleSheet.flatten([
+                                            styles.optionDot,
+                                            { backgroundColor: dotColor },
+                                        ])}
+                                    />
+                                    <Text variant="label" colorVariant="brand">
+                                        {option.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </View>
+                </View>
             )}
         </>
     );

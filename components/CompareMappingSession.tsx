@@ -272,11 +272,10 @@ function CompareMappingSession(props: Props) {
                 onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
                 ListFooterComponent={compressedTasks.length > 0 ? (
                     <View
-                        // eslint-disable-next-line react-native/no-inline-styles
-                        style={{
+                        style={StyleSheet.flatten({
                             width: SCREEN_WIDTH,
                             height: viewportHeight || undefined,
-                        }}
+                        })}
                     >
                         {completionPage}
                     </View>
