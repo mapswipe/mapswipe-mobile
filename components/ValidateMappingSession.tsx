@@ -22,8 +22,8 @@ import { inflate } from 'pako';
 import BlockListView from '@/components/BlockListView';
 import InlineListView from '@/components/InlineListView';
 import MapTile from '@/components/MapTile';
+import ProgressBar from '@/components/ProgressBar';
 import ScaleBar from '@/components/ScaleBar';
-import StageIndicator from '@/components/tutorial/StageIndicator';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
@@ -301,9 +301,10 @@ function ValidateMappingSession(props: Props) {
                     />
                 ))}
             </InlineListView>
-            <StageIndicator
-                currentIndex={currentTaskIndex}
-                total={maxTasks}
+            <ProgressBar
+                currentValue={currentTaskIndex + 1}
+                totalValue={maxTasks}
+                colorVariant="brand"
             />
         </BlockListView>
     );
