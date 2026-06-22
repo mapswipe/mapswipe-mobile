@@ -1,0 +1,46 @@
+{
+    "$schema": "https://unpkg.com/knip@5/schema.json",
+    "graphql-codegen": false,
+    "entry": [
+        "app/**/*.{ts,tsx}",
+        "codegen.ts",
+        "plugins/**",
+        "utils/firebase-generated-types.ts"
+    ],
+    "ignoreFiles": [
+        "metro.config.js",
+        "backend/**",
+        "generated/**",
+        "**/*.web.{ts,tsx}",
+        "components/BaseMap.tsx",
+        "components/GeoJsonMapSource.tsx"
+    ],
+    "ignoreMembers": [
+        "FbTask"
+    ],
+    "ignoreDependencies": [
+        "expo-updates",
+        "expo-splash-screen",
+        "@togglecorp/re-map",
+        "@expo/metro-config",
+        "metro-minify-terser",
+        "dotenv",
+        "@graphql-codegen/introspection",
+        "@graphql-codegen/typescript",
+        "@graphql-codegen/typescript-operations",
+        "@graphql-codegen/typescript-urql",
+        "@typescript-eslint/eslint-plugin",
+        "eslint-config-airbnb",
+        "eslint-plugin-import-newlines",
+        "eslint-plugin-jsx-a11y",
+        "eslint-plugin-react",
+        "eslint-plugin-react-hooks",
+        "eslint-plugin-react-native",
+        "eslint-plugin-simple-import-sort"
+    ],
+    "rules": {
+        "exports": "warn",
+        "types": "warn"
+    },
+    "treatConfigHintsAsErrors": false
+}

@@ -1,16 +1,14 @@
 import {
     Dispatch,
+    type ReactNode,
     SetStateAction,
     useCallback,
     useEffect,
     useMemo,
-    useRef,
     useState,
 } from 'react';
 import {
     FlatList,
-    type NativeScrollEvent,
-    type NativeSyntheticEvent,
     PanResponder,
     StyleSheet,
     useWindowDimensions,
@@ -63,7 +61,10 @@ interface Props {
     projectDetails: FindProject | CompletenessProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
-    onSessionComplete: () => void;
+    // Project completion screen, rendered as the final swipeable page.
+    completionPage: ReactNode;
+    // Fired once the user scrolls onto the completion page (mapping finished).
+    onReachedEnd?: () => void;
 }
 
 function TileGridMappingSession(props: Props) {
@@ -72,12 +73,17 @@ function TileGridMappingSession(props: Props) {
         projectDetails,
         results,
         onResultsChange,
-        onSessionComplete,
+        completionPage,
+        onReachedEnd,
     } = props;
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
-    const completedRef = useRef(false);
-    const onLastPageRef = useRef(false);
+    // True while the swipeable completion page is showing, so the session
+    // chrome (scale bar, progress bar, hide-tiles button) can be hidden there.
+    const [atCompletion, setAtCompletion] = useState(false);
+    // Height of the scroll viewport, so the completion page can fill it and
+    // anchor its action buttons to the bottom.
+    const [viewportHeight, setViewportHeight] = useState(0);
 
     const styles = useThemedStyles(createStyles);
 
@@ -188,35 +194,31 @@ function TileGridMappingSession(props: Props) {
 
     const tileWidth = Math.min(pageWidth / 2, pageHeight / 4);
 
+    // The completion page is appended as a full-width page after the tile
+    // columns. `completionLeftFiller` pads the columns up to the next page
+    // boundary so the outro always snaps cleanly (handles odd column counts and
+    // single-column groups). The trailing snap offset is the completion page.
+    const columnsWidth = groupedTasks.length * tileWidth;
+    const contentPages = groupedTasks.length === 0
+        ? 0
+        : Math.ceil(columnsWidth / pageWidth);
+    const completionLeftFiller = contentPages * pageWidth - columnsWidth;
+    const pageSnapOffsets = useMemo(
+        () => Array.from({ length: contentPages + 1 }, (_, i) => i * pageWidth),
+        [contentPages, pageWidth],
+    );
+
     const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { x: number } } }) => {
         const offsetX = event.nativeEvent.contentOffset.x;
         const pageIndex = Math.round(offsetX / pageWidth);
         const itemIndex = Math.min(pageIndex * 2, groupedTasks.length - 1);
         setCurrentTaskIndex(itemIndex);
-    }, [pageWidth, groupedTasks.length]);
-
-    const handleMomentumScrollEnd = useCallback((
-        event: NativeSyntheticEvent<NativeScrollEvent>,
-    ) => {
-        if (completedRef.current) return;
-
-        const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-        const maxScrollable = contentSize.width - layoutMeasurement.width;
-
-        if (maxScrollable <= 0) return;
-        const arrivedAtEnd = contentOffset.x >= maxScrollable - 1;
-
-        if (arrivedAtEnd) {
-            if (onLastPageRef.current) {
-                completedRef.current = true;
-                onSessionComplete();
-            } else {
-                onLastPageRef.current = true;
-            }
-        } else {
-            onLastPageRef.current = false;
+        const onCompletionPage = pageIndex >= contentPages;
+        setAtCompletion(onCompletionPage);
+        if (onCompletionPage) {
+            onReachedEnd?.();
         }
-    }, [onSessionComplete]);
+    }, [pageWidth, groupedTasks.length, contentPages, onReachedEnd]);
 
     const handleTilePress = useCallback((taskId: string) => {
         onResultsChange((prevResults) => {
@@ -336,41 +338,56 @@ function TileGridMappingSession(props: Props) {
                             })}
                         </View>
                     )}
+                    onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
+                    ListFooterComponent={groupedTasks.length > 0 ? (
+                        <View
+                            style={StyleSheet.flatten({
+                                width: pageWidth,
+                                marginLeft: completionLeftFiller,
+                                height: viewportHeight || undefined,
+                            })}
+                        >
+                            {completionPage}
+                        </View>
+                    ) : null}
                     horizontal
                     pagingEnabled
                     decelerationRate="fast"
                     showsHorizontalScrollIndicator={false}
                     disableIntervalMomentum
-                    snapToOffsets={groupedTasks.map((_, i) => i * pageWidth)}
+                    snapToOffsets={pageSnapOffsets}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                     onScroll={handleScroll}
-                    onMomentumScrollEnd={handleMomentumScrollEnd}
                     scrollEventThrottle={16}
                     windowSize={3}
                     initialNumToRender={2}
                     // removeClippedSubviews
                 />
             </View>
-            {latitude && (
-                <ScaleBar
-                    latitude={latitude}
-                    position="bottom"
-                    referenceSize={tileWidth}
-                    tileSize={tileWidth}
-                    zoomLevel={projectDetails?.zoomLevel}
-                    bottomPadding={40}
-                />
+            {!atCompletion && (
+                <>
+                    {latitude && (
+                        <ScaleBar
+                            latitude={latitude}
+                            position="bottom"
+                            referenceSize={tileWidth}
+                            tileSize={tileWidth}
+                            zoomLevel={projectDetails?.zoomLevel}
+                            bottomPadding={40}
+                        />
+                    )}
+                    <HideTileSelectionButton
+                        handleHideTileSelectionPressIn={handleHideTilePressIn}
+                        handleHideTileSelectionPressOut={handleHideTilePressOut}
+                        isPressed={hideTilePressValue}
+                    />
+                    <ProgressBar
+                        currentValue={Math.floor(currentTaskIndex / 2) + 1}
+                        totalValue={Math.ceil(groupedTasks.length / 2)}
+                        colorVariant="brand"
+                    />
+                </>
             )}
-            <HideTileSelectionButton
-                handleHideTileSelectionPressIn={handleHideTilePressIn}
-                handleHideTileSelectionPressOut={handleHideTilePressOut}
-                isPressed={hideTilePressValue}
-            />
-            <ProgressBar
-                currentValue={Math.floor(currentTaskIndex / 2) + 1}
-                totalValue={Math.ceil(groupedTasks.length / 2)}
-                colorVariant="brand"
-            />
             {isAccessibilityEnabled && <AccessibilityInfoModal />}
         </>
     );

@@ -10,7 +10,10 @@ import {
     useLocalSearchParams,
     useRouter,
 } from 'expo-router';
-import { isNotDefined } from '@togglecorp/fujs';
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
 import { set as setToDatabase } from 'firebase/database';
 
 import BlockListView from '@/components/BlockListView';
@@ -33,6 +36,10 @@ import ValidateMappingSession from '@/components/ValidateMappingSession';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
+import {
+    getAnswerCounts,
+    getResultOptions,
+} from '@/utils/results';
 import {
     FbProject,
     PROJECT_TYPE_COMPARE,
@@ -76,13 +83,37 @@ function MapTaskGroup() {
     const [results, setResults] = useState<Results>({});
     const [completed, setCompleted] = useState(false);
     const [resultSyncStatus, setResultSyncStatus] = useState<ResultSyncStatus>('not-started');
+    const [sessionDurationMs, setSessionDurationMs] = useState<number | undefined>(undefined);
 
     const userId = user?.uid;
 
-    const handleSessionComplete = useCallback(() => {
-        endTimestampRef.current = new Date().toISOString();
-        setCompleted(true);
+    // Per-answer counts and the number of tiles reviewed, for the session summary.
+    const answerCounts = useMemo(
+        () => (isDefined(projectDetails)
+            ? getAnswerCounts(results, getResultOptions(projectDetails))
+            : []),
+        [results, projectDetails],
+    );
+    const reviewedCount = useMemo(() => Object.keys(results).length, [results]);
+
+    // Stamps the end time once (the moment mapping finished) and derives the
+    // session duration shown on the outro. Idempotent across re-entries.
+    const markSessionEnd = useCallback(() => {
+        if (isDefined(endTimestampRef.current)) {
+            return;
+        }
+        const end = new Date().toISOString();
+        endTimestampRef.current = end;
+        const start = startTimestampRef.current;
+        if (isDefined(start)) {
+            setSessionDurationMs(new Date(end).getTime() - new Date(start).getTime());
+        }
     }, []);
+
+    const handleSessionComplete = useCallback(() => {
+        markSessionEnd();
+        setCompleted(true);
+    }, [markSessionEnd]);
 
     const saveResults = useCallback(async () => {
         if (isNotDefined(userId)) {
@@ -90,6 +121,12 @@ function MapTaskGroup() {
         }
 
         setResultSyncStatus('in-progress');
+        // Scroll-completion sessions render the outro as a swipeable page and
+        // never call handleSessionComplete, so stamp the end time at submit if
+        // it has not been set yet.
+        if (isNotDefined(endTimestampRef.current)) {
+            endTimestampRef.current = new Date().toISOString();
+        }
         const resultsLocationRef = firebaseRef(
             `v2/results/${projectId}/${taskGroupId}/${userId}`,
         );
@@ -130,6 +167,7 @@ function MapTaskGroup() {
         setResults({});
         setCompleted(false);
         setResultSyncStatus('not-started');
+        setSessionDurationMs(undefined);
         startTimestampRef.current = new Date().toISOString();
         endTimestampRef.current = undefined;
         router.replace({
@@ -174,6 +212,22 @@ function MapTaskGroup() {
         router.back();
     }, [router]);
 
+    // Rendered as the final swipeable page inside the scroll-completion
+    // sessions (FIND / COMPLETENESS / COMPARE / LOCATE_FEATURES). It omits the
+    // "Go back" button because swiping back to the tasks replaces it.
+    const completionPage = (
+        <SessionOutro
+            resultSyncStatus={resultSyncStatus}
+            onContinueMapping={handleContinueMapping}
+            onCompleteSession={handleCompleteSession}
+            onDiscardSession={handleDiscardSession}
+            swipeBackHint
+            answerCounts={answerCounts}
+            reviewedCount={reviewedCount}
+            durationMs={sessionDurationMs}
+        />
+    );
+
     return (
         <Page
             title={projectDetails?.projectInstruction ?? 'Map Project'}
@@ -191,6 +245,9 @@ function MapTaskGroup() {
                     onCompleteSession={handleCompleteSession}
                     onGoBack={handleGoBack}
                     onDiscardSession={handleDiscardSession}
+                    answerCounts={answerCounts}
+                    reviewedCount={reviewedCount}
+                    durationMs={sessionDurationMs}
                 />
             ) : (
                 <>
@@ -200,7 +257,8 @@ function MapTaskGroup() {
                             projectDetails={projectDetails}
                             results={results}
                             onResultsChange={setResults}
-                            onSessionComplete={handleSessionComplete}
+                            completionPage={completionPage}
+                            onReachedEnd={markSessionEnd}
                         />
                     )}
                     {projectDetails?.projectType === PROJECT_TYPE_COMPARE && (
@@ -209,7 +267,8 @@ function MapTaskGroup() {
                             projectDetails={projectDetails}
                             results={results}
                             onResultsChange={setResults}
-                            onSessionComplete={handleSessionComplete}
+                            completionPage={completionPage}
+                            onReachedEnd={markSessionEnd}
                         />
                     )}
                     {projectDetails?.projectType === PROJECT_TYPE_VALIDATE && (
@@ -227,7 +286,8 @@ function MapTaskGroup() {
                             projectDetails={projectDetails}
                             results={results}
                             onResultsChange={setResults}
-                            onSessionComplete={handleSessionComplete}
+                            completionPage={completionPage}
+                            onReachedEnd={markSessionEnd}
                         />
                     )}
                     {projectDetails?.projectType === PROJECT_TYPE_VALIDATE_IMAGE && (
@@ -251,7 +311,8 @@ function MapTaskGroup() {
                             projectDetails={projectDetails}
                             results={results}
                             onResultsChange={setResults}
-                            onSessionComplete={handleSessionComplete}
+                            completionPage={completionPage}
+                            onReachedEnd={markSessionEnd}
                         />
                     )}
                 </>

@@ -5,6 +5,7 @@ import {
     CaretRightIcon,
     CheckIcon,
     CircleIcon,
+    ClockIcon,
     CubeIcon,
     EggIcon,
     EyeIcon,
@@ -61,6 +62,7 @@ export type IconName =
     | 'shapes-outline'
     | 'square-outline'
     | 'star-outline'
+    | 'time-outline'
     | 'swipe-left'
     | 'swipe-right'
     | 'tap'
@@ -104,6 +106,7 @@ const iconMap: Record<IconName, PhosphorIcon> = {
     'shapes-outline': ShapesIcon,
     'square-outline': SquareIcon,
     'star-outline': StarIcon,
+    'time-outline': ClockIcon,
     'swipe-left': HandSwipeLeftIcon,
     'swipe-right': HandSwipeRightIcon,
     // FIXME: these icons should be updated
