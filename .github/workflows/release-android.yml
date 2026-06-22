@@ -83,6 +83,11 @@ jobs:
       - name: Expo prebuild (staging)
         run: APP_ENV=staging npx expo prebuild --platform android --clean
 
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/share/powershell /usr/share/swift /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h
+
       - name: Build staging APK
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/mapswipe-staging.keystore
@@ -90,7 +95,8 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_STAGING_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_STAGING_KEY_PASSWORD }}
         run: |
-          cd android && ./gradlew assembleRelease \
+          cd android && ./gradlew assembleRelease --stacktrace \
+            -PreactNativeArchitectures=armeabi-v7a,arm64-v8a \
             -Pandroid.injected.signing.store.file=$KEYSTORE_PATH \
             -Pandroid.injected.signing.store.password=$STORE_PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
@@ -205,6 +211,11 @@ jobs:
       - name: Expo prebuild (production)
         run: npx expo prebuild --platform android --clean
 
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/share/powershell /usr/share/swift /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h
+
       - name: Build production APK
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/mapswipe-prod.keystore
@@ -212,7 +223,8 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_PROD_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_PROD_KEY_PASSWORD }}
         run: |
-          cd android && ./gradlew assembleRelease \
+          cd android && ./gradlew assembleRelease --stacktrace \
+            -PreactNativeArchitectures=armeabi-v7a,arm64-v8a \
             -Pandroid.injected.signing.store.file=$KEYSTORE_PATH \
             -Pandroid.injected.signing.store.password=$STORE_PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
