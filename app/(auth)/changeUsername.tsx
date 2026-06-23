@@ -10,11 +10,13 @@ import { update } from 'firebase/database';
 import BlockListView from '@/components/BlockListView';
 import Button from '@/components/Button';
 import Page from '@/components/Page';
+import Text from '@/components/Text';
 import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
 import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
 import {
+    MAX_USERNAME_LENGTH,
     MIN_USERNAME_LENGTH,
     usernameExists,
     validateUserName,
@@ -27,6 +29,7 @@ const usernameSameAsBefore = 'New username is same as old!';
 export default function ChangePassword() {
     const { user, setUser } = useAuth();
     const [newUserName, setNewUserName] = useState<string>('');
+    const [usernameError, setUsernameError] = useState<string>();
     const router = useRouter();
     const { t } = useTranslation(['changeUserName', 'signup']);
     // FIXME: Update the use of this function
@@ -34,6 +37,15 @@ export default function ChangePassword() {
         handleAsync,
         loading,
     } = useAsyncHandler();
+
+    const handleUsernameChange = useCallback((value: string) => {
+        setNewUserName(value);
+        setUsernameError(
+            value.length > 0 && !validateUserName(value)
+                ? t('signup:usernameErrorText')
+                : undefined,
+        );
+    }, [t]);
 
     const handleUpdateProfile = useCallback(async () => {
         const isSame = newUserName === user?.displayName;
@@ -98,6 +110,19 @@ export default function ChangePassword() {
         });
     }, [newUserName, user, setUser, handleAsync, router, t]);
 
+    if (user?.uid?.startsWith('osm:')) {
+        return (
+            <Page
+                title={t('changeUserName:changeUserName')}
+                showBackButton
+            >
+                <BlockListView withPadding>
+                    <Text>{t('changeUserName:osmUsernameChangeNotAllowed')}</Text>
+                </BlockListView>
+            </Page>
+        );
+    }
+
     return (
         <Page
             title={t('changeUserName:changeUserName')}
@@ -115,8 +140,9 @@ export default function ChangePassword() {
                 <TextInput
                     variant="normal"
                     labelText={t('changeUserName:newUserName')}
-                    onChangeText={setNewUserName}
-                    maxLength={128}
+                    onChangeText={handleUsernameChange}
+                    maxLength={MAX_USERNAME_LENGTH}
+                    errorText={usernameError}
                     editable={!loading}
                 />
                 <Button

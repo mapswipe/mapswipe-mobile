@@ -242,11 +242,13 @@ function Profile() {
         });
     }, [handleDelete, t]);
 
+    const isOsmUser = user?.uid?.startsWith('osm:') ?? false;
+
     const settingItems: ButtonLayoutProps[] = [
-        {
+        ...(!isOsmUser ? [{
             title: t('changeUserName'),
             onPress: onHandleChangeUsername,
-        },
+        }] : []),
         {
             title: t('changePassword'),
             onPress: handleResetPasswordClick,

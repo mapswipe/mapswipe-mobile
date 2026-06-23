@@ -17,6 +17,7 @@ import Toast, {
     type ToastProps,
 } from 'react-native-toast-message';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { isDefined } from '@togglecorp/fujs';
 import { User } from 'firebase/auth';
 import { Provider as UrqlProvider } from 'urql';
@@ -27,6 +28,8 @@ import AuthContext, { AuthContextProps } from '@/contexts/auth';
 import { fetchCsrfToken } from '@/utils/csrfToken';
 import { firebaseAuth } from '@/utils/firebase';
 import client from '@/utils/urqlClient';
+
+SplashScreen.preventAutoHideAsync();
 
 export {
     // Catch any errors thrown by the Layout component.
@@ -120,6 +123,12 @@ export default function AppLayout() {
     useEffect(() => {
         fetchCsrfToken();
     }, []);
+
+    useEffect(() => {
+        if (user !== undefined) {
+            SplashScreen.hideAsync();
+        }
+    }, [user]);
 
     const authContextValue = useMemo<AuthContextProps>(() => {
         if (user === undefined) {
