@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "Instructies",
+  "viewInstructions": "Bekijk instructies",
+  "compareLookingFor": "U bent op zoek naar <1>veranderingen in het aantal gebouwen</1>. Dit functioneert als een duidelijke indicator voor een verandering in bevolkingsgrootte.",
+  "compareHoldZoom": "Als u een afbeelding van dichterbij wilt zien tikt u op de afbeelding en houdt u deze vast om nog iets meer in te zoomen.",
+  "locateIntro": "Dit tutorial zal u leren hoe u MapSwipe gebruikt. Hier zijn de basis-stappen:",
+  "locateTapReset": "Tik opnieuw om het vierkant terug te zetten in zijn originele staat."
+}

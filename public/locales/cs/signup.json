@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Zvolte své uživatelské jméno",
   "passwordError": "Heslo musí mít alespoň 6 znaků",
-  "usernameError": "Uživatelské jméno musí mít alespoň 4 znaky",
   "errorOnSignup": "Chyba při registraci",
   "usernameErrorMessage": "Vaše uživatelské jméno musí mít 4 nebo více znaků",
   "usernameNotEmail": "Vaše uživatelské jméno nemůže být e-mail",

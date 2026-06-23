@@ -1,13 +1,13 @@
 {
   "instructions": "Instruktioner",
   "yourTask": "Din opgave: ",
-  "lookingFor": "Du skal kigge efter {' '} <1>ændringer i bygninger</1>. Dette er en klar indikator for en ændring i befolkningstallet.",
+  "lookingFor": "Du skal kigge efter <1>ændringer i bygninger</1>. Dette er en klar indikator for en ændring i befolkningstallet.",
   "performTask": "Sådan løses opgaven: ",
-  "noChanges": "Hvis der ikke er nogle ændringer, så blot {' '} <1>swipe</1> videre til de næste billeder",
-  "seeChanges": "Hvis du ser ændringer i bygninger,{' '} <1>tap en gang</1>{' '} så feltet bliver grønt",
-  "unsure": "Usikker?{' '} <1>Tap to gange</1>{' '} og feltet vil blive gult",
-  "badImagery": "Problemer med billedet, som fx hvis området er dækket af skyer?{' '} <1>Tap tre gange </1>{' '} og feltet vil blive rødt",
+  "noChanges": "Hvis der ikke er nogle ændringer, så blot <1>swipe</1> videre til de næste billeder",
+  "seeChanges": "Hvis du ser ændringer i bygninger, <1>tap en gang</1> så feltet bliver grønt",
+  "unsure": "Usikker? <1>Tap to gange</1> og feltet vil blive gult",
+  "badImagery": "Problemer med billedet, som fx hvis området er dækket af skyer? <1>Tap tre gange </1> og feltet vil blive rødt",
   "holdZoom": "Hvis du har brug for at se billedet lidt tættere på, så tap og hold fingeren på billedet, hvorved det blive en smule forstørret.",
   "hint": "Tip: ",
-  "differentImagery": "Vi benytter forskellige billedkilder, og det kan betyde at der kan være forskel fra projekt til projekt i billedernes vinkel og opløsning. Men husk at du blot skal kigge efter {' '}<1> afgørende ændringer af beboelsesområder og bygninger</1>{' '} så hvis det ser ud til at de samme bygninger stadig er der, men at der måske er skiftet tag på et af husene, vil det være et 'no change' scenarie, og du skal blot swipe videre til det næste billede."
+  "differentImagery": "Vi benytter forskellige billedkilder, og det kan betyde at der kan være forskel fra projekt til projekt i billedernes vinkel og opløsning. Men husk at du blot skal kigge efter <1> afgørende ændringer af beboelsesområder og bygninger</1> så hvis det ser ud til at de samme bygninger stadig er der, men at der måske er skiftet tag på et af husene, vil det være et 'no change' scenarie, og du skal blot swipe videre til det næste billede."
 }

@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Kies uw gebruikersnaam",
   "passwordError": "Wachtwoord moet uit ten minste 6 tekens bestaan",
-  "usernameError": "Gebruikersnaam moet uit ten minste 4 tekens bestaan",
   "errorOnSignup": "Fout bij aanmelden",
   "usernameErrorMessage": "Uw gebruikersnaam moet uit 4 tekens of meer bestaan",
   "usernameNotEmail": "Uw gebruikersnaam mag geen e-mailadres zijn ",

@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "Juhised",
+  "viewInstructions": "Vaata juhendit",
+  "compareLookingFor": "Otsid <1>muudatusi ehitistes</1>. See on selge märk elanikkonna suuruse muudatusest.",
+  "compareHoldZoom": "Kui soovid pildimaterjali lähemalt vaadelda, puuduta ja hoia ruutu selle veidi suurendamiseks.",
+  "locateIntro": "Selles juhendis õpetatakse MapSwipe'i kasutama. Siin on põhisammud:",
+  "locateTapReset": "Puuduta veel korra, et taastada ruudu algne olek."
+}

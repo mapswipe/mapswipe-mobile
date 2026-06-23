@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Scegli il tuo nome utente",
   "passwordError": "La password deve essere lunga almeno 6 caratteri",
-  "usernameError": "Il nome utente deve essere lungo almeno 4 caratteri",
   "errorOnSignup": "Errore durante la registrazione",
   "usernameErrorMessage": "Il tuo nome utente deve contenere almeno 4 caratteri",
   "usernameNotEmail": "Il tuo nome utente non può essere un indirizzo e-mail",

@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Vælg dit brugernavn",
   "passwordError": "Adgangskoden skal være på mindst 6 tegn",
-  "usernameError": "Brugernavnet skal være på mindst 4 tegn",
   "errorOnSignup": "Fejl ved tilmelding",
   "usernameErrorMessage": "Dit brugernavn skal være på mindst 4 tegn",
   "usernameNotEmail": "Dit brugernavn kan ikke være din email",

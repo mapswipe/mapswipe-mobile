@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "Instructions",
+  "viewInstructions": "Voir les instructions",
+  "compareLookingFor": "Vous cherchez des <1>changements dans les bâtiments</1>. C'est un bon indicateur de changements de taille de la population.",
+  "compareHoldZoom": "Pour zoomer sur une image, appuyez dessus pendant une seconde ou plus.",
+  "locateIntro": "Ce tutoriel va vous montrer comment utiliser MapSwipe. Voici les bases:",
+  "locateTapReset": "Tapez une fois de plus pour remettre l'image à son état initial."
+}

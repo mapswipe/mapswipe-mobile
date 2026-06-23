@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "手順",
+  "viewInstructions": "手順を見る",
+  "compareLookingFor": "”changes in buildings”を探しています。これは、人口規模の変化の明確な指標として機能します。",
+  "compareHoldZoom": "画像をもっと詳しく見る必要がある場合は、画像を長押しすると、もう少しズームインします。",
+  "locateIntro": "このチュートリアルでは、MapSwipeの使用方法を説明します。基本的な手順は次のとおりです。",
+  "locateTapReset": "再度タップすると、正方形が元の状態に戻ります。"
+}

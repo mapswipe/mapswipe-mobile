@@ -1,7 +1,6 @@
 {
   "chooseUsername": "あなたのユーザーネームを選んでください",
   "passwordError": "パスワードは最低でも6文字必要です",
-  "usernameError": "ユーザーネームは最低でも4文字必要です",
   "errorOnSignup": "エラーまたはサインアップ",
   "usernameErrorMessage": "ユーザーネームは4文字以上必要です",
   "usernameNotEmail": "ユーザーネームをメールアドレスにすることはできません",

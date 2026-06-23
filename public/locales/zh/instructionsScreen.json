@@ -1,1 +1,6 @@
-{}
+{
+  "instructions": "指引",
+  "viewInstructions": "查看指示",
+  "compareLookingFor": "您正在尋找 <1>建築物的變化</1>。 這是人口數量變化的明確指標。",
+  "compareHoldZoom": "如果你需要更仔細地查看圖像，請點擊並按住該圖像以將它放大一點。"
+}

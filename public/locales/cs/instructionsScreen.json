@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "Instrukce",
+  "viewInstructions": "Zobrazit instrukce",
+  "compareLookingFor": "Hledáte <1>změny v budovách</1>. To funguje jako jasný indikátor změny velikosti populace.",
+  "compareHoldZoom": "Pokud potřebujete obrázek vidět blíže, klepněte na obrázek a podržte jej a přiblíží se o něco více.",
+  "locateIntro": "Tento kurz vás naučí, jak používat MapSwipe. Tady jsou základní kroky:",
+  "locateTapReset": "Opětovným klepnutím vrátíte čtverec do původního stavu."
+}

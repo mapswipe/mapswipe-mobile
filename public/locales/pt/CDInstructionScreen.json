@@ -1,13 +1,13 @@
 {
   "instructions": "Instruções",
   "yourTask": "A sua tarefa:",
-  "lookingFor": "Está à procura de{' '}<1>alterações nos edifícios</1>. Isto demonstra um indicador de alterações no tamanho da população.",
+  "lookingFor": "Está à procura de <1>alterações nos edifícios</1>. Isto demonstra um indicador de alterações no tamanho da população.",
   "performTask": "Como realizar a tarefa:",
-  "noChanges": "Se não existem alterações, simplesmente{' '} <1>deslize</1> para as próximas fotos",
-  "seeChanges": "Se observa alterações nos edifícios,{' '} <1>toque uma vez</1>{' '} e o ladrilho ficará verde",
-  "unsure": "Inseguro?{' '}<1>Toque duas vezes</1>{' '} e o ladrilho ficará amarelo",
-  "badImagery": "Problemas a visionar, como por exemplo nuvens a tapar a imagem? {' '} <1>Toque três vezes</1>{' '} e o ladrilho ficará encarnado",
+  "noChanges": "Se não existem alterações, simplesmente <1>deslize</1> para as próximas fotos",
+  "seeChanges": "Se observa alterações nos edifícios, <1>toque uma vez</1> e o ladrilho ficará verde",
+  "unsure": "Inseguro? <1>Toque duas vezes</1> e o ladrilho ficará amarelo",
+  "badImagery": "Problemas a visionar, como por exemplo nuvens a tapar a imagem? <1>Toque três vezes</1> e o ladrilho ficará encarnado",
   "holdZoom": "Se necessitar de observar uma imagem mais de perto, mantenha pressionada a imagem e esta será aumentada um pouco.",
   "hint": "Sugestão:",
-  "differentImagery": "Por vezes utilizam-se diferentes fontes de imagem. As imagens podem ter um alinhamento distinto ou ter uma resolução diferente. Lembre-se, está à procura de{' '}<1>mudanças definitivas em residências e edifícios</1>{' '} então, se parecer que os mesmos edifícios estão lá, mas talvez haja um novo telhado, este seria um cenário \"sem alterações\" e você simplesmente passaria para a próxima imagem."
+  "differentImagery": "Por vezes utilizam-se diferentes fontes de imagem. As imagens podem ter um alinhamento distinto ou ter uma resolução diferente. Lembre-se, está à procura de <1>mudanças definitivas em residências e edifícios</1> então, se parecer que os mesmos edifícios estão lá, mas talvez haja um novo telhado, este seria um cenário \"sem alterações\" e você simplesmente passaria para a próxima imagem."
 }

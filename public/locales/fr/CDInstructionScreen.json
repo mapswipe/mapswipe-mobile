@@ -1,13 +1,13 @@
 {
   "instructions": "Instructions",
   "yourTask": "Votre mission:",
-  "lookingFor": "Vous cherchez des{' '}<1>changements dans les bâtiments</1>. C'est un bon indicateur de changements de taille de la population.",
+  "lookingFor": "Vous cherchez des <1>changements dans les bâtiments</1>. C'est un bon indicateur de changements de taille de la population.",
   "performTask": "Comment faire:",
-  "noChanges": "S'il n'y a pas de différence,{' '}<1>faites glisser l'écran vers la gauche</1>pour continuer",
-  "seeChanges": "S'il y'a des changements dans les bâtiments,{' '}<1>tapez une fois</1>{' '}et l'image passera au vert",
-  "unsure": "Si vous n'êtes pas sûr,{' '}<1>tapez 2 fois</1>{' '}et l'image deviendra jaune",
-  "badImagery": "Si l'image n'est pas claire, par exemple s'il y'a des nuages,{' '}<1>tapez 3 fois</1>{' '}et elle deviendra rouge",
+  "noChanges": "S'il n'y a pas de différence, <1>faites glisser l'écran vers la gauche</1>pour continuer",
+  "seeChanges": "S'il y'a des changements dans les bâtiments, <1>tapez une fois</1> et l'image passera au vert",
+  "unsure": "Si vous n'êtes pas sûr, <1>tapez 2 fois</1> et l'image deviendra jaune",
+  "badImagery": "Si l'image n'est pas claire, par exemple s'il y'a des nuages, <1>tapez 3 fois</1> et elle deviendra rouge",
   "holdZoom": "Pour zoomer sur une image, appuyez dessus pendant une seconde ou plus.",
   "hint": "Astuce:",
-  "differentImagery": "Parfois différentes sources d'imagerie sont utilisées. Les images peuvent ne pas être parfaitement alignées, ou utiliser des résolutions différentes. Ce qui compte ce sont{' '}<1>les changements de constructions et bâtiments</1>{' '}donc si les mêmes bâtiments sont présents, mais avec par exemple un toit neuf, on considère qu'il n'y pas de changement, et on passe à l'écran suivant."
+  "differentImagery": "Parfois différentes sources d'imagerie sont utilisées. Les images peuvent ne pas être parfaitement alignées, ou utiliser des résolutions différentes. Ce qui compte ce sont <1>les changements de constructions et bâtiments</1> donc si les mêmes bâtiments sont présents, mais avec par exemple un toit neuf, on considère qu'il n'y pas de changement, et on passe à l'écran suivant."
 }

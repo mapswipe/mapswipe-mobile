@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "Instruktioner",
+  "viewInstructions": "Vis instruktioner",
+  "compareLookingFor": "Du skal kigge efter <1>ændringer i bygninger</1>. Dette er en klar indikator for en ændring i befolkningstallet.",
+  "compareHoldZoom": "Hvis du har brug for at se billedet lidt tættere på, så tap og hold fingeren på billedet, hvorved det blive en smule forstørret.",
+  "locateIntro": "Denne vejledning vil lære dig at bruge MapSwipe. Her er de grundlæggende trin:  ",
+  "locateTapReset": "Tap igen, for at bringe feltet tilbage til sit udgangspunkt."
+}

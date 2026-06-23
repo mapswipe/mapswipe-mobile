@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Chagua jina lako la mtumiaji",
   "passwordError": "Nenosiri lazima liwe zaidi ya herufi 6",
-  "usernameError": "Jina la mtumiaji lazima liwe zaidi ya herufi 4",
   "errorOnSignup": "Kosa kwenye kujisajili",
   "usernameErrorMessage": "Jina lako la mtumiaji lazima liwe na herufi 4 au zaidi",
   "usernameNotEmail": "Jina lako la mtumiaji haliwezi kuwa barua pepe",

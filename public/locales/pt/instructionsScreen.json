@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "Instruções",
+  "viewInstructions": "Ver instruções",
+  "compareLookingFor": "Está à procura de <1>alterações nos edifícios</1>. Isto demonstra um indicador de alterações no tamanho da população.",
+  "compareHoldZoom": "Se necessitar de observar uma imagem mais de perto, mantenha pressionada a imagem e esta será aumentada um pouco.",
+  "locateIntro": "Este tutorial irá ensiná-lo a usar o MapSwipe. Aqui estão as etapas básicas: ",
+  "locateTapReset": "Toque outra vez para o quadrado voltar ao estado original."
+}

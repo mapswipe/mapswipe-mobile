@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Elektu vian uzantnomon",
   "passwordError": "Pasvorto devas esti almenaŭ 6 signoj longa",
-  "usernameError": "Uzantnomo devas esti almenaŭ 4 signoj longa",
   "errorOnSignup": "Eraro pri registriĝi",
   "usernameErrorMessage": "Via uzantnomo devas esti 4 signoj aŭ pli",
   "usernameNotEmail": "Via uzantnomo ne povas esti retpoŝto",

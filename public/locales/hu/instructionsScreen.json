@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "Utasítások",
+  "viewInstructions": "Utasítások megtekintése",
+  "compareLookingFor": "<1>Épületek változásait</1> kell keresned. Ez egyértelműen jelzi a népességszám változását.",
+  "compareHoldZoom": "Ha közelebbről szeretnél megnézni egy felvételt, koppints rá és tartsd rajta az ujjad egy kicsi, így megjelenik róla egy nagyítás.",
+  "locateIntro": "Ez az oktatóanyag megtanít a MapSwipe használatára. Íme az első lépések:",
+  "locateTapReset": "Ha még egyszer rákoppintasz, visszaváltozik az eredeti állapotára."
+}

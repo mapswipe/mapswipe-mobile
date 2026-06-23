@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Wähle deinen Benutzernamen",
   "passwordError": "Dein Passwort muss aus mindestens 6 Zeichen bestehen",
-  "usernameError": "Dein Benutzername muss aus mindestens 4 Zeichen bestehen",
   "errorOnSignup": "Fehler bei der Kontoerstellung",
   "usernameErrorMessage": "Dein Benutzername muss aus mindestens 4 Zeichen bestehen",
   "usernameNotEmail": "Dein Benutzername darf keine E-Mail-Adresse sein",

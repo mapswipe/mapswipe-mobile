@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "Instrukcioj",
+  "viewInstructions": "Vidi instrukciojn",
+  "compareLookingFor": "Vi serĉas <1>ŝanĝojn en konstruaĵoj</1>. Ĉi tio funkcias kiel klara indikilo por ŝanĝo en la grandeco de la loĝantaro.",
+  "compareHoldZoom": "Se vi bezonas vidi bildon pli detale, frapu kaj tenu la bildon kaj ĝi zumos iom pli.",
+  "locateIntro": "Ĉi tiu lernilo instruos vin kiel uzi MapSwipe. Jen la bazaj paŝoj:",
+  "locateTapReset": "Frapetu denove por redoni la kvadraton al ĝia originala stato."
+}

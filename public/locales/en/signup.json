@@ -8,6 +8,7 @@
   "usernameErrorMessage": "Your username must be 4 characters or more and cannot contain space and uppercase",
   "usernameNotEmail": "Your username can not be an email",
   "usernamePublic": "Your username will be publicly visible",
+  "success": "Success",
   "welcomeToMapSwipe": "Welcome to MapSwipe, {{username}}",
   "emailAlreadyUsed": "Email already used by another account",
   "emailInvalid": "Email address is invalid",

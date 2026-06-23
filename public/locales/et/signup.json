@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Vali kasutajanimi",
   "passwordError": "Salasõna pikkus peab olema vähemalt 6 tähemärki",
-  "usernameError": "Kasutajanime pikkus peab olema vähemalt 4 tähemärki",
   "errorOnSignup": "Viga registreerumisel",
   "usernameErrorMessage": "Sinu kasutajanimes peab olema vähemalt 4 tähemärki",
   "usernameNotEmail": "Sinu kasutajanimeks ei või olla e-posti aadress",

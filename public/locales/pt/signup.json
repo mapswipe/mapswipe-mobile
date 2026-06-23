@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Escolha o seu nome de utilizador",
   "passwordError": "A palavra passe deve ter no mínimo 6 caracteres",
-  "usernameError": "O nome de utilizador deve ter no mínimo 4 caracteres",
   "errorOnSignup": "Erro no registo",
   "usernameErrorMessage": "O seu nome de utilizador deve ter 4 caracteres ou mais",
   "usernameNotEmail": "O seu nome de utilizador não pode ser um endereço de correio electrónico",

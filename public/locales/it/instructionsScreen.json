@@ -1,1 +1,8 @@
-{}
+{
+  "instructions": "Istruzioni",
+  "viewInstructions": "Vedi istruzioni",
+  "compareLookingFor": "Stai cercando<1>modifiche agli edifici</1>. Ciò è un chiaro indicatore per un cambiamento demografico.",
+  "compareHoldZoom": "Se necessiti di vedere l’immagina da più vicino, toccala e tieni premuto e la vedrai un po’ più ingrandita.",
+  "locateIntro": "Questo tutorial ti insegnerà a usare MapSwipe. Ecco le prime cose da sapere:",
+  "locateTapReset": "Tocca di nuovo per far ritornare il quadrato al suo stato iniziale."
+}

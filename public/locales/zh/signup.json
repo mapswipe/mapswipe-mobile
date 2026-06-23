@@ -1,7 +1,6 @@
 {
   "chooseUsername": "選擇你的用戶名",
   "passwordError": "密碼必須至少有6個字符長",
-  "usernameError": "您的用戶名必須包含4個或更多的字符",
   "errorOnSignup": "註冊時出錯",
   "usernameErrorMessage": "您的用戶名必須是4個字符或更多",
   "usernameNotEmail": "您的用戶名稱不能是電子郵件",

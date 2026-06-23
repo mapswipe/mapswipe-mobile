@@ -1,7 +1,6 @@
 {
   "chooseUsername": "Válassz egy felhasználónevet",
   "passwordError": "A jelszónak legalább 6 karakterből kell állnia",
-  "usernameError": "A felhasználónévnek legalább 4 karakterből kell állnia",
   "errorOnSignup": "Hiba történt a regisztráció során",
   "usernameErrorMessage": "A felhasználónévnek legalább 4 karakter hosszúnak kell lennie",
   "usernameNotEmail": "A felhasználónév nem lehet e-mail-cím",

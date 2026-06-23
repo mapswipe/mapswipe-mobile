@@ -1,1 +1,6 @@
-{}
+{
+  "instructions": "Instructions",
+  "viewInstructions": "View instructions",
+  "compareLookingFor": "You're looking for <1>changes in buildings</1>. This acts as a clear indicator for a change in population size.",
+  "compareHoldZoom": "If you need to see an image more closely, tap and hold the image and it'll zoom in a little more."
+}
