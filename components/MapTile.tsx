@@ -1,4 +1,7 @@
-import { useMemo } from 'react';
+import {
+    useId,
+    useMemo,
+} from 'react';
 import {
     StyleSheet,
     View,
@@ -49,6 +52,8 @@ function MapTile(props: Props) {
         hideLines = false,
     } = props;
 
+    const instanceId = useId();
+
     const styles = useThemedStyles(createStyles);
 
     const bounds = useMemo(() => getBbox(geoJson), [geoJson]);
@@ -82,23 +87,23 @@ function MapTile(props: Props) {
                 pitchEnabled={false}
             >
                 <RasterSource
-                    id="base-raster-source"
+                    id={`${instanceId}-raster-source`}
                     tileUrlTemplates={[
                         standardizeQuadKey(tileServer.url),
                     ]}
                 >
                     <RasterLayer
-                        id="base-raster-layer"
-                        sourceID="base-raster-source"
+                        id={`${instanceId}-raster-layer`}
+                        sourceID={`${instanceId}-raster-source`}
                     />
                 </RasterSource>
                 <ShapeSource
-                    id="shape-source"
+                    id={`${instanceId}-shape-source`}
                     shape={geoJson}
                 >
                     <LineLayer
-                        id="shape-line-layer"
-                        sourceID="shape-source"
+                        id={`${instanceId}-shape-line-layer`}
+                        sourceID={`${instanceId}-shape-source`}
                         style={lineLayerStyle}
                     />
                 </ShapeSource>

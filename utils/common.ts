@@ -14,7 +14,23 @@ import { showAlert } from '@/components/Toast';
 
 import { firebaseRef } from './firebase';
 
-export const MIN_USERNAME_LENGTH = 4;
+export const MIN_USERNAME_LENGTH = 3;
+export const MAX_USERNAME_LENGTH = 30;
+
+// Allowed: a-z A-Z 0-9 _ -
+// Must start and end with alphanumeric, no consecutive special chars (__ -- -_ _-)
+// NOTE: this validation is mirrored in the Firebase function at
+// python-mapswipe-workers/firebase/functions/src/utils/index.ts — keep in sync
+const USERNAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
+const CONSECUTIVE_SPECIAL_REGEX = /[_-]{2,}/;
+
+export function validateUserName(name: string | undefined): boolean {
+    if (!name) return false;
+    if (name.length < MIN_USERNAME_LENGTH || name.length > MAX_USERNAME_LENGTH) return false;
+    if (!USERNAME_REGEX.test(name)) return false;
+    if (CONSECUTIVE_SPECIAL_REGEX.test(name)) return false;
+    return true;
+}
 
 export function getProjectProgressForDisplay(progress: number): string {
     let finalProgress: string;
@@ -27,19 +43,6 @@ export function getProjectProgressForDisplay(progress: number): string {
         finalProgress = '100';
     }
     return finalProgress;
-}
-
-export function validateUserName(name: string | undefined) {
-    if (!name || name.length < MIN_USERNAME_LENGTH) {
-        return false;
-    }
-
-    // NOTE: this validation mirror is also used in firebase function
-    // python-mapswipe-workers/firebase/functions/src/utils/index.ts
-    const removeUserNameSpace = name.replace(/\s+/g, '');
-    const newUserName = removeUserNameSpace.toLowerCase();
-
-    return newUserName === name;
 }
 
 export function rankedSearchOnList<T>(

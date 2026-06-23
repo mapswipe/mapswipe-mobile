@@ -8,7 +8,6 @@ import {
     RefreshControl,
     ScrollView,
     StyleSheet,
-    Switch,
     View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -71,15 +70,23 @@ const USER_STATS = gql`
 `;
 
 const createStyles = (theme: AppTheme) => StyleSheet.create({
-    page: {
+    scrollView: {
         backgroundColor: theme.backgroundMuted,
     },
     alignCenter: {
         alignItems: 'center',
     },
-    switch: {
-        transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }],
-        height: 18,
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 2,
+        borderColor: theme.primaryBlue,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    checkboxChecked: {
+        backgroundColor: theme.primaryBlue,
     },
 });
 
@@ -235,11 +242,13 @@ function Profile() {
         });
     }, [handleDelete, t]);
 
+    const isOsmUser = user?.uid?.startsWith('osm:') ?? false;
+
     const settingItems: ButtonLayoutProps[] = [
-        {
+        ...(!isOsmUser ? [{
             title: t('changeUserName'),
             onPress: onHandleChangeUsername,
-        },
+        }] : []),
         {
             title: t('changePassword'),
             onPress: handleResetPasswordClick,
@@ -261,19 +270,20 @@ function Profile() {
             title: t('accessibility'),
             onPress: onHandleAccessibilityChange,
             action: (
-                <Switch
-                    trackColor={{
-                        false: theme.backgroundBrand,
-                        true: theme.success,
-                    }}
-                    thumbColor={
-                        isAccessibilityEnabled
-                            ? theme.primaryBlue
-                            : theme.backgroundMuted
-                    }
-                    value={isAccessibilityEnabled}
-                    style={styles.switch}
-                />
+                <View
+                    style={[
+                        styles.checkbox,
+                        isAccessibilityEnabled && styles.checkboxChecked,
+                    ]}
+                >
+                    {isAccessibilityEnabled && (
+                        <Icon
+                            name="checkmark-outline"
+                            color={theme.card}
+                            size={14}
+                        />
+                    )}
+                </View>
             ),
         },
         {
@@ -315,12 +325,12 @@ function Profile() {
     return (
         <Page
             title="Profile"
-            style={styles.page}
             variant="brand"
             scrollable={false}
         >
             <ProfileHeader />
             <ScrollView
+                style={styles.scrollView}
                 refreshControl={(
                     <RefreshControl
                         refreshing={loadingUserStats}

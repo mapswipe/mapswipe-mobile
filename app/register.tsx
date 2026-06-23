@@ -35,6 +35,7 @@ import { type AppTheme } from '@/constants/theme';
 import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import {
+    MAX_USERNAME_LENGTH,
     usernameExists,
     validateUserName,
 } from '@/utils/common';
@@ -206,6 +207,7 @@ function Register() {
                         value={username}
                         errorText={usernameError}
                         onChangeText={handleUsernameChange}
+                        maxLength={MAX_USERNAME_LENGTH}
                         readOnly={loading}
                     />
                     <TextInput
