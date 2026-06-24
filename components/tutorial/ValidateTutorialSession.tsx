@@ -1,6 +1,14 @@
-import { useCallback } from 'react';
-import { StyleSheet } from 'react-native';
+import {
+    useCallback,
+    useState,
+} from 'react';
+import {
+    ActivityIndicator,
+    StyleSheet,
+    View,
+} from 'react-native';
 
+import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import { type IconName } from '@/components/Icon';
 import IconButton from '@/components/IconButton';
 import InlineListView from '@/components/InlineListView';
@@ -22,8 +30,15 @@ const styles = StyleSheet.create({
         padding: SPACING_2XS,
         gap: SPACING_XS,
     },
+    // The map fills the remaining vertical space above the answer buttons.
+    // Without an explicit-height parent, MapTile's 100%-height map collapses.
     tile: {
         flexGrow: 1,
+    },
+    loading: {
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     buttons: {
         flexShrink: 0,
@@ -40,6 +55,8 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
         disabled,
     } = props;
 
+    const [hideTilePressValue, setHideTilePressValue] = useState(false);
+
     const handleSelect = useCallback((taskId: string, value: number) => {
         if (disabled) {
             return;
@@ -49,6 +66,14 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
             [taskId]: value,
         }));
     }, [disabled, onResultsChange]);
+
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
+    }, []);
 
     if (tutorial.projectType !== PROJECT_TYPE_VALIDATE) {
         return null;
@@ -65,13 +90,25 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
     const selectedValue = results[task.taskId];
 
     return (
-        <InlineListView style={styles.container} spacing="md" withoutWrap={false}>
-            {geoJson && (
-                <MapTile
-                    geoJson={geoJson}
-                    tileServer={tutorial.tileServer}
-                />
-            )}
+        <View style={styles.container}>
+            <View style={styles.tile}>
+                {geoJson ? (
+                    <MapTile
+                        geoJson={geoJson}
+                        tileServer={tutorial.tileServer}
+                        hideLines={hideTilePressValue}
+                    />
+                ) : (
+                    <View style={styles.loading}>
+                        <ActivityIndicator size="large" />
+                    </View>
+                )}
+            </View>
+            <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                handleHideTileSelectionPressOut={handleHideTilePressOut}
+                isPressed={hideTilePressValue}
+            />
             <InlineListView
                 withCenteredContent
                 style={styles.buttons}
@@ -92,7 +129,7 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
                     />
                 ))}
             </InlineListView>
-        </InlineListView>
+        </View>
     );
 }
 

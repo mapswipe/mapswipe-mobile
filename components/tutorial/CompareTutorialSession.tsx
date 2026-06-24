@@ -2,6 +2,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,6 +15,7 @@ import {
     listToMap,
 } from '@togglecorp/fujs';
 
+import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import ImageTile from '@/components/ImageTile';
 import Text from '@/components/Text';
 import { TutorialSessionProps } from '@/components/tutorial/types';
@@ -25,6 +27,9 @@ import {
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
+    },
+    pairsArea: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
@@ -67,6 +72,7 @@ function CompareTutorialSession(props: TutorialSessionProps) {
 
     const { t } = useTranslation('tutorialScreen');
     const { width: pageWidth, height: pageHeight } = useWindowDimensions();
+    const [hideTilePressValue, setHideTilePressValue] = useState(false);
 
     useEffect(() => {
         if (tasks.length === 0) {
@@ -102,40 +108,55 @@ function CompareTutorialSession(props: TutorialSessionProps) {
         });
     }, [disabled, onResultsChange]);
 
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
+    }, []);
+
     return (
         <View style={styles.container}>
-            {tasks.map((task) => {
-                if (!('url' in task) || !('urlB' in task) || !task.url || !task.urlB) {
-                    return null;
-                }
-                const result = results[task.taskId];
-                const selectedOption = typeof result === 'number'
-                    ? optionsByValue[result]
-                    : undefined;
+            <View style={styles.pairsArea}>
+                {tasks.map((task) => {
+                    if (!('url' in task) || !('urlB' in task) || !task.url || !task.urlB) {
+                        return null;
+                    }
+                    const result = results[task.taskId];
+                    const selectedOption = typeof result === 'number'
+                        ? optionsByValue[result]
+                        : undefined;
 
-                return (
-                    <View key={task.taskId} style={styles.pair}>
-                        <Text colorVariant="brand">{t('compareBefore')}</Text>
-                        <ImageTile
-                            taskId={task.taskId}
-                            url={task.url}
-                            urlB={undefined}
-                            width={tileWidth}
-                            tintColor={selectedOption?.color}
-                            onPress={handleTilePress}
-                        />
-                        <Text colorVariant="brand">{t('compareAfter')}</Text>
-                        <ImageTile
-                            taskId={task.taskId}
-                            url={task.urlB}
-                            urlB={undefined}
-                            width={tileWidth}
-                            tintColor={selectedOption?.color}
-                            onPress={handleTilePress}
-                        />
-                    </View>
-                );
-            })}
+                    return (
+                        <View key={task.taskId} style={styles.pair}>
+                            <Text colorVariant="brand">{t('compareBefore')}</Text>
+                            <ImageTile
+                                taskId={task.taskId}
+                                url={task.url}
+                                urlB={undefined}
+                                width={tileWidth}
+                                tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
+                                onPress={handleTilePress}
+                            />
+                            <Text colorVariant="brand">{t('compareAfter')}</Text>
+                            <ImageTile
+                                taskId={task.taskId}
+                                url={task.urlB}
+                                urlB={undefined}
+                                width={tileWidth}
+                                tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
+                                onPress={handleTilePress}
+                            />
+                        </View>
+                    );
+                })}
+            </View>
+            <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                handleHideTileSelectionPressOut={handleHideTilePressOut}
+                isPressed={hideTilePressValue}
+            />
         </View>
     );
 }

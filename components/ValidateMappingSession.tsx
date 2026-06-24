@@ -2,6 +2,7 @@ import {
     type Dispatch,
     type SetStateAction,
     useCallback,
+    useEffect,
     useMemo,
     useRef,
     useState,
@@ -190,6 +191,21 @@ function ValidateMappingSession(props: Props) {
 
     const limitedTasks = [...(taskList ?? [])].slice(0, totalSwipedTasks + 1);
 
+    // After "Go back" from the outro the session re-mounts at the first task
+    // with all answers intact; re-show the outro once the user swipes back to
+    // the final task. (The initial pass completes via handleAnswerSelect.)
+    useEffect(() => {
+        if (
+            maxTasks > 1
+            && currentTaskIndex === maxTasks - 1
+            && totalSwipedTasks >= maxTasks
+            && !completedRef.current
+        ) {
+            completedRef.current = true;
+            onSessionComplete();
+        }
+    }, [currentTaskIndex, maxTasks, totalSwipedTasks, onSessionComplete]);
+
     const currentBbox = useMemo(
         () => (isDefined(currentTask?.geojson)
             ? getBbox(currentTask.geojson as FeatureGeoJson)
@@ -302,7 +318,7 @@ function ValidateMappingSession(props: Props) {
                 ))}
             </InlineListView>
             <ProgressBar
-                currentValue={currentTaskIndex + 1}
+                currentValue={totalSwipedTasks}
                 totalValue={maxTasks}
                 colorVariant="brand"
             />

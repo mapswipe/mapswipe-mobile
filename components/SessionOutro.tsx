@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
+    ScrollView,
     StyleSheet,
     View,
 } from 'react-native';
@@ -49,12 +50,20 @@ function formatDuration(ms: number): string {
     return `${Math.round(totalSeconds / 60)} min`;
 }
 
-// The container is flex:1 so the action buttons can be pushed to the bottom via
-// the spacer. The footer wrapper gives it an explicit (measured) height, which
-// is what makes flex:1 safe here — an unresolved height would collapse it.
+// The outro is wrapped in a ScrollView whose content uses flexGrow:1: on tall
+// screens the spacer pushes the action buttons to the bottom, and on short
+// screens (or the taller 4-button Validate variant) the content scrolls so no
+// button ends up hidden behind the device navigation bar.
 const styles = StyleSheet.create({
-    container: {
+    scroll: {
         flex: 1,
+        width: '100%',
+    },
+    scrollContent: {
+        flexGrow: 1,
+    },
+    container: {
+        flexGrow: 1,
         width: '100%',
         padding: SPACING_MD,
         alignItems: 'center',
@@ -204,162 +213,168 @@ function SessionOutro(props: Props) {
         || (isDefined(reviewedCount) && reviewedCount > 0);
 
     return (
-        <BlockListView
-            style={styles.container}
-            spacing="lg"
+        <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
         >
-            <View style={styles.glow}>
-                <View style={styles.checkCircle}>
-                    <Icon
-                        name="checkmark-outline"
-                        color={theme.textOnPrimary}
-                        size={32}
-                    />
+            <BlockListView
+                style={styles.container}
+                spacing="lg"
+            >
+                <View style={styles.glow}>
+                    <View style={styles.checkCircle}>
+                        <Icon
+                            name="checkmark-outline"
+                            color={theme.textOnPrimary}
+                            size={32}
+                        />
+                    </View>
                 </View>
-            </View>
 
-            <BlockListView style={styles.headerBlock} spacing="3xs">
-                <Text variant="heading" colorVariant="brand" style={styles.centerText}>
-                    {t('sessionCompleteTitle')}
-                </Text>
-                <Text
-                    colorVariant="brand"
-                    variant="description"
-                    style={styles.centerText}
-                >
-                    {swipeBackHint ? t('swipeBackToRevise') : t('sessionCompleteMessage')}
-                </Text>
-            </BlockListView>
+                <BlockListView style={styles.headerBlock} spacing="3xs">
+                    <Text variant="heading" colorVariant="brand" style={styles.centerText}>
+                        {t('sessionCompleteTitle')}
+                    </Text>
+                    <Text
+                        colorVariant="brand"
+                        variant="description"
+                        style={styles.centerText}
+                    >
+                        {swipeBackHint ? t('swipeBackToRevise') : t('sessionCompleteMessage')}
+                    </Text>
+                </BlockListView>
 
-            {showCard && (
-                <View style={styles.card}>
-                    {visibleAnswers.length > 0 && (
-                        <View style={styles.statsList}>
-                            {visibleAnswers.map((answer) => {
-                                const answerColor = getDisplayColor(answer.color, theme);
-                                return (
-                                    <View key={answer.value} style={styles.statRow}>
-                                        <View style={styles.statRowLeft}>
-                                            <View
+                {showCard && (
+                    <View style={styles.card}>
+                        {visibleAnswers.length > 0 && (
+                            <View style={styles.statsList}>
+                                {visibleAnswers.map((answer) => {
+                                    const answerColor = getDisplayColor(answer.color, theme);
+                                    return (
+                                        <View key={answer.value} style={styles.statRow}>
+                                            <View style={styles.statRowLeft}>
+                                                <View
+                                                    style={StyleSheet.flatten([
+                                                        styles.dot,
+                                                        { backgroundColor: answerColor },
+                                                    ])}
+                                                />
+                                                <Text variant="description" colorVariant="brand">
+                                                    {answer.label}
+                                                </Text>
+                                            </View>
+                                            <Text
                                                 style={StyleSheet.flatten([
-                                                    styles.dot,
-                                                    { backgroundColor: answerColor },
+                                                    styles.statCount,
+                                                    { color: answerColor },
                                                 ])}
-                                            />
-                                            <Text variant="description" colorVariant="brand">
-                                                {answer.label}
+                                            >
+                                                {String(answer.count)}
                                             </Text>
                                         </View>
-                                        <Text
-                                            style={StyleSheet.flatten([
-                                                styles.statCount,
-                                                { color: answerColor },
-                                            ])}
-                                        >
-                                            {String(answer.count)}
-                                        </Text>
-                                    </View>
-                                );
-                            })}
-                        </View>
-                    )}
-                    {visibleAnswers.length > 0 && <View style={styles.horizontalDivider} />}
-                    <View style={styles.cardFooterRow}>
-                        {isDefined(reviewedCount) && (
-                            <Text variant="label" colorVariant="brand">
-                                {t('tilesReviewed', { count: reviewedCount })}
-                            </Text>
-                        )}
-                        {isDefined(durationMs) && (
-                            <View style={styles.footerItem}>
-                                <Icon
-                                    name="time-outline"
-                                    color={theme.textOnBrand}
-                                    size={14}
-                                />
-                                <Text variant="label" colorVariant="brand">
-                                    {t('timeMapping', { duration: formatDuration(durationMs) })}
-                                </Text>
+                                    );
+                                })}
                             </View>
                         )}
+                        {visibleAnswers.length > 0 && <View style={styles.horizontalDivider} />}
+                        <View style={styles.cardFooterRow}>
+                            {isDefined(reviewedCount) && (
+                                <Text variant="label" colorVariant="brand">
+                                    {t('tilesReviewed', { count: reviewedCount })}
+                                </Text>
+                            )}
+                            {isDefined(durationMs) && (
+                                <View style={styles.footerItem}>
+                                    <Icon
+                                        name="time-outline"
+                                        color={theme.textOnBrand}
+                                        size={14}
+                                    />
+                                    <Text variant="label" colorVariant="brand">
+                                        {t('timeMapping', { duration: formatDuration(durationMs) })}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
                     </View>
-                </View>
-            )}
+                )}
 
-            {inProgress && (
-                <InlineListView withCenteredContent withoutWrap spacing="2xs">
-                    <ActivityIndicator size="small" color={theme.textOnBrand} />
-                    <Text colorVariant="brand" variant="description">
-                        {t('savingProgress')}
-                    </Text>
-                </InlineListView>
-            )}
-            {failed && (
-                <InlineListView withCenteredContent withoutWrap spacing="2xs">
-                    <Icon name="warning-outline" color={theme.error} size={20} />
-                    <Text colorVariant="brand" variant="description">
-                        {t('saveFailed')}
-                    </Text>
-                </InlineListView>
-            )}
-            {succeeded && (
-                <InlineListView withCenteredContent withoutWrap spacing="2xs">
-                    <Icon name="checkmark-outline" color={theme.success} size={20} />
-                    <Text colorVariant="brand" variant="description">
-                        {t('saveSucceeded')}
-                    </Text>
-                </InlineListView>
-            )}
-
-            <View style={styles.spacer} />
-
-            {/* Order matches the design: the prominent Continue first, then
-                Save & finish, then the de-emphasized Discard last. */}
-            <BlockListView style={styles.buttonGroup} spacing="sm">
-                <Button
-                    name="continue"
-                    colorVariant="primaryGreen"
-                    styleVariant="filled"
-                    disabled={inProgress}
-                    onPress={onContinueMapping}
-                >
-                    <View style={styles.continueContent}>
-                        <Text style={styles.continueTitle}>
-                            {t('continueMapping')}
+                {inProgress && (
+                    <InlineListView withCenteredContent withoutWrap spacing="2xs">
+                        <ActivityIndicator size="small" color={theme.textOnBrand} />
+                        <Text colorVariant="brand" variant="description">
+                            {t('savingProgress')}
                         </Text>
-                        <Text style={styles.continueSubtitle}>
-                            {t('startNewTasks')}
+                    </InlineListView>
+                )}
+                {failed && (
+                    <InlineListView withCenteredContent withoutWrap spacing="2xs">
+                        <Icon name="warning-outline" color={theme.error} size={20} />
+                        <Text colorVariant="brand" variant="description">
+                            {t('saveFailed')}
                         </Text>
-                    </View>
-                </Button>
-                <Button
-                    name="complete"
-                    title={t('saveAndFinish')}
-                    colorVariant="white"
-                    styleVariant="outline"
-                    disabled={inProgress}
-                    onPress={onCompleteSession}
-                />
-                {onGoBack && (
+                    </InlineListView>
+                )}
+                {succeeded && (
+                    <InlineListView withCenteredContent withoutWrap spacing="2xs">
+                        <Icon name="checkmark-outline" color={theme.success} size={20} />
+                        <Text colorVariant="brand" variant="description">
+                            {t('saveSucceeded')}
+                        </Text>
+                    </InlineListView>
+                )}
+
+                <View style={styles.spacer} />
+
+                {/* Order matches the design: the prominent Continue first, then
+                    Save & finish, then the de-emphasized Discard last. */}
+                <BlockListView style={styles.buttonGroup} spacing="sm">
                     <Button
-                        name="go-back"
-                        title={t('goBack')}
+                        name="continue"
+                        colorVariant="primaryGreen"
+                        styleVariant="filled"
+                        disabled={inProgress}
+                        onPress={onContinueMapping}
+                    >
+                        <View style={styles.continueContent}>
+                            <Text style={styles.continueTitle}>
+                                {t('continueMapping')}
+                            </Text>
+                            <Text style={styles.continueSubtitle}>
+                                {t('startNewTasks')}
+                            </Text>
+                        </View>
+                    </Button>
+                    <Button
+                        name="complete"
+                        title={t('saveAndFinish')}
                         colorVariant="white"
                         styleVariant="outline"
                         disabled={inProgress}
-                        onPress={onGoBack}
+                        onPress={onCompleteSession}
                     />
-                )}
-                <Button
-                    name="discard"
-                    title={t('discardSession')}
-                    colorVariant="primaryRed"
-                    styleVariant="transparent"
-                    disabled={inProgress}
-                    onPress={onDiscardSession}
-                />
+                    {onGoBack && (
+                        <Button
+                            name="go-back"
+                            title={t('goBack')}
+                            colorVariant="white"
+                            styleVariant="outline"
+                            disabled={inProgress}
+                            onPress={onGoBack}
+                        />
+                    )}
+                    <Button
+                        name="discard"
+                        title={t('discardSession')}
+                        colorVariant="primaryRed"
+                        styleVariant="transparent"
+                        disabled={inProgress}
+                        onPress={onDiscardSession}
+                    />
+                </BlockListView>
             </BlockListView>
-        </BlockListView>
+        </ScrollView>
     );
 }
 

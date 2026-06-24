@@ -84,6 +84,9 @@ function TileGridMappingSession(props: Props) {
     // Height of the scroll viewport, so the completion page can fill it and
     // anchor its action buttons to the bottom.
     const [viewportHeight, setViewportHeight] = useState(0);
+    // Current page index (each page = two tile columns), used to drive the
+    // progress bar so it advances cleanly per page rather than per column.
+    const [currentPage, setCurrentPage] = useState(0);
 
     const styles = useThemedStyles(createStyles);
 
@@ -213,6 +216,7 @@ function TileGridMappingSession(props: Props) {
         const pageIndex = Math.round(offsetX / pageWidth);
         const itemIndex = Math.min(pageIndex * 2, groupedTasks.length - 1);
         setCurrentTaskIndex(itemIndex);
+        setCurrentPage(pageIndex);
         const onCompletionPage = pageIndex >= contentPages;
         setAtCompletion(onCompletionPage);
         if (onCompletionPage) {
@@ -382,8 +386,8 @@ function TileGridMappingSession(props: Props) {
                         isPressed={hideTilePressValue}
                     />
                     <ProgressBar
-                        currentValue={Math.floor(currentTaskIndex / 2) + 1}
-                        totalValue={Math.ceil(groupedTasks.length / 2)}
+                        currentValue={Math.min(currentPage + 1, contentPages)}
+                        totalValue={contentPages}
                         colorVariant="brand"
                     />
                 </>

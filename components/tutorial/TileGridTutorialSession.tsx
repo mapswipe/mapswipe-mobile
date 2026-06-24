@@ -2,6 +2,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useState,
 } from 'react';
 import {
     StyleSheet,
@@ -16,6 +17,7 @@ import {
     mapToList,
 } from '@togglecorp/fujs';
 
+import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import ImageTile from '@/components/ImageTile';
 import { TutorialSessionProps } from '@/components/tutorial/types';
 import { TileTutorialTask } from '@/utils/tutorial';
@@ -27,6 +29,9 @@ import {
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
+    },
+    gridArea: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
@@ -68,6 +73,7 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
     } = props;
 
     const { width: pageWidth, height: pageHeight } = useWindowDimensions();
+    const [hideTilePressValue, setHideTilePressValue] = useState(false);
 
     useEffect(() => {
         if (tasks.length === 0) {
@@ -125,40 +131,55 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
         });
     }, [disabled, onResultsChange]);
 
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
+    }, []);
+
     return (
         <View style={styles.container}>
-            <View style={styles.row}>
-                {groupedColumns.map((column) => (
-                    <View key={column.taskX} style={styles.column}>
-                        {column.rows.map((task) => {
-                            const result = results[task.taskId];
-                            const selectedOption = typeof result === 'number'
-                                ? optionsByValue[result]
-                                : undefined;
+            <View style={styles.gridArea}>
+                <View style={styles.row}>
+                    {groupedColumns.map((column) => (
+                        <View key={column.taskX} style={styles.column}>
+                            {column.rows.map((task) => {
+                                const result = results[task.taskId];
+                                const selectedOption = typeof result === 'number'
+                                    ? optionsByValue[result]
+                                    : undefined;
 
-                            if (!task.url) {
-                                return null;
-                            }
+                                if (!task.url) {
+                                    return null;
+                                }
 
-                            return (
-                                <ImageTile
-                                    key={task.taskId}
-                                    taskId={task.taskId}
-                                    url={task.url}
-                                    urlB={
-                                        tutorial.projectType === PROJECT_TYPE_COMPLETENESS
-                                            ? task.urlB
-                                            : undefined
-                                    }
-                                    width={tileWidth}
-                                    tintColor={selectedOption?.color}
-                                    onPress={handleTilePress}
-                                />
-                            );
-                        })}
-                    </View>
-                ))}
+                                return (
+                                    <ImageTile
+                                        key={task.taskId}
+                                        taskId={task.taskId}
+                                        url={task.url}
+                                        urlB={
+                                            tutorial.projectType === PROJECT_TYPE_COMPLETENESS
+                                                ? task.urlB
+                                                : undefined
+                                        }
+                                        width={tileWidth}
+                                        tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
+                                        onPress={handleTilePress}
+                                    />
+                                );
+                            })}
+                        </View>
+                    ))}
+                </View>
             </View>
+            <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                handleHideTileSelectionPressOut={handleHideTilePressOut}
+                isPressed={hideTilePressValue}
+            />
         </View>
     );
 }

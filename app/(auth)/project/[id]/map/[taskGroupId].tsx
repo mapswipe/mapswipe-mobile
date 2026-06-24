@@ -5,7 +5,10 @@ import {
     useRef,
     useState,
 } from 'react';
-import { StyleSheet } from 'react-native';
+import {
+    BackHandler,
+    StyleSheet,
+} from 'react-native';
 import {
     useLocalSearchParams,
     useRouter,
@@ -211,6 +214,24 @@ function MapTaskGroup() {
     const handleBack = useCallback(() => {
         router.back();
     }, [router]);
+
+    // Intercept the Android hardware back button while mapping so an accidental
+    // press opens the confirmation modal instead of silently discarding the
+    // session. On the outro (completed) we let the default navigation proceed.
+    useEffect(() => {
+        const onHardwareBack = () => {
+            if (completed) {
+                return false;
+            }
+            handleContinueModalOpen();
+            return true;
+        };
+        const subscription = BackHandler.addEventListener(
+            'hardwareBackPress',
+            onHardwareBack,
+        );
+        return () => subscription.remove();
+    }, [completed, handleContinueModalOpen]);
 
     // Rendered as the final swipeable page inside the scroll-completion
     // sessions (FIND / COMPLETENESS / COMPARE / LOCATE_FEATURES). It omits the

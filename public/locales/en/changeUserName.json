@@ -3,5 +3,8 @@
   "currentUserName": "Current Username",
   "newUserName": "New Username",
   "confirmUserNameChange": "Confirm Username Change",
+  "updatingUsername": "Updating Username…",
+  "usernameUpdated": "Username updated!",
+  "errorOnUsernameChange": "Error changing username",
   "osmUsernameChangeNotAllowed": "Username cannot be changed for OpenStreetMap accounts."
 }
