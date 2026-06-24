@@ -286,7 +286,7 @@ function Projects() {
             firebaseRef('v2/projects'),
             orderByChild('status'),
             equalTo('active'),
-            limitToFirst(20),
+            limitToFirst(40),
         )
     ), []);
 

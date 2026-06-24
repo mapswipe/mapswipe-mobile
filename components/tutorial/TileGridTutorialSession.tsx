@@ -33,8 +33,10 @@ const styles = StyleSheet.create({
     },
     gridArea: {
         flex: 1,
+        minHeight: 0,
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
     },
     column: {},
     row: {
@@ -74,6 +76,10 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
 
     const { width: pageWidth, height: pageHeight } = useWindowDimensions();
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
+    // Measured size of the grid slot, so tiles fit the space actually available
+    // (between the instruction banner and the Check Answer button) rather than a
+    // fixed fraction of the window — which overflowed and overlapped them.
+    const [gridSize, setGridSize] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
         if (tasks.length === 0) {
@@ -113,10 +119,12 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
     const numRows = groupedColumns[0]?.rows.length || 1;
 
     const tileWidth = useMemo(() => {
-        const horizontalBudget = (pageWidth - 24) / numCols;
-        const verticalBudget = (pageHeight * 0.60) / numRows;
-        return Math.max(80, Math.min(horizontalBudget, verticalBudget));
-    }, [pageWidth, pageHeight, numCols, numRows]);
+        const availWidth = gridSize.width || (pageWidth - 24);
+        const availHeight = gridSize.height || (pageHeight * 0.60);
+        const horizontalBudget = (availWidth - 8) / numCols;
+        const verticalBudget = availHeight / numRows;
+        return Math.max(60, Math.min(horizontalBudget, verticalBudget));
+    }, [gridSize, pageWidth, pageHeight, numCols, numRows]);
 
     const handleTilePress = useCallback((taskId: string) => {
         if (disabled) {
@@ -141,7 +149,10 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.gridArea}>
+            <View
+                style={styles.gridArea}
+                onLayout={(event) => setGridSize(event.nativeEvent.layout)}
+            >
                 <View style={styles.row}>
                     {groupedColumns.map((column) => (
                         <View key={column.taskX} style={styles.column}>

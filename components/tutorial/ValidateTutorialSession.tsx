@@ -27,16 +27,23 @@ import {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        minHeight: 0,
         padding: SPACING_2XS,
         gap: SPACING_XS,
     },
-    // The map fills the remaining vertical space above the answer buttons.
-    // Without an explicit-height parent, MapTile's 100%-height map collapses.
+    // The map fills the leftover space between the title and the answer buttons.
+    // Use flex:1 (basis 0), NOT flexGrow:1 — RN defaults flexShrink to 0, so a
+    // flexGrow-only map keeps its large content basis and pushes the shrink-0
+    // answer buttons off the slot (under the Check Answer button). overflow
+    // clips the map to its allotted area.
     tile: {
-        flexGrow: 1,
+        flex: 1,
+        minHeight: 0,
+        overflow: 'hidden',
     },
     loading: {
-        flexGrow: 1,
+        flex: 1,
+        minHeight: 0,
         alignItems: 'center',
         justifyContent: 'center',
     },
