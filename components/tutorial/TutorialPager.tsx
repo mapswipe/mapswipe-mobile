@@ -2,6 +2,7 @@ import {
     useCallback,
     useEffect,
     useRef,
+    useState,
 } from 'react';
 import {
     FlatList,
@@ -38,12 +39,15 @@ import {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        minHeight: 0,
     },
     list: {
         flex: 1,
+        minHeight: 0,
     },
     page: {
         flex: 1,
+        minHeight: 0,
     },
     footer: {
         paddingHorizontal: SPACING_XS,
@@ -90,6 +94,11 @@ function TutorialPager(props: Props) {
 
     const { width: pageWidth } = useWindowDimensions();
     const listRef = useRef<FlatList<TutorialStage>>(null);
+    // Horizontal FlatList items are sized to their content vertically, not to
+    // the list's visible height — so a tall scenario (e.g. the map) makes the
+    // page grow past the screen and pushes the buttons off the bottom. Measure
+    // the list and give every page an explicit height to bound them.
+    const [listHeight, setListHeight] = useState(0);
 
     useEffect(() => {
         listRef.current?.scrollToIndex({ index: currentIndex, animated: true });
@@ -149,12 +158,13 @@ function TutorialPager(props: Props) {
         }
 
         return (
-            <View style={[styles.page, { width: pageWidth }]}>
+            <View style={[styles.page, { width: pageWidth, height: listHeight || undefined }]}>
                 {content}
             </View>
         );
     }, [
         pageWidth,
+        listHeight,
         projectId,
         tutorial,
         scenarioStates,
@@ -173,6 +183,7 @@ function TutorialPager(props: Props) {
             <FlatList
                 ref={listRef}
                 style={styles.list}
+                onLayout={(event) => setListHeight(event.nativeEvent.layout.height)}
                 data={stages}
                 keyExtractor={(_, i) => `stage-${i}`}
                 renderItem={renderStage}
@@ -187,7 +198,7 @@ function TutorialPager(props: Props) {
                     index,
                 })}
                 initialScrollIndex={currentIndex}
-                extraData={`${currentIndex}-${scrollEnabled}`}
+                extraData={`${currentIndex}-${scrollEnabled}-${listHeight}`}
             />
             <View style={styles.footer}>
                 <StageIndicator total={stages.length} currentIndex={currentIndex} />

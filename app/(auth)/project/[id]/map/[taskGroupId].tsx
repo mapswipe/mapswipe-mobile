@@ -5,12 +5,10 @@ import {
     useRef,
     useState,
 } from 'react';
-import {
-    BackHandler,
-    StyleSheet,
-} from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
     useLocalSearchParams,
+    useNavigation,
     useRouter,
 } from 'expo-router';
 import {
@@ -67,6 +65,8 @@ function MapTaskGroup() {
         taskGroupId,
     } = useLocalSearchParams<{id: string; taskGroupId: string;}>();
     const router = useRouter();
+    const navigation = useNavigation();
+    const isLeavingRef = useRef(false);
 
     const startTimestampRef = useRef<string | undefined>(undefined);
     const endTimestampRef = useRef<string | undefined>(undefined);
@@ -207,31 +207,33 @@ function MapTaskGroup() {
         />
     );
 
-    const handleContinueModalOpen = useCallback(() => {
-        setContinueModal(!continueModal);
-    }, [continueModal]);
+    const openContinueModal = useCallback(() => {
+        setContinueModal(true);
+    }, []);
 
-    const handleBack = useCallback(() => {
+    const closeContinueModal = useCallback(() => {
+        setContinueModal(false);
+    }, []);
+
+    const handleLeaveMapping = useCallback(() => {
+        setContinueModal(false);
+        isLeavingRef.current = true;
         router.back();
     }, [router]);
 
-    // Intercept the Android hardware back button while mapping so an accidental
-    // press opens the confirmation modal instead of silently discarding the
-    // session. On the outro (completed) we let the default navigation proceed.
+    // Block leaving mid-session — whether via iOS swipe-back, the Android
+    // hardware back, or the header back button — and show the confirmation
+    // modal instead. Once completed (on the outro) navigation proceeds normally.
     useEffect(() => {
-        const onHardwareBack = () => {
-            if (completed) {
-                return false;
+        const unsubscribe = navigation.addListener('beforeRemove', (event) => {
+            if (completed || isLeavingRef.current) {
+                return;
             }
-            handleContinueModalOpen();
-            return true;
-        };
-        const subscription = BackHandler.addEventListener(
-            'hardwareBackPress',
-            onHardwareBack,
-        );
-        return () => subscription.remove();
-    }, [completed, handleContinueModalOpen]);
+            event.preventDefault();
+            setContinueModal(true);
+        });
+        return unsubscribe;
+    }, [navigation, completed]);
 
     // Rendered as the final swipeable page inside the scroll-completion
     // sessions (FIND / COMPLETENESS / COMPARE / LOCATE_FEATURES). It omits the
@@ -257,7 +259,7 @@ function MapTaskGroup() {
             showBackButton
             headerTitleAlign="center"
             headerRight={infoButton}
-            onClickBackButton={handleContinueModalOpen}
+            onClickBackButton={openContinueModal}
         >
             {completed ? (
                 <SessionOutro
@@ -390,14 +392,14 @@ function MapTaskGroup() {
                         name="continue-mapping"
                         spacing="xs"
                         title="Continue mapping"
-                        onPress={handleContinueModalOpen}
+                        onPress={closeContinueModal}
                     />
                     <Button
                         name="back-to-menu"
                         colorVariant="primaryRed"
                         spacing="xs"
                         title="Back to Project"
-                        onPress={handleBack}
+                        onPress={handleLeaveMapping}
                     />
                 </BlockListView>
             </Modal>

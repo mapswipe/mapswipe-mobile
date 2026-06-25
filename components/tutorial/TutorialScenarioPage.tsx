@@ -43,11 +43,16 @@ import ValidateTutorialSession from './ValidateTutorialSession';
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        minHeight: 0,
         padding: SPACING_XS,
         gap: SPACING_2XS,
     },
+    // minHeight:0 lets the slot (and the map inside it) shrink to the space
+    // available, so the session's own buttons and the Check Answer button below
+    // stay within the viewport instead of being pushed off the bottom.
     sessionSlot: {
         flex: 1,
+        minHeight: 0,
     },
 });
 

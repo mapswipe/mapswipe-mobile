@@ -17,7 +17,6 @@ import { TutorialSessionProps } from '@/components/tutorial/types';
 import {
     SPACING_2XS,
     SPACING_3XS,
-    SPACING_XS,
 } from '@/constants/dimensions';
 import {
     FeatureGeoJson,
@@ -29,27 +28,27 @@ const styles = StyleSheet.create({
         flex: 1,
         minHeight: 0,
         padding: SPACING_2XS,
-        gap: SPACING_XS,
     },
-    // The map fills the leftover space between the title and the answer buttons.
-    // Use flex:1 (basis 0), NOT flexGrow:1 — RN defaults flexShrink to 0, so a
-    // flexGrow-only map keeps its large content basis and pushes the shrink-0
-    // answer buttons off the slot (under the Check Answer button). overflow
-    // clips the map to its allotted area.
-    tile: {
+    mapSlot: {
         flex: 1,
         minHeight: 0,
         overflow: 'hidden',
     },
+    map: {
+        width: '100%',
+    },
     loading: {
         flex: 1,
-        minHeight: 0,
         alignItems: 'center',
         justifyContent: 'center',
     },
+    controls: {
+        flexShrink: 0,
+        paddingTop: SPACING_3XS,
+    },
     buttons: {
         flexShrink: 0,
-        paddingVertical: SPACING_3XS,
+        paddingTop: SPACING_3XS,
     },
 });
 
@@ -63,6 +62,9 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
     } = props;
 
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
+    // MapLibre's MapView ignores a flex height, so we measure the (flex-sized)
+    // map slot and pass that as an explicit pixel height to MapTile.
+    const [mapSlotHeight, setMapSlotHeight] = useState(0);
 
     const handleSelect = useCallback((taskId: string, value: number) => {
         if (disabled) {
@@ -98,12 +100,16 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.tile}>
+            <View
+                style={styles.mapSlot}
+                onLayout={(event) => setMapSlotHeight(event.nativeEvent.layout.height)}
+            >
                 {geoJson ? (
                     <MapTile
                         geoJson={geoJson}
                         tileServer={tutorial.tileServer}
                         hideLines={hideTilePressValue}
+                        style={[styles.map, { height: mapSlotHeight || undefined }]}
                     />
                 ) : (
                     <View style={styles.loading}>
@@ -111,31 +117,33 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
                     </View>
                 )}
             </View>
-            <HideTileSelectionButton
-                handleHideTileSelectionPressIn={handleHideTilePressIn}
-                handleHideTileSelectionPressOut={handleHideTilePressOut}
-                isPressed={hideTilePressValue}
-            />
-            <InlineListView
-                withCenteredContent
-                style={styles.buttons}
-                spacing="sm"
-            >
-                {customOptions?.map((option) => (
-                    <IconButton
-                        key={option.value}
-                        name={option.value}
-                        title={option.title}
-                        iconName={option.icon as IconName}
-                        tintColor={option.iconColor}
-                        width={50}
-                        active={selectedValue === option.value}
-                        disabled={disabled}
-                        textColorVariant="brand"
-                        onPress={(value) => handleSelect(task.taskId, value)}
-                    />
-                ))}
-            </InlineListView>
+            <View style={styles.controls}>
+                <HideTileSelectionButton
+                    handleHideTileSelectionPressIn={handleHideTilePressIn}
+                    handleHideTileSelectionPressOut={handleHideTilePressOut}
+                    isPressed={hideTilePressValue}
+                />
+                <InlineListView
+                    withCenteredContent
+                    style={styles.buttons}
+                    spacing="sm"
+                >
+                    {customOptions?.map((option) => (
+                        <IconButton
+                            key={option.value}
+                            name={option.value}
+                            title={option.title}
+                            iconName={option.icon as IconName}
+                            tintColor={option.iconColor}
+                            width={50}
+                            active={selectedValue === option.value}
+                            disabled={disabled}
+                            textColorVariant="brand"
+                            onPress={(value) => handleSelect(task.taskId, value)}
+                        />
+                    ))}
+                </InlineListView>
+            </View>
         </View>
     );
 }

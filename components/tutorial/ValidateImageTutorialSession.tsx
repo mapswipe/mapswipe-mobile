@@ -21,9 +21,14 @@ import {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        minHeight: 0,
     },
+    // The image fills this slot (ImageWrapper is flex + 100% height). Bounding it
+    // with minHeight:0 + overflow:hidden keeps the answer buttons on screen.
     imageSlot: {
         flex: 1,
+        minHeight: 0,
+        overflow: 'hidden',
     },
     buttons: {
         flexShrink: 0,

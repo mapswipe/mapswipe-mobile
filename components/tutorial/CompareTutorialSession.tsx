@@ -28,6 +28,7 @@ import {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        minHeight: 0,
     },
     pairsArea: {
         flex: 1,

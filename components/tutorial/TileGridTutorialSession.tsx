@@ -30,6 +30,7 @@ import {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        minHeight: 0,
     },
     gridArea: {
         flex: 1,
