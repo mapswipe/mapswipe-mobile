@@ -84,7 +84,7 @@ export const toastConfig = {
             contentContainerStyle={styles.toastContainer}
             text1Style={styles.toastText1}
             text2Style={styles.toastText2}
-            text2NumberOfLines={3}
+            text2NumberOfLines={0}
         />
     ),
     warning: (props: ToastProps) => (
@@ -95,16 +95,18 @@ export const toastConfig = {
             contentContainerStyle={styles.toastContainer}
             text1Style={styles.toastText1}
             text2Style={styles.toastText2}
-            text2NumberOfLines={3}
+            text2NumberOfLines={0}
         />
     ),
     error: (props: ToastProps) => (
         <ErrorToast
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...props}
+            style={styles.toastError}
+            contentContainerStyle={styles.toastContainer}
             text1Style={styles.toastText1}
             text2Style={styles.toastText2}
-            text2NumberOfLines={3}
+            text2NumberOfLines={0}
         />
     ),
     info: (props: ToastProps) => (
@@ -114,7 +116,7 @@ export const toastConfig = {
             style={styles.toastInfo}
             text1Style={styles.toastText1}
             text2Style={styles.toastText2}
-            text2NumberOfLines={3}
+            text2NumberOfLines={0}
         />
     ),
 };

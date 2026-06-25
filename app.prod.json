@@ -16,7 +16,7 @@
         },
         "ios": {
             "bundleIdentifier": "org.missingmaps.mapswipe",
-            "buildNumber": "5",
+            "buildNumber": "6",
             "backgroundColor": "#0D1949",
             "supportsTablet": true,
             "infoPlist": {

@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
     },
     tileArea: {
         flex: 1,
+        position: 'relative',
     },
     tasks: {
         flex: 2,
@@ -65,17 +66,24 @@ const styles = StyleSheet.create({
         width: SCREEN_WIDTH,
         padding: 20,
     },
-    scaleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingLeft: 20,
-    },
-    scaleBarArea: {
+    // Wraps the map (no padding) so the overlays are positioned relative to the
+    // map itself — guaranteeing they sit on it rather than drifting below.
+    mapWrapper: {
         flex: 1,
+        position: 'relative',
     },
-    hideButtonWrapper: {
-        paddingRight: 6,
+    // Overlays on the map, with a small padding.
+    scaleOverlay: {
+        position: 'absolute',
+        top: 8,
+        left: 8,
     },
+    eyeOverlay: {
+        position: 'absolute',
+        bottom: 8,
+        right: 8,
+    },
+    eyeButton: {},
     buttons: {
         flexGrow: 0,
         flexShrink: 0,
@@ -206,27 +214,6 @@ function ValidateMappingSession(props: Props) {
         }
     }, [currentTaskIndex, maxTasks, totalSwipedTasks, onSessionComplete]);
 
-    const currentBbox = useMemo(
-        () => (isDefined(currentTask?.geojson)
-            ? getBbox(currentTask.geojson as FeatureGeoJson)
-            : undefined),
-        [currentTask],
-    );
-
-    const latitude = useMemo(
-        () => (isDefined(currentBbox)
-            ? (currentBbox[1] + currentBbox[3]) / 2
-            : undefined),
-        [currentBbox],
-    );
-
-    const zoomLevel = useMemo(
-        () => (isDefined(currentBbox)
-            ? getOptimalZoomLevel(currentBbox)
-            : undefined),
-        [currentBbox],
-    );
-
     const tileWidth = SCREEN_WIDTH - 40;
 
     const handleHideTilePressIn = useCallback(() => {
@@ -256,15 +243,46 @@ function ValidateMappingSession(props: Props) {
                     data={limitedTasks}
                     keyExtractor={(_, index) => index.toString()}
                     extraData={hideTilePressValue}
-                    renderItem={({ item }) => (
-                        <View style={styles.task}>
-                            <MapTile
-                                geoJson={item.geojson as FeatureGeoJson}
-                                tileServer={projectDetails.tileServer}
-                                hideLines={hideTilePressValue}
-                            />
-                        </View>
-                    )}
+                    renderItem={({ item }) => {
+                        const itemGeoJson = item.geojson as FeatureGeoJson;
+                        const itemBbox = getBbox(itemGeoJson);
+                        const itemLatitude = isDefined(itemBbox)
+                            ? (itemBbox[1] + itemBbox[3]) / 2
+                            : undefined;
+                        const itemZoom = isDefined(itemBbox)
+                            ? getOptimalZoomLevel(itemBbox)
+                            : undefined;
+                        return (
+                            <View style={styles.task}>
+                                <View style={styles.mapWrapper}>
+                                    <MapTile
+                                        geoJson={itemGeoJson}
+                                        tileServer={projectDetails.tileServer}
+                                        hideLines={hideTilePressValue}
+                                    />
+                                    {isDefined(itemLatitude) && isDefined(itemZoom) && (
+                                        <View style={styles.scaleOverlay} pointerEvents="none">
+                                            <ScaleBar
+                                                latitude={itemLatitude}
+                                                referenceSize={tileWidth}
+                                                tileSize={tileWidth}
+                                                zoomLevel={itemZoom}
+                                                inline
+                                            />
+                                        </View>
+                                    )}
+                                    <View style={styles.eyeOverlay}>
+                                        <HideTileSelectionButton
+                                            handleHideTileSelectionPressIn={handleHideTilePressIn}
+                                            handleHideTileSelectionPressOut={handleHideTilePressOut}
+                                            isPressed={hideTilePressValue}
+                                            containerStyle={styles.eyeButton}
+                                        />
+                                    </View>
+                                </View>
+                            </View>
+                        );
+                    }}
                     onViewableItemsChanged={onViewableItemsChanged}
                     viewabilityConfig={viewabilityConfig}
                     horizontal
@@ -276,26 +294,6 @@ function ValidateMappingSession(props: Props) {
                     pagingEnabled
                     showsHorizontalScrollIndicator={false}
                 />
-            </View>
-            <View style={styles.scaleRow}>
-                <View style={styles.scaleBarArea}>
-                    {isDefined(latitude) && isDefined(zoomLevel) && (
-                        <ScaleBar
-                            latitude={latitude}
-                            referenceSize={tileWidth}
-                            tileSize={tileWidth}
-                            zoomLevel={zoomLevel}
-                            inline
-                        />
-                    )}
-                </View>
-                <View style={styles.hideButtonWrapper}>
-                    <HideTileSelectionButton
-                        handleHideTileSelectionPressIn={handleHideTilePressIn}
-                        handleHideTileSelectionPressOut={handleHideTilePressOut}
-                        isPressed={hideTilePressValue}
-                    />
-                </View>
             </View>
             <InlineListView
                 withCenteredContent

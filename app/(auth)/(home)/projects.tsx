@@ -88,11 +88,11 @@ const createStyles = (theme: AppTheme) => (StyleSheet.create({
 
 const createProjectStyles = (
     theme: AppTheme,
-    { width }: { width: number },
+    { width, aspectRatio }: { width: number; aspectRatio: number },
 ) => StyleSheet.create({
     card: {
         width,
-        aspectRatio: 5 / 6,
+        aspectRatio,
         borderRadius: 6,
         overflow: 'hidden',
         backgroundColor: theme.backgroundMuted,
@@ -197,7 +197,12 @@ function ProjectItem(props: ProjectItemProps) {
 
     const theme = useTheme();
     const cardWidth = featured ? (SCREEN_WIDTH - CARD_PADDING * 2) : CARD_WIDTH;
-    const styles = useThemedStyles(createProjectStyles, { width: cardWidth });
+    // Featured cards are full-width 2:1 banners; regular cards stay taller (5/6).
+    const cardAspectRatio = featured ? 2 / 1 : 5 / 6;
+    const styles = useThemedStyles(createProjectStyles, {
+        width: cardWidth,
+        aspectRatio: cardAspectRatio,
+    });
     const progressLabel = getProjectProgressForDisplay(project.progress);
     const progressNum = Number(progressLabel);
     const gradient = gradientForId(project.projectId);

@@ -1,5 +1,6 @@
 import {
     useCallback,
+    useEffect,
     useMemo,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +17,10 @@ import {
     deleteUser,
     sendPasswordResetEmail,
 } from 'firebase/auth';
-import { gql } from 'urql';
+import {
+    CombinedError,
+    gql,
+} from 'urql';
 
 import { ACCESSIBILITY_TUTORIAL_SEEN_KEY } from '@/components/AccessibilityInfoModal';
 import BlockListView from '@/components/BlockListView';
@@ -31,8 +35,10 @@ import showConfirm from '@/components/showConfirm';
 import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
 import {
+    gqlEndpoint,
     mapSwipeWebUrl,
     missingMapUrl,
+    referrerEndpoint,
     supportedLanguages,
 } from '@/constants/common';
 import { SPACING_MD } from '@/constants/dimensions';
@@ -69,6 +75,57 @@ const USER_STATS = gql`
   }
 `;
 
+// Turn a urql error into a clear, user-facing reason: CSRF, a network failure,
+// or the actual error message the server returned.
+function describeStatsError(error: CombinedError): { title: string; message: string } {
+    const status = (error.response as { status?: number } | undefined)?.status;
+    const graphQLMessage = error.graphQLErrors
+        ?.map((graphQLError) => graphQLError.message)
+        .filter(Boolean)
+        .join('\n');
+    const networkMessage = error.networkError?.message;
+    const haystack = `${error.message} ${networkMessage ?? ''} ${graphQLMessage ?? ''}`
+        .toLowerCase();
+
+    if (status === 403 || haystack.includes('csrf')) {
+        return {
+            title: 'CSRF issue',
+            message: graphQLMessage
+                || networkMessage
+                || 'Your session/CSRF token is missing or invalid. Try signing in again.',
+        };
+    }
+
+    // The server responded with a real GraphQL error — surface it verbatim.
+    if (graphQLMessage) {
+        return {
+            title: 'Could not load stats',
+            message: graphQLMessage,
+        };
+    }
+
+    // Non-2xx HTTP response without a GraphQL body.
+    if (typeof status === 'number') {
+        return {
+            title: `Server error (${status})`,
+            message: networkMessage || 'The stats server returned an error.',
+        };
+    }
+
+    // fetch rejected — never reached the server (offline / DNS / CORS).
+    if (error.networkError) {
+        return {
+            title: 'Network issue',
+            message: 'Could not reach the stats server. Check your connection and try again.',
+        };
+    }
+
+    return {
+        title: 'Could not load stats',
+        message: error.message || 'Something went wrong while loading your stats.',
+    };
+}
+
 const createStyles = (theme: AppTheme) => StyleSheet.create({
     scrollView: {
         backgroundColor: theme.backgroundMuted,
@@ -102,11 +159,36 @@ function Profile() {
     const { handleAsync } = useAsyncHandler();
 
     const [
-        { data: userStatsData, fetching: loadingUserStats },
+        { data: userStatsData, fetching: loadingUserStats, error: userStatsError },
         refetchUserStats,
     ] = useUserStatsQuery({
-        variables: { firebaseId: user?.uid || '' },
+        variables: { firebaseId: user?.uid ?? '' },
+        // Don't query with an empty id before auth resolves — an empty
+        // firebaseId returns "No ContributorUser matches the given query."
+        pause: !user?.uid,
     });
+
+    // Surface stats-fetch failures clearly (CSRF / network / real server error)
+    // instead of silently rendering zeros.
+    useEffect(() => {
+        if (!userStatsError) {
+            return;
+        }
+        const { title, message } = describeStatsError(userStatsError);
+        // TEMP (this deployment only): append request context so QA reports are
+        // actionable. Remove once the stats issue is resolved.
+        const diagnostics = [
+            `firebaseId: ${user?.uid ?? '(none)'}`,
+            `backend: ${gqlEndpoint}`,
+            `referrer: ${referrerEndpoint ?? '(unset)'}`,
+        ].join('\n');
+        showAlert({
+            title,
+            message: `${message}\n\n${diagnostics}`,
+            alertType: 'error',
+            shouldHideAfterDelay: false,
+        });
+    }, [userStatsError, user?.uid]);
 
     const currentLanguage = useMemo(
         () => (supportedLanguages ?? []).find(

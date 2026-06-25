@@ -1,6 +1,8 @@
 import {
     useCallback,
     useEffect,
+    useMemo,
+    useRef,
     useState,
 } from 'react';
 import {
@@ -130,15 +132,30 @@ export default function ImageWrapper({
     const [error, setError] = useState(false);
     const [retryKey, setRetryKey] = useState(0);
     const [imageDimensions, setImageDimensions] = useState<ImageDimensions>();
+    // Once the image has loaded, a later (cache-served) reload must not re-show
+    // the spinner — its onLoadEnd often doesn't re-fire, leaving it stuck.
+    const loadedRef = useRef(false);
+
+    // Stable source so parent re-renders don't trigger a spurious reload.
+    const source = useMemo(() => ({ uri: item.url }), [item.url]);
 
     useEffect(() => {
         onImageLoadStart(itemIndex);
     }, [onImageLoadStart, itemIndex]);
 
     const handleLoadStart = useCallback(() => {
+        if (loadedRef.current) {
+            return;
+        }
         onImageLoadStart(itemIndex);
         setLoading(true);
     }, [onImageLoadStart, itemIndex]);
+
+    const handleLoad = useCallback(() => {
+        loadedRef.current = true;
+        setLoading(false);
+        onImageLoadEnd(itemIndex);
+    }, [onImageLoadEnd, itemIndex]);
 
     const handleError = useCallback(() => {
         setLoading(false);
@@ -146,12 +163,14 @@ export default function ImageWrapper({
     }, []);
 
     const handleRetry = useCallback(() => {
+        loadedRef.current = false;
         setLoading(true);
         setError(false);
         setRetryKey((k) => k + 1);
     }, []);
 
     const handleLoadEnd = useCallback(() => {
+        loadedRef.current = true;
         onImageLoadEnd(itemIndex);
         setLoading(false);
 
@@ -243,9 +262,10 @@ export default function ImageWrapper({
                 {!error ? (
                     <Animated.Image
                         key={retryKey}
-                        source={{ uri: item.url }}
+                        source={source}
                         style={[styles.image, animatedStyle]}
                         onLoadStart={handleLoadStart}
+                        onLoad={handleLoad}
                         onLoadEnd={handleLoadEnd}
                         onError={handleError}
                         fadeDuration={0}
