@@ -1,10 +1,13 @@
 import {
     useCallback,
     useLayoutEffect,
+    useRef,
+    useState,
 } from 'react';
 import {
     ScrollView,
     StyleSheet,
+    TouchableOpacity,
     ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,6 +26,8 @@ import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
 import BackButton from '../BackButton';
+import Modal from '../Modal';
+import Text from '../Text';
 
 type Variant = 'normal' | 'brand';
 
@@ -30,6 +35,10 @@ const createStyles = (theme: AppTheme, { variant }: { variant: Variant }) => Sty
     page: {
         flex: 1,
         backgroundColor: variant === 'brand' ? theme.backgroundBrand : theme.background,
+    },
+    headerTitle: {
+        fontSize: FONT_SIZE_MD,
+        color: theme.textOnBrand,
     },
 });
 
@@ -40,9 +49,37 @@ interface Props {
     variant?: 'normal' | 'brand';
     scrollable?: boolean
     showBackButton?: boolean;
-    onClickBackButton?: () => void;
+    onClickBackButton?: (proceedWithBack: () => void) => void;
     headerTitleAlign?: 'left' | 'center';
     headerRight?: () => React.ReactNode;
+}
+
+function TitleWithPopup({ title, styles }:
+     { title: string; styles: ReturnType<typeof createStyles> }) {
+    const [visible, setVisible] = useState(false);
+    return (
+        <>
+            <TouchableOpacity
+                onLongPress={() => setVisible(true)}
+                activeOpacity={1}
+            >
+                <Text
+                    style={styles.headerTitle}
+                    numberOfLines={1}
+                >
+                    {title}
+                </Text>
+            </TouchableOpacity>
+            <Modal
+                open="title-popup"
+                visible={visible}
+                onClose={() => setVisible(false)}
+                animationType="slide"
+            >
+                <Text variant="title">{title}</Text>
+            </Modal>
+        </>
+    );
 }
 
 function Page(props: Props) {
@@ -61,16 +98,32 @@ function Page(props: Props) {
     const theme = useTheme();
     const styles = useThemedStyles(createStyles, { variant });
 
+    // When the caller confirms navigation (calls proceedWithBack), we set this
+    // to true so the re-dispatched GO_BACK action isn't intercepted again.
+    const bypassNextRef = useRef(false);
+
     const backButton = useCallback(() => (
         <BackButton
-            onPress={onClickBackButton}
+            // Route the tap through navigation.goBack() instead of calling
+            // onClickBackButton directly, so taps and swipe-gestures both
+            // funnel through the same beforeRemove listener below.
+            onPress={() => navigation.goBack()}
         />
-    ), [onClickBackButton]);
+    ), [navigation]);
+
+    const headerTitle = useCallback(
+        () => (
+            <TitleWithPopup
+                title={title}
+                styles={styles}
+            />
+        ),
+        [title, styles],
+    );
 
     useLayoutEffect(
         () => {
             navigation.setOptions({
-                title,
                 headerShown: showBackButton,
                 headerBackVisible: false,
                 headerStyle: {
@@ -79,31 +132,57 @@ function Page(props: Props) {
                 headerTintColor: theme.textOnBrand,
                 headerShadowVisible: false,
                 headerTitleAlign,
-                headerTitleStyle: {
-                    fontSize: FONT_SIZE_MD,
-                },
+                headerTitle,
                 headerRight,
                 headerLeft: backButton,
             });
         },
         [
             navigation,
-            title,
             theme,
             showBackButton,
             headerTitleAlign,
+            headerTitle,
             headerRight,
             onClickBackButton,
             backButton,
         ],
     );
 
-    // Header is always brand-colored, so status bar needs light content whenever
-    // the brand background is visible (either as the page bg or as the header).
+    // Intercepts EVERY dismissal path for this screen: swipe-back gesture,
+    // Android IOS hardware back button, and the tap-triggered goBack() above.
+    // This is the fix — onPress alone never fires for gesture/hardware back
+    // since those dispatch GO_BACK natively, bypassing the JS prop entirely.
+    useLayoutEffect(
+        () => {
+            if (!onClickBackButton) {
+                return undefined;
+            }
+            const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+                // Only intercept genuine back gestures/button presses.
+                // Programmatic replace/reset (e.g. router.replace('/')) must
+                // not be blocked — those are intentional route changes.
+                if (e.data.action.type !== 'GO_BACK') {
+                    return;
+                }
+                if (bypassNextRef.current) {
+                    bypassNextRef.current = false;
+                    return;
+                }
+                e.preventDefault();
+                onClickBackButton(() => {
+                    bypassNextRef.current = true;
+                    navigation.dispatch(e.data.action);
+                });
+            });
+
+            return unsubscribe;
+        },
+        [navigation, onClickBackButton],
+    );
+
     const statusBarStyle = variant === 'brand' || showBackButton ? 'light' : 'dark';
 
-    // In tab navigators both screens stay mounted, so the declarative <StatusBar>
-    // from a sibling tab can override ours. Re-apply imperatively on focus.
     useFocusEffect(
         useCallback(() => {
             setStatusBarStyle(statusBarStyle);

@@ -8,7 +8,6 @@ import {
 import { StyleSheet } from 'react-native';
 import {
     useLocalSearchParams,
-    useNavigation,
     useRouter,
 } from 'expo-router';
 import {
@@ -65,13 +64,11 @@ function MapTaskGroup() {
         taskGroupId,
     } = useLocalSearchParams<{id: string; taskGroupId: string;}>();
     const router = useRouter();
-    const navigation = useNavigation();
-    const isLeavingRef = useRef(false);
-
     const startTimestampRef = useRef<string | undefined>(undefined);
     const endTimestampRef = useRef<string | undefined>(undefined);
     const [modal, setModal] = useState<boolean>(false);
     const [continueModal, setContinueModal] = useState<boolean>(false);
+    const pendingProceedRef = useRef<(() => void) | null>(null);
 
     const { user } = useAuth();
 
@@ -207,37 +204,22 @@ function MapTaskGroup() {
         />
     );
 
-    const openContinueModal = useCallback(() => {
+    const openContinueModal = useCallback((proceedWithBack: () => void) => {
+        pendingProceedRef.current = proceedWithBack;
         setContinueModal(true);
     }, []);
 
     const closeContinueModal = useCallback(() => {
+        pendingProceedRef.current = null;
         setContinueModal(false);
     }, []);
 
     const handleLeaveMapping = useCallback(() => {
         setContinueModal(false);
-        isLeavingRef.current = true;
-        router.back();
-    }, [router]);
+        pendingProceedRef.current?.();
+        pendingProceedRef.current = null;
+    }, []);
 
-    // Block leaving mid-session — whether via iOS swipe-back, the Android
-    // hardware back, or the header back button — and show the confirmation
-    // modal instead. Once completed (on the outro) navigation proceeds normally.
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('beforeRemove', (event) => {
-            if (completed || isLeavingRef.current) {
-                return;
-            }
-            event.preventDefault();
-            setContinueModal(true);
-        });
-        return unsubscribe;
-    }, [navigation, completed]);
-
-    // Rendered as the final swipeable page inside the scroll-completion
-    // sessions (FIND / COMPLETENESS / COMPARE / LOCATE_FEATURES). It omits the
-    // "Go back" button because swiping back to the tasks replaces it.
     const completionPage = (
         <SessionOutro
             resultSyncStatus={resultSyncStatus}

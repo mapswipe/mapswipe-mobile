@@ -205,7 +205,7 @@ function TileGridMappingSession(props: Props) {
     const contentPages = groupedTasks.length === 0
         ? 0
         : Math.ceil(columnsWidth / pageWidth);
-    const completionLeftFiller = contentPages * pageWidth - columnsWidth;
+    const completionLeftFiller = Math.round(contentPages * pageWidth - columnsWidth);
     const pageSnapOffsets = useMemo(
         () => Array.from({ length: contentPages + 1 }, (_, i) => i * pageWidth),
         [contentPages, pageWidth],

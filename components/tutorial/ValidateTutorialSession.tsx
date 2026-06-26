@@ -146,7 +146,8 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
                         <ActivityIndicator size="large" />
                     </View>
                 )}
-                {geoJson && isDefined(latitude) && isDefined(zoomLevel) && mapSlotSize.width > 0 && (
+                {geoJson && isDefined(latitude)
+                && isDefined(zoomLevel) && mapSlotSize.width > 0 && (
                     <View style={styles.scaleOverlay} pointerEvents="none">
                         <ScaleBar
                             latitude={latitude}
