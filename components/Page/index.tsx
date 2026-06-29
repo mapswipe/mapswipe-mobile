@@ -66,6 +66,7 @@ function TitleWithPopup({ title, styles }:
                 <Text
                     style={styles.headerTitle}
                     numberOfLines={1}
+                    ellipsizeMode="tail"
                 >
                     {title}
                 </Text>
@@ -162,7 +163,7 @@ function Page(props: Props) {
                 // Only intercept genuine back gestures/button presses.
                 // Programmatic replace/reset (e.g. router.replace('/')) must
                 // not be blocked — those are intentional route changes.
-                if (e.data.action.type !== 'GO_BACK') {
+                if (e.data.action.type !== 'GO_BACK' && e.data.action.type !== 'POP') {
                     return;
                 }
                 if (bypassNextRef.current) {

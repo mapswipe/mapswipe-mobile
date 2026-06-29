@@ -3,6 +3,7 @@ import {
     GestureResponderEvent,
     StyleSheet,
     Text as NativeText,
+    TextProps,
     TextStyle,
 } from 'react-native';
 
@@ -23,6 +24,7 @@ interface Props {
     onPress?: (event: GestureResponderEvent) => void;
     colorVariant?: ColorVariant;
     numberOfLines?: number;
+    ellipsizeMode?: TextProps['ellipsizeMode'];
 }
 
 function Text(props: Props) {
@@ -33,6 +35,7 @@ function Text(props: Props) {
         variant = 'default',
         onPress,
         numberOfLines,
+        ellipsizeMode,
     } = props;
 
     const theme = useTheme();
@@ -74,6 +77,7 @@ function Text(props: Props) {
         <NativeText
             onPress={onPress}
             numberOfLines={numberOfLines}
+            ellipsizeMode={ellipsizeMode}
             style={[
                 variant === 'heading' && styles.heading,
                 variant === 'title' && styles.title,

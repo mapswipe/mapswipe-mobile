@@ -49,6 +49,7 @@ const createStyles = () => StyleSheet.create({
     },
     tileGridWrapper: {
         flex: 1,
+        overflow: 'hidden',
     },
 });
 
@@ -346,12 +347,17 @@ function TileGridMappingSession(props: Props) {
                     ListFooterComponent={groupedTasks.length > 0 ? (
                         <View
                             style={StyleSheet.flatten({
-                                width: pageWidth,
-                                marginLeft: completionLeftFiller,
+                                flexDirection: 'row',
+                                width: completionLeftFiller + pageWidth,
                                 height: viewportHeight || undefined,
                             })}
                         >
-                            {completionPage}
+                            {completionLeftFiller > 0 && (
+                                <View style={{ width: completionLeftFiller }} />
+                            )}
+                            <View style={{ width: pageWidth }}>
+                                {completionPage}
+                            </View>
                         </View>
                     ) : null}
                     horizontal

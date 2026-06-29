@@ -1,8 +1,6 @@
 import {
     useCallback,
-    useEffect,
     useMemo,
-    useRef,
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,11 +9,7 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-import {
-    useLocalSearchParams,
-    useNavigation,
-    useRouter,
-} from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { isDefined } from '@togglecorp/fujs';
 
 import IconButton from '@/components/IconButton';
@@ -59,26 +53,6 @@ const styles = StyleSheet.create({
 function Tutorial() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
     const { t } = useTranslation(['tutorialScreen', 'Tutorial']);
-    const navigation = useNavigation();
-    const router = useRouter();
-    const isLeavingRef = useRef(false);
-
-    // Block swipe-back (iOS) and the hardware back button within the tutorial;
-    // leaving is only via the header back button, which sets isLeavingRef first.
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('beforeRemove', (event) => {
-            if (isLeavingRef.current) {
-                return;
-            }
-            event.preventDefault();
-        });
-        return unsubscribe;
-    }, [navigation]);
-
-    const handleHeaderBack = useCallback(() => {
-        isLeavingRef.current = true;
-        router.back();
-    }, [router]);
     const projectQuery = useMemo(() => (
         firebaseRef(`v2/projects/${projectId}`)
     ), [projectId]);
@@ -207,7 +181,6 @@ function Tutorial() {
             showBackButton
             headerTitleAlign="center"
             headerRight={infoButton}
-            onClickBackButton={handleHeaderBack}
         >
             {isLoading ? (
                 <View style={styles.loaderContainer}>
