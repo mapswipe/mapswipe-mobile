@@ -5,7 +5,10 @@ import {
     useRef,
     useState,
 } from 'react';
-import { StyleSheet } from 'react-native';
+import {
+    Platform,
+    StyleSheet,
+} from 'react-native';
 import {
     useLocalSearchParams,
     useRouter,
@@ -36,6 +39,7 @@ import ValidateMappingSession from '@/components/ValidateMappingSession';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useHardwareBackHandler from '@/hooks/useHardwareBackHandler';
+import usePreventScreenRemove from '@/hooks/usePreventScreenRemove';
 import { firebaseRef } from '@/utils/firebase';
 import {
     getAnswerCounts,
@@ -212,16 +216,21 @@ function MapTaskGroup() {
         setContinueModal(false);
     }, []);
 
+    // Confirm before leaving the mapping session so progress isn't lost.
+    // Each back path opens the same "Stop Mapping?" modal:
+    // - header back button -> Page's onBackPress (all platforms)
+    // - iOS swipe-back gesture -> usePreventScreenRemove (intercepts the gesture)
+    // - Android hardware back -> useHardwareBackHandler
+    const { leave } = usePreventScreenRemove({
+        enabled: Platform.OS === 'ios',
+        onAttemptLeave: openContinueModal,
+    });
+    useHardwareBackHandler({ onBackPress: openContinueModal });
+
     const handleLeaveMapping = useCallback(() => {
         setContinueModal(false);
-        router.back();
-    }, [router]);
-
-    // Confirm before leaving the mapping session so progress isn't lost. The
-    // header back button (Page's onBackPress) and the Android hardware back
-    // button both open the confirm modal instead of navigating away; the
-    // swipe-back gesture is disabled in the layout for the same reason.
-    useHardwareBackHandler({ onBackPress: openContinueModal });
+        leave();
+    }, [leave]);
 
     const completionPage = (
         <SessionOutro

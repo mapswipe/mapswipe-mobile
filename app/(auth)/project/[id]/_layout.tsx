@@ -12,14 +12,12 @@ function ProjectItemLayout() {
                     gestureEnabled: false,
                 }}
             />
-            <Stack.Screen
-                name="map"
-                options={{
-                    // Disable swipe-back (iOS) out of the mapping flow; leaving
-                    // goes through the "Stop Mapping?" confirm modal instead.
-                    gestureEnabled: false,
-                }}
-            />
+            {/*
+              * Swipe-back is left enabled out of the mapping flow; the mapping
+              * screen's usePreventScreenRemove hook intercepts the iOS gesture
+              * and routes it through the "Stop Mapping?" confirm modal.
+              */}
+            <Stack.Screen name="map" />
         </Stack>
 
     );

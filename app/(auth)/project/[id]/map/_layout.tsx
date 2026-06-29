@@ -5,11 +5,9 @@ export default function ProjectMapLayout() {
         <Stack
             screenOptions={{
                 headerShown: true,
-                // Disable swipe-back (iOS) so mapping progress isn't lost to an
-                // accidental edge swipe. The header back button and the Android
-                // hardware back button go through the "Stop Mapping?" confirm
-                // modal instead (see the mapping screen).
-                gestureEnabled: false,
+                // Swipe-back is left enabled so the mapping screen's
+                // usePreventScreenRemove hook can intercept the iOS gesture and
+                // route it through the "Stop Mapping?" confirm modal.
             }}
         />
     );
