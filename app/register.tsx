@@ -18,8 +18,10 @@ import {
     createUserWithEmailAndPassword,
     updateProfile,
 } from 'firebase/auth';
-import { update } from 'firebase/database';
-import { serverTimestamp } from 'firebase/firestore';
+import {
+    serverTimestamp,
+    update,
+} from 'firebase/database';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';

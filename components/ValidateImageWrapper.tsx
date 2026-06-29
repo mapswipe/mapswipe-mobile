@@ -7,7 +7,6 @@ import {
 } from 'react';
 import {
     ActivityIndicator,
-    Image,
     LayoutChangeEvent,
     StyleSheet,
     Text,
@@ -23,10 +22,18 @@ import Animated, {
     useSharedValue,
 } from 'react-native-reanimated';
 import Svg, { Rect } from 'react-native-svg';
+import {
+    Image as ExpoImage,
+    type ImageLoadEventData,
+} from 'expo-image';
 
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 
 import HideTileSelectionButton from './HideTileSelectionButton';
+
+// expo-image (memory+disk cache, fast decode) wrapped so the pinch-zoom
+// transform can animate it via reanimated.
+const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 
 const styles = StyleSheet.create({
     container: {
@@ -40,8 +47,6 @@ const styles = StyleSheet.create({
     image: {
         width: '100%',
         height: '100%',
-        objectFit: 'contain',
-        resizeMode: 'contain',
     },
     loader: {
         position: 'absolute',
@@ -151,10 +156,21 @@ export default function ImageWrapper({
         setLoading(true);
     }, [onImageLoadStart, itemIndex]);
 
-    const handleLoad = useCallback(() => {
+    const handleLoad = useCallback((event: ImageLoadEventData) => {
         loadedRef.current = true;
         setLoading(false);
         onImageLoadEnd(itemIndex);
+
+        // expo-image's load event carries the natural dimensions, so we no
+        // longer need a separate Image.getSize() fetch for the bbox math.
+        const { width, height } = event.source;
+        if (width && height) {
+            setImageDimensions((prev) => ({
+                ...prev,
+                naturalWidth: width,
+                naturalHeight: height,
+            }));
+        }
     }, [onImageLoadEnd, itemIndex]);
 
     const handleError = useCallback(() => {
@@ -173,17 +189,7 @@ export default function ImageWrapper({
         loadedRef.current = true;
         onImageLoadEnd(itemIndex);
         setLoading(false);
-
-        if (item.url) {
-            Image.getSize(item.url, (width, height) => {
-                setImageDimensions((prev) => ({
-                    ...prev,
-                    naturalWidth: width,
-                    naturalHeight: height,
-                }));
-            });
-        }
-    }, [item.url, onImageLoadEnd, itemIndex]);
+    }, [onImageLoadEnd, itemIndex]);
 
     const handleLayout = useCallback((event: LayoutChangeEvent) => {
         const { width, height } = event.nativeEvent.layout;
@@ -260,15 +266,19 @@ export default function ImageWrapper({
                     />
                 )}
                 {!error ? (
-                    <Animated.Image
+                    <AnimatedImage
                         key={retryKey}
                         source={source}
                         style={[styles.image, animatedStyle]}
+                        contentFit="contain"
+                        cachePolicy="memory-disk"
+                        // No fade, matching the previous Image's fadeDuration={0}
+                        // — keeps the loading behaviour identical.
+                        transition={0}
                         onLoadStart={handleLoadStart}
                         onLoad={handleLoad}
                         onLoadEnd={handleLoadEnd}
                         onError={handleError}
-                        fadeDuration={0}
                     />
                 ) : (
                     <View style={styles.retryContainer}>

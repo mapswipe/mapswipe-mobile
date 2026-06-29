@@ -61,10 +61,12 @@ export function rankedSearchOnList<T>(
 
 export async function usernameExists(username: string) {
     try {
+        // usernameKey is the lowercased username, so compare lowercased too
+        // for a case-insensitive uniqueness check.
         const q = query(
             firebaseRef('v2/users'),
             orderByChild('usernameKey'),
-            equalTo(username),
+            equalTo(username.toLowerCase()),
         );
         const snap = await get(q);
         return snap.exists();
