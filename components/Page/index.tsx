@@ -1,7 +1,6 @@
 import {
     useCallback,
     useLayoutEffect,
-    useRef,
     useState,
 } from 'react';
 import {
@@ -49,7 +48,9 @@ interface Props {
     variant?: 'normal' | 'brand';
     scrollable?: boolean
     showBackButton?: boolean;
-    onClickBackButton?: (proceedWithBack: () => void) => void;
+    // Overrides the header back button's default goBack(). Use to intercept the
+    // tap (e.g. to confirm before leaving). Must be stable (memoized).
+    onBackPress?: () => void;
     headerTitleAlign?: 'left' | 'center';
     headerRight?: () => React.ReactNode;
 }
@@ -91,7 +92,7 @@ function Page(props: Props) {
         variant = 'normal',
         scrollable = true,
         showBackButton = false,
-        onClickBackButton,
+        onBackPress,
         headerTitleAlign = 'left',
         headerRight,
     } = props;
@@ -99,18 +100,11 @@ function Page(props: Props) {
     const theme = useTheme();
     const styles = useThemedStyles(createStyles, { variant });
 
-    // When the caller confirms navigation (calls proceedWithBack), we set this
-    // to true so the re-dispatched GO_BACK action isn't intercepted again.
-    const bypassNextRef = useRef(false);
-
     const backButton = useCallback(() => (
         <BackButton
-            // Route the tap through navigation.goBack() instead of calling
-            // onClickBackButton directly, so taps and swipe-gestures both
-            // funnel through the same beforeRemove listener below.
-            onPress={() => navigation.goBack()}
+            onPress={onBackPress ?? (() => navigation.goBack())}
         />
-    ), [navigation]);
+    ), [navigation, onBackPress]);
 
     const headerTitle = useCallback(
         () => (
@@ -124,19 +118,28 @@ function Page(props: Props) {
 
     useLayoutEffect(
         () => {
-            navigation.setOptions({
-                headerShown: showBackButton,
-                headerBackVisible: false,
-                headerStyle: {
-                    backgroundColor: theme.backgroundBrand,
-                },
-                headerTintColor: theme.textOnBrand,
-                headerShadowVisible: false,
-                headerTitleAlign,
-                headerTitle,
-                headerRight,
-                headerLeft: backButton,
-            });
+            // Page is occasionally rendered outside a navigator (e.g. the root
+            // layout's loading screen while auth resolves). There, useNavigation
+            // returns a placeholder whose setOptions throws ("Options cannot be
+            // set from a placeholder screen."). Nothing to configure in that
+            // case, so swallow the error.
+            try {
+                navigation.setOptions({
+                    headerShown: showBackButton,
+                    headerBackVisible: false,
+                    headerStyle: {
+                        backgroundColor: theme.backgroundBrand,
+                    },
+                    headerTintColor: theme.textOnBrand,
+                    headerShadowVisible: false,
+                    headerTitleAlign,
+                    headerTitle,
+                    headerRight,
+                    headerLeft: backButton,
+                });
+            } catch {
+                // not inside a navigator screen — no header to configure
+            }
         },
         [
             navigation,
@@ -145,41 +148,8 @@ function Page(props: Props) {
             headerTitleAlign,
             headerTitle,
             headerRight,
-            onClickBackButton,
             backButton,
         ],
-    );
-
-    // Intercepts EVERY dismissal path for this screen: swipe-back gesture,
-    // Android IOS hardware back button, and the tap-triggered goBack() above.
-    // This is the fix — onPress alone never fires for gesture/hardware back
-    // since those dispatch GO_BACK natively, bypassing the JS prop entirely.
-    useLayoutEffect(
-        () => {
-            if (!onClickBackButton) {
-                return undefined;
-            }
-            const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-                // Only intercept genuine back gestures/button presses.
-                // Programmatic replace/reset (e.g. router.replace('/')) must
-                // not be blocked — those are intentional route changes.
-                if (e.data.action.type !== 'GO_BACK' && e.data.action.type !== 'POP') {
-                    return;
-                }
-                if (bypassNextRef.current) {
-                    bypassNextRef.current = false;
-                    return;
-                }
-                e.preventDefault();
-                onClickBackButton(() => {
-                    bypassNextRef.current = true;
-                    navigation.dispatch(e.data.action);
-                });
-            });
-
-            return unsubscribe;
-        },
-        [navigation, onClickBackButton],
     );
 
     const statusBarStyle = variant === 'brand' || showBackButton ? 'light' : 'dark';

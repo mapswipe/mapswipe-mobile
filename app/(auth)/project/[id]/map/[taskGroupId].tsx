@@ -35,6 +35,7 @@ import ValidateImageMappingSession from '@/components/ValidateImageMappingSessio
 import ValidateMappingSession from '@/components/ValidateMappingSession';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import useHardwareBackHandler from '@/hooks/useHardwareBackHandler';
 import { firebaseRef } from '@/utils/firebase';
 import {
     getAnswerCounts,
@@ -68,7 +69,6 @@ function MapTaskGroup() {
     const endTimestampRef = useRef<string | undefined>(undefined);
     const [modal, setModal] = useState<boolean>(false);
     const [continueModal, setContinueModal] = useState<boolean>(false);
-    const pendingProceedRef = useRef<(() => void) | null>(null);
 
     const { user } = useAuth();
 
@@ -204,21 +204,24 @@ function MapTaskGroup() {
         />
     );
 
-    const openContinueModal = useCallback((proceedWithBack: () => void) => {
-        pendingProceedRef.current = proceedWithBack;
+    const openContinueModal = useCallback(() => {
         setContinueModal(true);
     }, []);
 
     const closeContinueModal = useCallback(() => {
-        pendingProceedRef.current = null;
         setContinueModal(false);
     }, []);
 
     const handleLeaveMapping = useCallback(() => {
         setContinueModal(false);
-        pendingProceedRef.current?.();
-        pendingProceedRef.current = null;
-    }, []);
+        router.back();
+    }, [router]);
+
+    // Confirm before leaving the mapping session so progress isn't lost. The
+    // header back button (Page's onBackPress) and the Android hardware back
+    // button both open the confirm modal instead of navigating away; the
+    // swipe-back gesture is disabled in the layout for the same reason.
+    useHardwareBackHandler({ onBackPress: openContinueModal });
 
     const completionPage = (
         <SessionOutro
@@ -241,7 +244,7 @@ function MapTaskGroup() {
             showBackButton
             headerTitleAlign="center"
             headerRight={infoButton}
-            onClickBackButton={openContinueModal}
+            onBackPress={openContinueModal}
         >
             {completed ? (
                 <SessionOutro

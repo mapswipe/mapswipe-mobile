@@ -9,11 +9,6 @@
         "newArchEnabled": true,
         "backgroundColor": "#0D1949",
         "userInterfaceStyle": "light",
-        "splash": {
-            "image": "./assets/images/splash-icon.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#0D1949"
-        },
         "ios": {
             "bundleIdentifier": "org.missingmaps.mapswipe",
             "buildNumber": "7",
@@ -29,7 +24,6 @@
                 "foregroundImage": "./assets/images/adaptive-icon.png",
                 "backgroundColor": "#0D1949"
             },
-            "edgeToEdgeEnabled": true,
             "predictiveBackGestureEnabled": false,
             "package": "org.missingmaps.mapswipe",
             "userInterfaceStyle": "light"
@@ -43,7 +37,16 @@
             "expo-router",
             "expo-system-ui",
             "@maplibre/maplibre-react-native",
-            "./plugins/disable-liquid-glass.cjs"
+            "./plugins/disable-liquid-glass.cjs",
+            [
+                "expo-splash-screen",
+                {
+                    "image": "./assets/images/splash-icon.png",
+                    "imageWidth": 200,
+                    "resizeMode": "contain",
+                    "backgroundColor": "#0D1949"
+                }
+            ]
         ],
         "experiments": {
             "typedRoutes": true

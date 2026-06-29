@@ -5,9 +5,10 @@ export default function ProjectMapLayout() {
         <Stack
             screenOptions={{
                 headerShown: true,
-                // Disable swipe-back (iOS) while mapping so progress isn't lost
-                // to an accidental edge swipe; the header back / confirm modal
-                // remain the intended way out.
+                // Disable swipe-back (iOS) so mapping progress isn't lost to an
+                // accidental edge swipe. The header back button and the Android
+                // hardware back button go through the "Stop Mapping?" confirm
+                // modal instead (see the mapping screen).
                 gestureEnabled: false,
             }}
         />
