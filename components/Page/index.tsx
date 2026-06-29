@@ -7,6 +7,7 @@ import {
     ScrollView,
     StyleSheet,
     TouchableOpacity,
+    useWindowDimensions,
     ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -29,6 +30,11 @@ import Modal from '../Modal';
 import Text from '../Text';
 
 type Variant = 'normal' | 'brand';
+
+// Horizontal space (px) reserved for the header buttons on each side combined,
+// so the centered/left-aligned title truncates with an ellipsis instead of
+// sliding under the back / right buttons. Tune if the buttons change size.
+const HEADER_TITLE_RESERVE = 120;
 
 const createStyles = (theme: AppTheme, { variant }: { variant: Variant }) => StyleSheet.create({
     page: {
@@ -55,8 +61,8 @@ interface Props {
     headerRight?: () => React.ReactNode;
 }
 
-function TitleWithPopup({ title, styles }:
-     { title: string; styles: ReturnType<typeof createStyles> }) {
+function TitleWithPopup({ title, styles, maxWidth }:
+     { title: string; styles: ReturnType<typeof createStyles>; maxWidth: number }) {
     const [visible, setVisible] = useState(false);
     return (
         <>
@@ -65,7 +71,7 @@ function TitleWithPopup({ title, styles }:
                 activeOpacity={1}
             >
                 <Text
-                    style={styles.headerTitle}
+                    style={{ ...styles.headerTitle, maxWidth }}
                     numberOfLines={1}
                     ellipsizeMode="tail"
                 >
@@ -99,6 +105,11 @@ function Page(props: Props) {
     const navigation = useNavigation();
     const theme = useTheme();
     const styles = useThemedStyles(createStyles, { variant });
+    const { width: windowWidth } = useWindowDimensions();
+
+    // Bound the title so it ellipsizes within the space left by the header
+    // buttons instead of sliding under them. Recomputed on rotation/resize.
+    const titleMaxWidth = Math.max(0, windowWidth - HEADER_TITLE_RESERVE);
 
     const backButton = useCallback(() => (
         <BackButton
@@ -111,9 +122,10 @@ function Page(props: Props) {
             <TitleWithPopup
                 title={title}
                 styles={styles}
+                maxWidth={titleMaxWidth}
             />
         ),
-        [title, styles],
+        [title, styles, titleMaxWidth],
     );
 
     useLayoutEffect(
