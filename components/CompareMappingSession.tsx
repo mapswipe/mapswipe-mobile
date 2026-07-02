@@ -1,10 +1,14 @@
 import {
+    cloneElement,
     Dispatch,
+    isValidElement,
+    type ReactElement,
     type ReactNode,
     SetStateAction,
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import {
@@ -183,6 +187,20 @@ function CompareMappingSession(props: Props) {
         }
     }, [pageWidth, compressedTasks.length, onReachedEnd]);
 
+    const flatListRef = useRef<FlatList<FbMappingTaskCompareCreateOnlyInput>>(null);
+
+    // "Go Back" on the outro scrolls back to the last task so the user can
+    // revise their answer (the outro is the page after the final task).
+    const handleOutroGoBack = useCallback(() => {
+        if (compressedTasks.length === 0) {
+            return;
+        }
+        flatListRef.current?.scrollToOffset({
+            offset: (compressedTasks.length - 1) * pageWidth,
+            animated: true,
+        });
+    }, [compressedTasks.length, pageWidth]);
+
     // FIXME: Discuss with Ankit on how to better define this
     const tileWidth = Math.min(pageWidth - 20, pageHeight / 2 - 120);
 
@@ -221,6 +239,7 @@ function CompareMappingSession(props: Props) {
     return (
         <>
             <FlatList
+                ref={flatListRef}
                 data={compressedTasks}
                 contentContainerStyle={styles.content}
                 keyExtractor={(task) => task.taskId}
@@ -277,7 +296,15 @@ function CompareMappingSession(props: Props) {
                             height: viewportHeight || undefined,
                         })}
                     >
-                        {completionPage}
+                        {isValidElement(completionPage)
+                            ? cloneElement(
+                                completionPage as ReactElement<{ onGoBack?: () => void }>,
+                                // handleOutroGoBack only reads the FlatList ref when
+                                // invoked (on button press), never during render.
+                                // eslint-disable-next-line react-hooks/refs
+                                { onGoBack: handleOutroGoBack },
+                            )
+                            : completionPage}
                     </View>
                 ) : null}
                 horizontal

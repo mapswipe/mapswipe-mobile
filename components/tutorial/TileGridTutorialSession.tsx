@@ -43,6 +43,14 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
     },
+    // Anchor the hide button to the bottom-right overlay of the grid area
+    // instead of letting it float at the container bottom (which left it
+    // misaligned below the vertically-centered grid).
+    hideButton: {
+        position: 'absolute',
+        bottom: 20,
+        right: 14,
+    },
 });
 
 const OPTIONS: ResultOption[] = [
@@ -191,6 +199,7 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
                 handleHideTileSelectionPressIn={handleHideTilePressIn}
                 handleHideTileSelectionPressOut={handleHideTilePressOut}
                 isPressed={hideTilePressValue}
+                containerStyle={styles.hideButton}
             />
         </View>
     );

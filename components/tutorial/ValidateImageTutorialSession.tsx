@@ -31,6 +31,10 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     buttons: {
+        // Override InlineListView's base flexGrow:1 — otherwise the button row
+        // grows to fill half the slot, leaving a large gap below it and
+        // shrinking the image.
+        flexGrow: 0,
         flexShrink: 0,
         paddingVertical: SPACING_3XS,
     },

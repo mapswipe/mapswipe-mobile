@@ -122,6 +122,10 @@ export default function ProjectDetail() {
 
     const { data: project } = useFirebaseDatabase<FbProject>({ query: projectQuery });
 
+    // A project at 100% global progress is done — block mapping (tutorial stays
+    // available). progress is a 0–100 percentage.
+    const isProjectComplete = (project?.progress ?? 0) >= 100;
+
     return (
         <Page
             title={project?.name ?? 'Project'}
@@ -201,7 +205,8 @@ export default function ProjectDetail() {
                                 projectInstruction: project?.projectInstruction,
                             },
                         }}
-                        title="Map now"
+                        title={isProjectComplete ? 'Project completed' : 'Map now'}
+                        disabled={isProjectComplete}
                     />
                 </BlockListView>
             </BlockListView>

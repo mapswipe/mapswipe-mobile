@@ -10,6 +10,7 @@ import {
 import {
     FlatList,
     StyleSheet,
+    View,
 } from 'react-native';
 import {
     isDefined,
@@ -78,6 +79,11 @@ function ValidateImageMappingSession(props: Props) {
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const completedRef = useRef(false);
     const [imagesLoading, setImagesLoading] = useState<Record<number, boolean>>({});
+    // Measured height of the paging list so each item fills it — otherwise a
+    // horizontal FlatList item sizes to its content (the image's aspect height,
+    // or just the error text), leaving the image small and the error squished
+    // at the top.
+    const [viewportHeight, setViewportHeight] = useState<number | undefined>(undefined);
 
     const taskQuery = useMemo(() => (
         firebaseRef(`v2/tasks/${projectDetails.projectId}/${taskGroupId}`)
@@ -199,14 +205,17 @@ function ValidateImageMappingSession(props: Props) {
                 ref={flatListRef}
                 data={limitedTasks}
                 keyExtractor={(_, index) => index.toString()}
+                onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
                 renderItem={({ item, index }) => (
-                    <ImageWrapper
-                        item={item}
-                        itemIndex={index}
-                        onImageLoadStart={handleImageLoadStart}
-                        onImageLoadEnd={handleImageLoadEnd}
-                        bbox={item.bbox}
-                    />
+                    <View style={{ width: SCREEN_WIDTH, height: viewportHeight }}>
+                        <ImageWrapper
+                            item={item}
+                            itemIndex={index}
+                            onImageLoadStart={handleImageLoadStart}
+                            onImageLoadEnd={handleImageLoadEnd}
+                            bbox={item.bbox}
+                        />
+                    </View>
                 )}
                 onViewableItemsChanged={onViewableItemsChanged}
                 viewabilityConfig={viewabilityConfig}

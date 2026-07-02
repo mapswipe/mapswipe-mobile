@@ -11,7 +11,7 @@
         "userInterfaceStyle": "light",
         "ios": {
             "bundleIdentifier": "org.missingmaps.mapswipe",
-            "buildNumber": "8",
+            "buildNumber": "9",
             "backgroundColor": "#0D1949",
             "supportsTablet": true,
             "infoPlist": {
@@ -42,7 +42,7 @@
                 "expo-splash-screen",
                 {
                     "image": "./assets/images/splash-icon.png",
-                    "imageWidth": 200,
+                    "imageWidth": 150,
                     "resizeMode": "contain",
                     "backgroundColor": "#0D1949"
                 }

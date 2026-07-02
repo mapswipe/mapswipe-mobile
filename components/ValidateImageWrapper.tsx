@@ -39,10 +39,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 2,
         justifyContent: 'center',
-        position: 'relative', // add this
+        position: 'relative',
         alignItems: 'center',
         width: SCREEN_WIDTH,
-        backgroundColor: '#fff',
     },
     image: {
         width: '100%',
@@ -53,7 +52,9 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     retryContainer: {
+        flex: 1,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     retryText: {
         color: 'white',
@@ -66,7 +67,9 @@ const styles = StyleSheet.create({
     hideButton: {
         position: 'absolute',
         bottom: 0,
-        alignSelf: 'center',
+        left: 0,
+        right: 0,
+        alignItems: 'center',
     },
 });
 
@@ -288,7 +291,7 @@ export default function ImageWrapper({
                         </TouchableOpacity>
                     </View>
                 )}
-                {bboxForBox && !hideShapeSource && (
+                {!error && bboxForBox && !hideShapeSource && (
                     <Animated.View
                         style={[StyleSheet.absoluteFill, animatedStyle, styles.svg]}
                         pointerEvents="none"
@@ -310,14 +313,16 @@ export default function ImageWrapper({
                         </Svg>
                     </Animated.View>
                 )}
-                <View style={styles.hideButton}>
-                    <HideTileSelectionButton
-                        isPressed={hideShapeSource}
-                        handleHideTileSelectionPressIn={handleHideTilePressIn}
-                        handleHideTileSelectionPressOut={handleHideTilePressOut}
-                        size="large"
-                    />
-                </View>
+                {!error && (
+                    <View style={styles.hideButton}>
+                        <HideTileSelectionButton
+                            isPressed={hideShapeSource}
+                            handleHideTileSelectionPressIn={handleHideTilePressIn}
+                            handleHideTileSelectionPressOut={handleHideTilePressOut}
+                            size="large"
+                        />
+                    </View>
+                )}
             </View>
         </GestureDetector>
     );
