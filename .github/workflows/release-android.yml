@@ -211,7 +211,7 @@ jobs:
 
       - name: Decode production keystore
         run: |
-          echo "${{ secrets.ANDROID_PROD_KEYSTORE_BASE64 }}" | base64 --decode > ${{ runner.temp }}/mapswipe-prod.keystore
+          echo "${{ secrets.ANDROID_PRODUCTION_KEYSTORE_BASE64 }}" | base64 --decode > ${{ runner.temp }}/mapswipe-prod.keystore
 
       - name: Expo prebuild (production)
         run: npx expo prebuild --platform android --clean
@@ -224,9 +224,9 @@ jobs:
       - name: Build production APK
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/mapswipe-prod.keystore
-          STORE_PASSWORD: ${{ secrets.ANDROID_PROD_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_PROD_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_PROD_KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_PRODUCTION_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_PRODUCTION_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_PRODUCTION_KEY_PASSWORD }}
         run: |
           cd android && ./gradlew assembleRelease --stacktrace \
             -PreactNativeArchitectures=armeabi-v7a,arm64-v8a \
