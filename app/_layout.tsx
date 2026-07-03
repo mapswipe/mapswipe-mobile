@@ -48,18 +48,23 @@ const styles = StyleSheet.create({
     },
     toastContainer: {
         paddingHorizontal: 15,
+        paddingVertical: 10,
     },
     toastSuccess: {
         borderLeftColor: 'green',
+        height: 'auto',
     },
     toastWarning: {
         borderLeftColor: '#f4c542',
+        height: 'auto',
     },
     toastError: {
         borderLeftColor: 'red',
+        height: 'auto',
     },
     toastInfo: {
         borderLeftColor: 'blue',
+        height: 'auto',
     },
     toastText1: {
         fontSize: 16,
@@ -79,6 +84,7 @@ export const toastConfig = {
             contentContainerStyle={styles.toastContainer}
             text1Style={styles.toastText1}
             text2Style={styles.toastText2}
+            text2NumberOfLines={0}
         />
     ),
     warning: (props: ToastProps) => (
@@ -89,14 +95,18 @@ export const toastConfig = {
             contentContainerStyle={styles.toastContainer}
             text1Style={styles.toastText1}
             text2Style={styles.toastText2}
+            text2NumberOfLines={0}
         />
     ),
     error: (props: ToastProps) => (
         <ErrorToast
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...props}
+            style={styles.toastError}
+            contentContainerStyle={styles.toastContainer}
             text1Style={styles.toastText1}
             text2Style={styles.toastText2}
+            text2NumberOfLines={0}
         />
     ),
     info: (props: ToastProps) => (
@@ -106,6 +116,7 @@ export const toastConfig = {
             style={styles.toastInfo}
             text1Style={styles.toastText1}
             text2Style={styles.toastText2}
+            text2NumberOfLines={0}
         />
     ),
 };

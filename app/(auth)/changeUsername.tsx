@@ -21,9 +21,11 @@ import {
     usernameExists,
     validateUserName,
 } from '@/utils/common';
-import { firebaseRef } from '@/utils/firebase';
+import {
+    firebaseAuth,
+    firebaseRef,
+} from '@/utils/firebase';
 
-const successTitle = 'Username updated!';
 const usernameSameAsBefore = 'New username is same as old!';
 
 export default function ChangePassword() {
@@ -53,7 +55,7 @@ export default function ChangePassword() {
         handleAsync(async () => {
             if (isSame) {
                 showAlert({
-                    title: t('signup:errorOnSignup'),
+                    title: t('changeUserName:errorOnUsernameChange'),
                     message: usernameSameAsBefore,
                     alertType: 'error',
                 });
@@ -61,7 +63,7 @@ export default function ChangePassword() {
             }
             if (!isValid) {
                 showAlert({
-                    title: t('signup:errorOnSignup'),
+                    title: t('changeUserName:errorOnUsernameChange'),
                     message: t('signup:usernameError'),
                     alertType: 'error',
                 });
@@ -71,7 +73,7 @@ export default function ChangePassword() {
 
             if (userNameAlreadyExist) {
                 showAlert({
-                    title: t('signup:errorOnSignup'),
+                    title: t('changeUserName:errorOnUsernameChange'),
                     message: t('signup:userNameExistError'),
                     alertType: 'error',
                     shouldHideAfterDelay: false,
@@ -93,17 +95,17 @@ export default function ChangePassword() {
             );
             await user.reload();
             showAlert({
-                title: 'Success',
-                message: successTitle,
+                title: t('signup:success'),
+                message: t('changeUserName:usernameUpdated'),
                 alertType: 'success',
             });
             router.back();
-            setUser({ ...user });
+            setUser(firebaseAuth.currentUser);
             setNewUserName('');
         }).catch((err) => {
             const message = err instanceof Error ? err.message : 'Unknown error occurred';
             showAlert({
-                title: t('signup:errorOnSignup'),
+                title: t('changeUserName:errorOnUsernameChange'),
                 message,
                 alertType: 'error',
             });
@@ -148,7 +150,7 @@ export default function ChangePassword() {
                 <Button
                     name="change-username"
                     title={loading
-                        ? t('changeUserName:Updating Username')
+                        ? t('changeUserName:updatingUsername')
                         : t('changeUserName:confirmUserNameChange')}
                     disabled={
                         loading

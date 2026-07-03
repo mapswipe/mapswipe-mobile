@@ -46,7 +46,12 @@ function TutorialEndPage(props: Props) {
         createStyles,
     );
     const handleStartMapping = useCallback(() => {
-        router.replace({
+        // Pop back to the project page that's already in the stack instead of
+        // pushing/replacing a new one. Using replace here left the original
+        // project page below the tutorial, so the user had to press back twice
+        // to reach the project listing. dismissTo falls back to replace when the
+        // project page isn't in the stack (e.g. a deep link into the tutorial).
+        router.dismissTo({
             pathname: '/project/[id]',
             params: { id: projectId },
         });

@@ -49,6 +49,16 @@ const createStyles = () => StyleSheet.create({
     },
     tileGridWrapper: {
         flex: 1,
+        overflow: 'hidden',
+    },
+    // Give the hide button its own centered line below the map so it doesn't
+    // sit flush against (and graze) the tiles.
+    hideButtonRow: {
+        alignItems: 'center',
+        paddingVertical: 6,
+    },
+    hideButtonInner: {
+        alignItems: 'center',
     },
 });
 
@@ -84,6 +94,9 @@ function TileGridMappingSession(props: Props) {
     // Height of the scroll viewport, so the completion page can fill it and
     // anchor its action buttons to the bottom.
     const [viewportHeight, setViewportHeight] = useState(0);
+    // Current page index (each page = two tile columns), used to drive the
+    // progress bar so it advances cleanly per page rather than per column.
+    const [currentPage, setCurrentPage] = useState(0);
 
     const styles = useThemedStyles(createStyles);
 
@@ -202,7 +215,7 @@ function TileGridMappingSession(props: Props) {
     const contentPages = groupedTasks.length === 0
         ? 0
         : Math.ceil(columnsWidth / pageWidth);
-    const completionLeftFiller = contentPages * pageWidth - columnsWidth;
+    const completionLeftFiller = Math.round(contentPages * pageWidth - columnsWidth);
     const pageSnapOffsets = useMemo(
         () => Array.from({ length: contentPages + 1 }, (_, i) => i * pageWidth),
         [contentPages, pageWidth],
@@ -213,6 +226,7 @@ function TileGridMappingSession(props: Props) {
         const pageIndex = Math.round(offsetX / pageWidth);
         const itemIndex = Math.min(pageIndex * 2, groupedTasks.length - 1);
         setCurrentTaskIndex(itemIndex);
+        setCurrentPage(pageIndex);
         const onCompletionPage = pageIndex >= contentPages;
         setAtCompletion(onCompletionPage);
         if (onCompletionPage) {
@@ -342,12 +356,17 @@ function TileGridMappingSession(props: Props) {
                     ListFooterComponent={groupedTasks.length > 0 ? (
                         <View
                             style={StyleSheet.flatten({
-                                width: pageWidth,
-                                marginLeft: completionLeftFiller,
+                                flexDirection: 'row',
+                                width: completionLeftFiller + pageWidth,
                                 height: viewportHeight || undefined,
                             })}
                         >
-                            {completionPage}
+                            {completionLeftFiller > 0 && (
+                                <View style={{ width: completionLeftFiller }} />
+                            )}
+                            <View style={{ width: pageWidth }}>
+                                {completionPage}
+                            </View>
                         </View>
                     ) : null}
                     horizontal
@@ -376,14 +395,17 @@ function TileGridMappingSession(props: Props) {
                             bottomPadding={40}
                         />
                     )}
-                    <HideTileSelectionButton
-                        handleHideTileSelectionPressIn={handleHideTilePressIn}
-                        handleHideTileSelectionPressOut={handleHideTilePressOut}
-                        isPressed={hideTilePressValue}
-                    />
+                    <View style={styles.hideButtonRow}>
+                        <HideTileSelectionButton
+                            handleHideTileSelectionPressIn={handleHideTilePressIn}
+                            handleHideTileSelectionPressOut={handleHideTilePressOut}
+                            isPressed={hideTilePressValue}
+                            containerStyle={styles.hideButtonInner}
+                        />
+                    </View>
                     <ProgressBar
-                        currentValue={Math.floor(currentTaskIndex / 2) + 1}
-                        totalValue={Math.ceil(groupedTasks.length / 2)}
+                        currentValue={Math.min(currentPage + 1, contentPages)}
+                        totalValue={contentPages}
                         colorVariant="brand"
                     />
                 </>

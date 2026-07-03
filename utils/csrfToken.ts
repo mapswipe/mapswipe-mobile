@@ -11,21 +11,34 @@ export async function fetchCsrfToken() {
             method: 'GET',
             credentials: 'include',
         });
-        if (response.ok) {
-            const match = document.cookie.match(/(MAPSWIPE-[\w-]+-CSRFTOKEN)=([^;]+)/);
-            if (match) {
-                const cookieName = match[1];
-                const csrfToken = match[2];
-                await AsyncStorage.setItem(CSRF_COOKIE_NAME_KEY, cookieName);
-                await AsyncStorage.setItem(CSRF_KEY, csrfToken);
-                return csrfToken;
-            }
+        if (!response.ok) {
+            return null;
+        }
+
+        // The CSRF cookie is readable from different places per platform:
+        // - Native (React Native): `Set-Cookie` IS exposed on the response
+        //   headers (RN doesn't apply the browser's forbidden-header rule),
+        //   but there is no `document`.
+        // - Web (browser): `Set-Cookie` is a forbidden response header (returns
+        //   null), but the browser stores the (non-HttpOnly) cookie and exposes
+        //   it via `document.cookie`.
+        // Try both so it works on web and native.
+        const setCookieHeader = response.headers.get('set-cookie');
+        const documentCookie = typeof document !== 'undefined' ? document.cookie : '';
+        const cookieString = setCookieHeader || documentCookie;
+
+        const match = cookieString.match(/(MAPSWIPE-[\w-]+-CSRFTOKEN)=([^;]+)/);
+        if (match) {
+            const [, cookieName, csrfToken] = match;
+            await AsyncStorage.setItem(CSRF_COOKIE_NAME_KEY, cookieName);
+            await AsyncStorage.setItem(CSRF_KEY, csrfToken);
+            return csrfToken;
         }
         return null;
     } catch (err) {
         // A failed CSRF fetch is expected and recoverable (offline, backend
-        // unreachable, or native where document.cookie is unavailable). Warn
-        // instead of error so it does not raise a red-box LogBox in dev.
+        // unreachable). Warn instead of error so it does not raise a red-box
+        // LogBox in dev.
         // eslint-disable-next-line no-console
         console.warn('Failed to fetch CSRF token', err);
         return null;

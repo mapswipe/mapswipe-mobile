@@ -3,8 +3,10 @@ import {
     useMemo,
 } from 'react';
 import {
+    type StyleProp,
     StyleSheet,
     View,
+    type ViewStyle,
 } from 'react-native';
 import {
     Camera,
@@ -31,6 +33,9 @@ interface Props {
     geoJson: GeoJSON.GeoJSON;
     tileServer: FbObjRasterTileServer;
     hideLines?: boolean;
+    // Applied to the tile container, e.g. `{ flex: 1 }` so the map fills a
+    // flex slot (the container otherwise sizes to content and can collapse).
+    style?: StyleProp<ViewStyle>;
 }
 
 const createStyles = () => StyleSheet.create({
@@ -50,6 +55,7 @@ function MapTile(props: Props) {
         geoJson,
         tileServer,
         hideLines = false,
+        style,
     } = props;
 
     const instanceId = useId();
@@ -77,7 +83,7 @@ function MapTile(props: Props) {
     }), [hideLines]);
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, style]}>
             <MapView
                 // FIXME: use pre-defined values
                 style={styles.mapView}

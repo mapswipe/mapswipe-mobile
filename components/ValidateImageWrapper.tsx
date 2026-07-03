@@ -1,11 +1,12 @@
 import {
     useCallback,
     useEffect,
+    useMemo,
+    useRef,
     useState,
 } from 'react';
 import {
     ActivityIndicator,
-    Image,
     LayoutChangeEvent,
     StyleSheet,
     Text,
@@ -21,32 +22,40 @@ import Animated, {
     useSharedValue,
 } from 'react-native-reanimated';
 import Svg, { Rect } from 'react-native-svg';
-
-import { SCREEN_WIDTH } from '@/constants/dimensions';
+import {
+    Image as ExpoImage,
+    type ImageLoadEventData,
+} from 'expo-image';
 
 import HideTileSelectionButton from './HideTileSelectionButton';
+
+// expo-image (memory+disk cache, fast decode) wrapped so the pinch-zoom
+// transform can animate it via reanimated.
+const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 
 const styles = StyleSheet.create({
     container: {
         flex: 2,
         justifyContent: 'center',
-        position: 'relative', // add this
+        position: 'relative',
         alignItems: 'center',
-        width: SCREEN_WIDTH,
-        backgroundColor: '#fff',
+        // Fill the slot rather than a hardcoded screen width — the tutorial slot
+        // is padded/narrower, and a fixed SCREEN_WIDTH overflowed it and pushed
+        // the centered hide button off-center.
+        width: '100%',
     },
     image: {
         width: '100%',
         height: '100%',
-        objectFit: 'contain',
-        resizeMode: 'contain',
     },
     loader: {
         position: 'absolute',
         zIndex: 1,
     },
     retryContainer: {
+        flex: 1,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     retryText: {
         color: 'white',
@@ -59,7 +68,9 @@ const styles = StyleSheet.create({
     hideButton: {
         position: 'absolute',
         bottom: 0,
-        alignSelf: 'center',
+        left: 0,
+        right: 0,
+        alignItems: 'center',
     },
 });
 
@@ -130,15 +141,41 @@ export default function ImageWrapper({
     const [error, setError] = useState(false);
     const [retryKey, setRetryKey] = useState(0);
     const [imageDimensions, setImageDimensions] = useState<ImageDimensions>();
+    // Once the image has loaded, a later (cache-served) reload must not re-show
+    // the spinner — its onLoadEnd often doesn't re-fire, leaving it stuck.
+    const loadedRef = useRef(false);
+
+    // Stable source so parent re-renders don't trigger a spurious reload.
+    const source = useMemo(() => ({ uri: item.url }), [item.url]);
 
     useEffect(() => {
         onImageLoadStart(itemIndex);
     }, [onImageLoadStart, itemIndex]);
 
     const handleLoadStart = useCallback(() => {
+        if (loadedRef.current) {
+            return;
+        }
         onImageLoadStart(itemIndex);
         setLoading(true);
     }, [onImageLoadStart, itemIndex]);
+
+    const handleLoad = useCallback((event: ImageLoadEventData) => {
+        loadedRef.current = true;
+        setLoading(false);
+        onImageLoadEnd(itemIndex);
+
+        // expo-image's load event carries the natural dimensions, so we no
+        // longer need a separate Image.getSize() fetch for the bbox math.
+        const { width, height } = event.source;
+        if (width && height) {
+            setImageDimensions((prev) => ({
+                ...prev,
+                naturalWidth: width,
+                naturalHeight: height,
+            }));
+        }
+    }, [onImageLoadEnd, itemIndex]);
 
     const handleError = useCallback(() => {
         setLoading(false);
@@ -146,25 +183,17 @@ export default function ImageWrapper({
     }, []);
 
     const handleRetry = useCallback(() => {
+        loadedRef.current = false;
         setLoading(true);
         setError(false);
         setRetryKey((k) => k + 1);
     }, []);
 
     const handleLoadEnd = useCallback(() => {
+        loadedRef.current = true;
         onImageLoadEnd(itemIndex);
         setLoading(false);
-
-        if (item.url) {
-            Image.getSize(item.url, (width, height) => {
-                setImageDimensions((prev) => ({
-                    ...prev,
-                    naturalWidth: width,
-                    naturalHeight: height,
-                }));
-            });
-        }
-    }, [item.url, onImageLoadEnd, itemIndex]);
+    }, [onImageLoadEnd, itemIndex]);
 
     const handleLayout = useCallback((event: LayoutChangeEvent) => {
         const { width, height } = event.nativeEvent.layout;
@@ -241,14 +270,19 @@ export default function ImageWrapper({
                     />
                 )}
                 {!error ? (
-                    <Animated.Image
+                    <AnimatedImage
                         key={retryKey}
-                        source={{ uri: item.url }}
+                        source={source}
                         style={[styles.image, animatedStyle]}
+                        contentFit="contain"
+                        cachePolicy="memory-disk"
+                        // No fade, matching the previous Image's fadeDuration={0}
+                        // — keeps the loading behaviour identical.
+                        transition={0}
                         onLoadStart={handleLoadStart}
+                        onLoad={handleLoad}
                         onLoadEnd={handleLoadEnd}
                         onError={handleError}
-                        fadeDuration={0}
                     />
                 ) : (
                     <View style={styles.retryContainer}>
@@ -258,7 +292,7 @@ export default function ImageWrapper({
                         </TouchableOpacity>
                     </View>
                 )}
-                {bboxForBox && !hideShapeSource && (
+                {!error && bboxForBox && !hideShapeSource && (
                     <Animated.View
                         style={[StyleSheet.absoluteFill, animatedStyle, styles.svg]}
                         pointerEvents="none"
@@ -280,14 +314,16 @@ export default function ImageWrapper({
                         </Svg>
                     </Animated.View>
                 )}
-                <View style={styles.hideButton}>
-                    <HideTileSelectionButton
-                        isPressed={hideShapeSource}
-                        handleHideTileSelectionPressIn={handleHideTilePressIn}
-                        handleHideTileSelectionPressOut={handleHideTilePressOut}
-                        size="large"
-                    />
-                </View>
+                {!error && (
+                    <View style={styles.hideButton}>
+                        <HideTileSelectionButton
+                            isPressed={hideShapeSource}
+                            handleHideTileSelectionPressIn={handleHideTilePressIn}
+                            handleHideTileSelectionPressOut={handleHideTilePressOut}
+                            size="large"
+                        />
+                    </View>
+                )}
             </View>
         </GestureDetector>
     );

@@ -2,6 +2,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,6 +15,7 @@ import {
     listToMap,
 } from '@togglecorp/fujs';
 
+import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import ImageTile from '@/components/ImageTile';
 import Text from '@/components/Text';
 import { TutorialSessionProps } from '@/components/tutorial/types';
@@ -26,9 +28,15 @@ import {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        minHeight: 0,
+    },
+    pairsArea: {
+        flex: 1,
+        minHeight: 0,
         alignItems: 'center',
         justifyContent: 'center',
         gap: SPACING_3XS,
+        overflow: 'hidden',
     },
     pair: {
         alignItems: 'center',
@@ -67,6 +75,10 @@ function CompareTutorialSession(props: TutorialSessionProps) {
 
     const { t } = useTranslation('tutorialScreen');
     const { width: pageWidth, height: pageHeight } = useWindowDimensions();
+    const [hideTilePressValue, setHideTilePressValue] = useState(false);
+    // Measured size of the pair slot, so the before/after tiles fit the space
+    // available rather than a fixed fraction of the window.
+    const [pairsSize, setPairsSize] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
         if (tasks.length === 0) {
@@ -85,9 +97,13 @@ function CompareTutorialSession(props: TutorialSessionProps) {
         });
     }, [tasks, onResultsChange]);
 
-    const tileWidth = useMemo(() => (
-        Math.max(100, Math.min(pageWidth - 60, pageHeight / 2 - 180))
-    ), [pageWidth, pageHeight]);
+    const tileWidth = useMemo(() => {
+        const availWidth = pairsSize.width || pageWidth;
+        const availHeight = pairsSize.height || (pageHeight - 300);
+        // Two tiles stacked, plus the Before/After labels and gaps between them.
+        const verticalBudget = (availHeight - 64) / 2;
+        return Math.max(80, Math.min(availWidth - 24, verticalBudget));
+    }, [pairsSize, pageWidth, pageHeight]);
 
     const handleTilePress = useCallback((taskId: string) => {
         if (disabled) {
@@ -102,40 +118,58 @@ function CompareTutorialSession(props: TutorialSessionProps) {
         });
     }, [disabled, onResultsChange]);
 
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
+    }, []);
+
     return (
         <View style={styles.container}>
-            {tasks.map((task) => {
-                if (!('url' in task) || !('urlB' in task) || !task.url || !task.urlB) {
-                    return null;
-                }
-                const result = results[task.taskId];
-                const selectedOption = typeof result === 'number'
-                    ? optionsByValue[result]
-                    : undefined;
+            <View
+                style={styles.pairsArea}
+                onLayout={(event) => setPairsSize(event.nativeEvent.layout)}
+            >
+                {tasks.map((task) => {
+                    if (!('url' in task) || !('urlB' in task) || !task.url || !task.urlB) {
+                        return null;
+                    }
+                    const result = results[task.taskId];
+                    const selectedOption = typeof result === 'number'
+                        ? optionsByValue[result]
+                        : undefined;
 
-                return (
-                    <View key={task.taskId} style={styles.pair}>
-                        <Text colorVariant="brand">{t('compareBefore')}</Text>
-                        <ImageTile
-                            taskId={task.taskId}
-                            url={task.url}
-                            urlB={undefined}
-                            width={tileWidth}
-                            tintColor={selectedOption?.color}
-                            onPress={handleTilePress}
-                        />
-                        <Text colorVariant="brand">{t('compareAfter')}</Text>
-                        <ImageTile
-                            taskId={task.taskId}
-                            url={task.urlB}
-                            urlB={undefined}
-                            width={tileWidth}
-                            tintColor={selectedOption?.color}
-                            onPress={handleTilePress}
-                        />
-                    </View>
-                );
-            })}
+                    return (
+                        <View key={task.taskId} style={styles.pair}>
+                            <Text colorVariant="brand">{t('compareBefore')}</Text>
+                            <ImageTile
+                                taskId={task.taskId}
+                                url={task.url}
+                                urlB={undefined}
+                                width={tileWidth}
+                                tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
+                                onPress={handleTilePress}
+                            />
+                            <Text colorVariant="brand">{t('compareAfter')}</Text>
+                            <ImageTile
+                                taskId={task.taskId}
+                                url={task.urlB}
+                                urlB={undefined}
+                                width={tileWidth}
+                                tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
+                                onPress={handleTilePress}
+                            />
+                        </View>
+                    );
+                })}
+            </View>
+            <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                handleHideTileSelectionPressOut={handleHideTilePressOut}
+                isPressed={hideTilePressValue}
+            />
         </View>
     );
 }

@@ -5,7 +5,10 @@ import {
     useRef,
     useState,
 } from 'react';
-import { StyleSheet } from 'react-native';
+import {
+    Platform,
+    StyleSheet,
+} from 'react-native';
 import {
     useLocalSearchParams,
     useRouter,
@@ -35,6 +38,8 @@ import ValidateImageMappingSession from '@/components/ValidateImageMappingSessio
 import ValidateMappingSession from '@/components/ValidateMappingSession';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
+import useHardwareBackHandler from '@/hooks/useHardwareBackHandler';
+import usePreventScreenRemove from '@/hooks/usePreventScreenRemove';
 import { firebaseRef } from '@/utils/firebase';
 import {
     getAnswerCounts,
@@ -64,7 +69,6 @@ function MapTaskGroup() {
         taskGroupId,
     } = useLocalSearchParams<{id: string; taskGroupId: string;}>();
     const router = useRouter();
-
     const startTimestampRef = useRef<string | undefined>(undefined);
     const endTimestampRef = useRef<string | undefined>(undefined);
     const [modal, setModal] = useState<boolean>(false);
@@ -204,17 +208,30 @@ function MapTaskGroup() {
         />
     );
 
-    const handleContinueModalOpen = useCallback(() => {
-        setContinueModal(!continueModal);
-    }, [continueModal]);
+    const openContinueModal = useCallback(() => {
+        setContinueModal(true);
+    }, []);
 
-    const handleBack = useCallback(() => {
-        router.back();
-    }, [router]);
+    const closeContinueModal = useCallback(() => {
+        setContinueModal(false);
+    }, []);
 
-    // Rendered as the final swipeable page inside the scroll-completion
-    // sessions (FIND / COMPLETENESS / COMPARE / LOCATE_FEATURES). It omits the
-    // "Go back" button because swiping back to the tasks replaces it.
+    // Confirm before leaving the mapping session so progress isn't lost.
+    // Each back path opens the same "Stop Mapping?" modal:
+    // - header back button -> Page's onBackPress (all platforms)
+    // - iOS swipe-back gesture -> usePreventScreenRemove (intercepts the gesture)
+    // - Android hardware back -> useHardwareBackHandler
+    const { leave } = usePreventScreenRemove({
+        enabled: Platform.OS === 'ios',
+        onAttemptLeave: openContinueModal,
+    });
+    useHardwareBackHandler({ onBackPress: openContinueModal });
+
+    const handleLeaveMapping = useCallback(() => {
+        setContinueModal(false);
+        leave();
+    }, [leave]);
+
     const completionPage = (
         <SessionOutro
             resultSyncStatus={resultSyncStatus}
@@ -236,7 +253,7 @@ function MapTaskGroup() {
             showBackButton
             headerTitleAlign="center"
             headerRight={infoButton}
-            onClickBackButton={handleContinueModalOpen}
+            onBackPress={openContinueModal}
         >
             {completed ? (
                 <SessionOutro
@@ -369,14 +386,14 @@ function MapTaskGroup() {
                         name="continue-mapping"
                         spacing="xs"
                         title="Continue mapping"
-                        onPress={handleContinueModalOpen}
+                        onPress={closeContinueModal}
                     />
                     <Button
                         name="back-to-menu"
                         colorVariant="primaryRed"
                         spacing="xs"
                         title="Back to Project"
-                        onPress={handleBack}
+                        onPress={handleLeaveMapping}
                     />
                 </BlockListView>
             </Modal>

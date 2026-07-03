@@ -36,13 +36,22 @@ import {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
+        minHeight: 0,
         gap: 12,
     },
     controls: {
         flexGrow: 0,
+        flexShrink: 0,
         alignSelf: 'flex-end',
+    },
+    // The tile fills this slot; minHeight:0 + overflow:hidden keep it from
+    // overflowing the controls/Check Answer button when the window is short.
+    tileSlot: {
+        flex: 1,
+        minHeight: 0,
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });
 
@@ -73,6 +82,7 @@ function LocateTutorialSession(props: TutorialSessionProps) {
 
     const [mode, setMode] = useState<'mapping' | 'selection'>('mapping');
     const [selectedCellsByTile, setSelectedCellsByTile] = useState<Record<string, number[]>>({});
+    const [tileSlotSize, setTileSlotSize] = useState({ width: 0, height: 0 });
 
     const options = useMemo<ResultOption[]>(() => {
         if (projectCustomOptions && projectCustomOptions.length > 0) {
@@ -229,10 +239,10 @@ function LocateTutorialSession(props: TutorialSessionProps) {
     }, [selectedCellsByTile, onResultsChange, cellsPerTile, defaultCellValue, getNextValue]);
 
     const tileWidth = useMemo(() => {
-        const horizontalBudget = pageWidth - 24;
-        const verticalBudget = pageHeight * 0.6;
-        return Math.max(160, Math.min(horizontalBudget, verticalBudget));
-    }, [pageWidth, pageHeight]);
+        const availWidth = tileSlotSize.width || (pageWidth - 24);
+        const availHeight = tileSlotSize.height || (pageHeight * 0.6);
+        return Math.max(120, Math.min(availWidth, availHeight));
+    }, [tileSlotSize, pageWidth, pageHeight]);
 
     return (
         <View style={styles.container}>
@@ -274,46 +284,51 @@ function LocateTutorialSession(props: TutorialSessionProps) {
                     )}
                 </InlineListView>
             )}
-            {tileGroups.map((group) => {
-                if (isNotDefined(group.url)) {
-                    return null;
-                }
-                const existing = results[group.tileKey];
-                const baseCells = Array.isArray(existing) ? existing : [];
-                const cellValues: number[] = [];
-                for (let i = 0; i < cellsPerTile; i += 1) {
-                    cellValues.push(baseCells[i] ?? defaultCellValue);
-                }
-                const validCells = new Set<number>();
-                group.tasks.forEach((task) => {
-                    const idx = task.taskPartitionIndex;
-                    if (idx >= 0 && idx < cellsPerTile) {
-                        validCells.add(idx);
+            <View
+                style={styles.tileSlot}
+                onLayout={(event) => setTileSlotSize(event.nativeEvent.layout)}
+            >
+                {tileGroups.map((group) => {
+                    if (isNotDefined(group.url)) {
+                        return null;
                     }
-                });
-                const selectedCells = selectedCellsByTile[group.tileKey] ?? [];
-                return (
-                    <LocateTile
-                        key={group.tileKey}
-                        url={group.url}
-                        width={tileWidth}
-                        gridSize={gridSize}
-                        cellValues={cellValues}
-                        optionsByValue={optionsByValue}
-                        selectedCells={selectedCells}
-                        selectionMode={effectiveSelectionMode}
-                        isCellInteractive={(cellIndex) => (
-                            !disabled && validCells.has(cellIndex)
-                        )}
-                        onCellPress={(cellIndex) => (
-                            handleCellPress(group.tileKey, cellIndex)
-                        )}
-                        onCellSelect={(cellIndex, action) => (
-                            handleCellSelect(group.tileKey, cellIndex, action)
-                        )}
-                    />
-                );
-            })}
+                    const existing = results[group.tileKey];
+                    const baseCells = Array.isArray(existing) ? existing : [];
+                    const cellValues: number[] = [];
+                    for (let i = 0; i < cellsPerTile; i += 1) {
+                        cellValues.push(baseCells[i] ?? defaultCellValue);
+                    }
+                    const validCells = new Set<number>();
+                    group.tasks.forEach((task) => {
+                        const idx = task.taskPartitionIndex;
+                        if (idx >= 0 && idx < cellsPerTile) {
+                            validCells.add(idx);
+                        }
+                    });
+                    const selectedCells = selectedCellsByTile[group.tileKey] ?? [];
+                    return (
+                        <LocateTile
+                            key={group.tileKey}
+                            url={group.url}
+                            width={tileWidth}
+                            gridSize={gridSize}
+                            cellValues={cellValues}
+                            optionsByValue={optionsByValue}
+                            selectedCells={selectedCells}
+                            selectionMode={effectiveSelectionMode}
+                            isCellInteractive={(cellIndex) => (
+                                !disabled && validCells.has(cellIndex)
+                            )}
+                            onCellPress={(cellIndex) => (
+                                handleCellPress(group.tileKey, cellIndex)
+                            )}
+                            onCellSelect={(cellIndex, action) => (
+                                handleCellSelect(group.tileKey, cellIndex, action)
+                            )}
+                        />
+                    );
+                })}
+            </View>
         </View>
     );
 }

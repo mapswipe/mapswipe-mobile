@@ -89,6 +89,12 @@ function Tutorial() {
         if (!tutorialDetails) {
             return [];
         }
+        // Task `screen` values aren't guaranteed to be sequential 0/1-based
+        // indices — some tutorials number them arbitrarily (e.g. 86–90). Map the
+        // i-th scenario to the i-th screen group in ascending screen order.
+        const sortedScreenKeys = Object.keys(tasksByScreen)
+            .map(Number)
+            .sort((a, b) => a - b);
         const list: TutorialStage[] = [];
         list.push({ type: 'intro', tutorial: tutorialDetails });
         (tutorialDetails.informationPages ?? []).forEach((page) => {
@@ -99,7 +105,7 @@ function Tutorial() {
                 type: 'scenario',
                 screen,
                 screenIndex: i,
-                tasks: tasksByScreen[i + 1] ?? tasksByScreen[i] ?? [],
+                tasks: tasksByScreen[sortedScreenKeys[i]] ?? [],
             });
         });
         list.push({ type: 'outro', tutorial: tutorialDetails });

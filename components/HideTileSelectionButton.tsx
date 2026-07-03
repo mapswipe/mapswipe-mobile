@@ -1,5 +1,8 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import {
+    StyleSheet,
+    type ViewStyle,
+} from 'react-native';
 
 import { AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
@@ -32,6 +35,9 @@ interface HideTileSelectionButtonProps {
     handleHideTileSelectionPressOut? : () => void;
     size?: sizeVariant;
     isPressed: boolean;
+    // Replaces the default container (positioning/padding) — used to place the
+    // button as an absolute overlay, e.g. bottom-left of a map.
+    containerStyle?: ViewStyle | ViewStyle[];
 }
 
 function HideTileSelectionButton(props:HideTileSelectionButtonProps) {
@@ -40,6 +46,7 @@ function HideTileSelectionButton(props:HideTileSelectionButtonProps) {
         handleHideTileSelectionPressOut,
         isPressed,
         size = 'small',
+        containerStyle,
     } = props;
 
     const styles = useThemedStyles(createStyles, {
@@ -51,7 +58,7 @@ function HideTileSelectionButton(props:HideTileSelectionButtonProps) {
         <IconButton
             onPressIn={handleHideTileSelectionPressIn}
             onPressOut={handleHideTileSelectionPressOut}
-            stylesContainer={styles.container}
+            stylesContainer={containerStyle ?? styles.container}
             stylesButton={styles.button}
             iconName="eye-closed"
             name="hide"

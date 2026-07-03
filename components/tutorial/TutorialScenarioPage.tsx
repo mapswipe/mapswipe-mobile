@@ -27,6 +27,7 @@ import {
     PROJECT_TYPE_FIND,
     PROJECT_TYPE_LOCATE_FEATURES,
     PROJECT_TYPE_VALIDATE,
+    PROJECT_TYPE_VALIDATE_IMAGE,
     Results,
 } from '@/utils/types';
 
@@ -36,16 +37,22 @@ import ScenarioFeedback from './ScenarioFeedback';
 import TileGridTutorialSession from './TileGridTutorialSession';
 import { ScenarioState } from './types';
 import UnsupportedTutorialSession from './UnsupportedTutorialSession';
+import ValidateImageTutorialSession from './ValidateImageTutorialSession';
 import ValidateTutorialSession from './ValidateTutorialSession';
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        minHeight: 0,
         padding: SPACING_XS,
         gap: SPACING_2XS,
     },
+    // minHeight:0 lets the slot (and the map inside it) shrink to the space
+    // available, so the session's own buttons and the Check Answer button below
+    // stay within the viewport instead of being pushed off the bottom.
     sessionSlot: {
         flex: 1,
+        minHeight: 0,
     },
 });
 
@@ -139,6 +146,19 @@ function TutorialScenarioPage(props: Props) {
                 />
             );
             break;
+
+        case PROJECT_TYPE_VALIDATE_IMAGE:
+            session = (
+                <ValidateImageTutorialSession
+                    tutorial={tutorial}
+                    tasks={tasks}
+                    results={results}
+                    onResultsChange={handleResultsChange}
+                    disabled={disabled}
+                />
+            );
+            break;
+
         case PROJECT_TYPE_VALIDATE:
             session = (
                 <ValidateTutorialSession

@@ -105,7 +105,10 @@ function Profile() {
         { data: userStatsData, fetching: loadingUserStats },
         refetchUserStats,
     ] = useUserStatsQuery({
-        variables: { firebaseId: user?.uid || '' },
+        variables: { firebaseId: user?.uid ?? '' },
+        // Don't query with an empty id before auth resolves — an empty
+        // firebaseId returns "No ContributorUser matches the given query."
+        pause: !user?.uid,
     });
 
     const currentLanguage = useMemo(

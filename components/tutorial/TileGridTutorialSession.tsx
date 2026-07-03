@@ -2,6 +2,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useState,
 } from 'react';
 import {
     StyleSheet,
@@ -16,6 +17,7 @@ import {
     mapToList,
 } from '@togglecorp/fujs';
 
+import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import ImageTile from '@/components/ImageTile';
 import { TutorialSessionProps } from '@/components/tutorial/types';
 import { TileTutorialTask } from '@/utils/tutorial';
@@ -28,12 +30,26 @@ import {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        minHeight: 0,
+    },
+    gridArea: {
+        flex: 1,
+        minHeight: 0,
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
     },
     column: {},
     row: {
         flexDirection: 'row',
+    },
+    // Anchor the hide button to the bottom-right overlay of the grid area
+    // instead of letting it float at the container bottom (which left it
+    // misaligned below the vertically-centered grid).
+    hideButton: {
+        position: 'absolute',
+        bottom: 20,
+        right: 14,
     },
 });
 
@@ -68,6 +84,11 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
     } = props;
 
     const { width: pageWidth, height: pageHeight } = useWindowDimensions();
+    const [hideTilePressValue, setHideTilePressValue] = useState(false);
+    // Measured size of the grid slot, so tiles fit the space actually available
+    // (between the instruction banner and the Check Answer button) rather than a
+    // fixed fraction of the window — which overflowed and overlapped them.
+    const [gridSize, setGridSize] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
         if (tasks.length === 0) {
@@ -107,10 +128,12 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
     const numRows = groupedColumns[0]?.rows.length || 1;
 
     const tileWidth = useMemo(() => {
-        const horizontalBudget = (pageWidth - 24) / numCols;
-        const verticalBudget = (pageHeight * 0.65) / numRows;
-        return Math.max(80, Math.min(horizontalBudget, verticalBudget));
-    }, [pageWidth, pageHeight, numCols, numRows]);
+        const availWidth = gridSize.width || (pageWidth - 24);
+        const availHeight = gridSize.height || (pageHeight * 0.60);
+        const horizontalBudget = (availWidth - 8) / numCols;
+        const verticalBudget = availHeight / numRows;
+        return Math.max(60, Math.min(horizontalBudget, verticalBudget));
+    }, [gridSize, pageWidth, pageHeight, numCols, numRows]);
 
     const handleTilePress = useCallback((taskId: string) => {
         if (disabled) {
@@ -125,40 +148,59 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
         });
     }, [disabled, onResultsChange]);
 
+    const handleHideTilePressIn = useCallback(() => {
+        setHideTilePressValue(true);
+    }, []);
+
+    const handleHideTilePressOut = useCallback(() => {
+        setHideTilePressValue(false);
+    }, []);
+
     return (
         <View style={styles.container}>
-            <View style={styles.row}>
-                {groupedColumns.map((column) => (
-                    <View key={column.taskX} style={styles.column}>
-                        {column.rows.map((task) => {
-                            const result = results[task.taskId];
-                            const selectedOption = typeof result === 'number'
-                                ? optionsByValue[result]
-                                : undefined;
+            <View
+                style={styles.gridArea}
+                onLayout={(event) => setGridSize(event.nativeEvent.layout)}
+            >
+                <View style={styles.row}>
+                    {groupedColumns.map((column) => (
+                        <View key={column.taskX} style={styles.column}>
+                            {column.rows.map((task) => {
+                                const result = results[task.taskId];
+                                const selectedOption = typeof result === 'number'
+                                    ? optionsByValue[result]
+                                    : undefined;
 
-                            if (!task.url) {
-                                return null;
-                            }
+                                if (!task.url) {
+                                    return null;
+                                }
 
-                            return (
-                                <ImageTile
-                                    key={task.taskId}
-                                    taskId={task.taskId}
-                                    url={task.url}
-                                    urlB={
-                                        tutorial.projectType === PROJECT_TYPE_COMPLETENESS
-                                            ? task.urlB
-                                            : undefined
-                                    }
-                                    width={tileWidth}
-                                    tintColor={selectedOption?.color}
-                                    onPress={handleTilePress}
-                                />
-                            );
-                        })}
-                    </View>
-                ))}
+                                return (
+                                    <ImageTile
+                                        key={task.taskId}
+                                        taskId={task.taskId}
+                                        url={task.url}
+                                        urlB={
+                                            tutorial.projectType === PROJECT_TYPE_COMPLETENESS
+                                                ? task.urlB
+                                                : undefined
+                                        }
+                                        width={tileWidth}
+                                        tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
+                                        onPress={handleTilePress}
+                                    />
+                                );
+                            })}
+                        </View>
+                    ))}
+                </View>
             </View>
+            <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                handleHideTileSelectionPressOut={handleHideTilePressOut}
+                isPressed={hideTilePressValue}
+                containerStyle={styles.hideButton}
+            />
         </View>
     );
 }

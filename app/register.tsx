@@ -19,7 +19,6 @@ import {
     updateProfile,
 } from 'firebase/auth';
 import { update } from 'firebase/database';
-import { serverTimestamp } from 'firebase/firestore';
 
 import logo from '@/assets/images/icon.png';
 import BlockListView from '@/components/BlockListView';
@@ -145,7 +144,7 @@ function Register() {
                 await update(firebaseRef(dbPath), {
                     username,
                     usernameKey: username.toLowerCase(),
-                    created: serverTimestamp(),
+                    created: new Date().toISOString(),
                     groupContributionCount: 0,
                     projectContributionCount: 0,
                     taskContributionCount: 0,
