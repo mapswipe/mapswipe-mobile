@@ -27,8 +27,6 @@ import {
     type ImageLoadEventData,
 } from 'expo-image';
 
-import { SCREEN_WIDTH } from '@/constants/dimensions';
-
 import HideTileSelectionButton from './HideTileSelectionButton';
 
 // expo-image (memory+disk cache, fast decode) wrapped so the pinch-zoom
@@ -41,7 +39,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         position: 'relative',
         alignItems: 'center',
-        width: SCREEN_WIDTH,
+        // Fill the slot rather than a hardcoded screen width — the tutorial slot
+        // is padded/narrower, and a fixed SCREEN_WIDTH overflowed it and pushed
+        // the centered hide button off-center.
+        width: '100%',
     },
     image: {
         width: '100%',

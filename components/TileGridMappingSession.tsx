@@ -51,6 +51,15 @@ const createStyles = () => StyleSheet.create({
         flex: 1,
         overflow: 'hidden',
     },
+    // Give the hide button its own centered line below the map so it doesn't
+    // sit flush against (and graze) the tiles.
+    hideButtonRow: {
+        alignItems: 'center',
+        paddingVertical: 6,
+    },
+    hideButtonInner: {
+        alignItems: 'center',
+    },
 });
 
 const VIEWABILITY_CONFIG = {
@@ -386,11 +395,14 @@ function TileGridMappingSession(props: Props) {
                             bottomPadding={40}
                         />
                     )}
-                    <HideTileSelectionButton
-                        handleHideTileSelectionPressIn={handleHideTilePressIn}
-                        handleHideTileSelectionPressOut={handleHideTilePressOut}
-                        isPressed={hideTilePressValue}
-                    />
+                    <View style={styles.hideButtonRow}>
+                        <HideTileSelectionButton
+                            handleHideTileSelectionPressIn={handleHideTilePressIn}
+                            handleHideTileSelectionPressOut={handleHideTilePressOut}
+                            isPressed={hideTilePressValue}
+                            containerStyle={styles.hideButtonInner}
+                        />
+                    </View>
                     <ProgressBar
                         currentValue={Math.min(currentPage + 1, contentPages)}
                         totalValue={contentPages}
