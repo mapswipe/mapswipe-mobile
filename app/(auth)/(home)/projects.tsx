@@ -14,6 +14,7 @@ import {
     query,
 } from 'firebase/database';
 
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 import BlockListView from '@/components/BlockListView';
 import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
@@ -366,6 +367,7 @@ function Projects() {
                 contentContainerStyle={styles.projectsContent}
                 ListHeaderComponent={(
                     <BlockListView style={styles.featuredProjectsContent}>
+                        <AnnouncementBanner />
                         {featuredProjects.map((project) => (
                             <ProjectItem
                                 key={project.projectId}
