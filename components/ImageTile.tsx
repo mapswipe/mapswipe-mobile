@@ -1,4 +1,7 @@
-import { useCallback } from 'react';
+import {
+    useCallback,
+    useState,
+} from 'react';
 import {
     ImageBackground,
     Pressable,
@@ -8,8 +11,13 @@ import {
 import { Image } from 'expo-image';
 
 import Icon, { type IconName } from '@/components/Icon';
+import Modal from '@/components/Modal';
+import { SCREEN_WIDTH } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+
+// Enlarged tile shown in the long-press preview popup.
+const PREVIEW_SIZE = SCREEN_WIDTH - 90;
 
 const createStyles = (
     theme: AppTheme,
@@ -57,6 +65,16 @@ const createStyles = (
         alignItems: 'center',
         justifyContent: 'center',
     },
+    previewImage: {
+        width: PREVIEW_SIZE,
+        aspectRatio: 1,
+        alignSelf: 'center',
+    },
+    previewImageB: {
+        width: PREVIEW_SIZE,
+        aspectRatio: 1,
+        opacity: 0.7,
+    },
 });
 
 interface Props<TASK_ID> {
@@ -84,45 +102,78 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
 
     const styles = useThemedStyles(createStyles, { width, tintColor });
 
+    const [previewVisible, setPreviewVisible] = useState(false);
+
     const handlePress = useCallback(() => {
         onPress(taskId);
     }, [taskId, onPress]);
 
+    const handleLongPress = useCallback(() => {
+        setPreviewVisible(true);
+    }, []);
+
+    const handleClosePreview = useCallback(() => {
+        setPreviewVisible(false);
+    }, []);
+
     return (
-        <Pressable
-            onPress={handlePress}
-            style={styles.imageTile}
-        >
-            <ImageBackground
-                source={{ uri: url }}
-                style={styles.image}
+        <>
+            <Pressable
+                onPress={handlePress}
+                onLongPress={handleLongPress}
+                style={styles.imageTile}
             >
-                {urlB && (
-                    <Image
-                        source={urlB}
-                        style={styles.imageB}
-                    />
-                )}
-                <View
-                    style={styles.view}
-                />
-                {accessibilityBadgeIconName && accessibilityBadgeColor && (
-                    <View
-                        style={[
-                            styles.accessibilityBadge,
-                            { backgroundColor: accessibilityBadgeColor },
-                        ]}
-                    >
-                        <Icon
-                            name={accessibilityBadgeIconName}
-                            color="#ffffff"
-                            size={14}
-                            weight="bold"
+                <ImageBackground
+                    source={{ uri: url }}
+                    style={styles.image}
+                >
+                    {urlB && (
+                        <Image
+                            source={urlB}
+                            style={styles.imageB}
                         />
-                    </View>
-                )}
-            </ImageBackground>
-        </Pressable>
+                    )}
+                    <View
+                        style={styles.view}
+                    />
+                    {accessibilityBadgeIconName && accessibilityBadgeColor && (
+                        <View
+                            style={[
+                                styles.accessibilityBadge,
+                                { backgroundColor: accessibilityBadgeColor },
+                            ]}
+                        >
+                            <Icon
+                                name={accessibilityBadgeIconName}
+                                color="#ffffff"
+                                size={14}
+                                weight="bold"
+                            />
+                        </View>
+                    )}
+                </ImageBackground>
+            </Pressable>
+            {previewVisible && (
+                <Modal
+                    open="tile-preview"
+                    visible
+                    onClose={handleClosePreview}
+                    closeButtonName="Close"
+                >
+                    <ImageBackground
+                        source={{ uri: url }}
+                        style={styles.previewImage}
+                    >
+                        {urlB && (
+                            <Image
+                                source={urlB}
+                                style={styles.previewImageB}
+                            />
+                        )}
+                    </ImageBackground>
+                </Modal>
+            )}
+        </>
     );
 }
 

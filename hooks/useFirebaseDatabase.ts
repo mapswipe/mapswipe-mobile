@@ -19,6 +19,7 @@ function useFirebaseDatabase<DATA = unknown>(props: Props) {
 
     const [pending, setPending] = React.useState(!skip);
     const [data, setData] = React.useState<DATA>();
+    const [error, setError] = React.useState<Error>();
 
     React.useEffect(() => {
         if (skip || isNotDefined(query)) {
@@ -26,8 +27,10 @@ function useFirebaseDatabase<DATA = unknown>(props: Props) {
         }
 
         setPending(true);
+        setError(undefined);
         const handleQueryDone = (snapshot: DataSnapshot) => {
             setPending(false);
+            setError(undefined);
 
             if (!snapshot.exists()) {
                 setData(undefined);
@@ -37,10 +40,11 @@ function useFirebaseDatabase<DATA = unknown>(props: Props) {
             setData(snapshot.val());
         };
 
-        const handleQueryError = (error: unknown) => {
+        const handleQueryError = (queryError: Error) => {
             // eslint-disable-next-line no-console
-            console.error(error);
+            console.error(queryError);
             setPending(false);
+            setError(queryError);
         };
 
         const unsubscribe = onValue(query, handleQueryDone, handleQueryError);
@@ -54,7 +58,8 @@ function useFirebaseDatabase<DATA = unknown>(props: Props) {
     const returnValue = React.useMemo(() => ({
         data,
         pending,
-    }), [data, pending]);
+        error,
+    }), [data, pending, error]);
 
     return returnValue;
 }
