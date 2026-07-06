@@ -1,0 +1,10 @@
+{
+  "3.0.0": {
+    "changes": [
+      "MapSwipe has been completely revamped with a brand new look and feel!",
+      "Faster and smoother mapping experience across all project types.",
+      "Improved tutorials and accessibility support.",
+      "Various performance improvements and bug fixes."
+    ]
+  }
+}

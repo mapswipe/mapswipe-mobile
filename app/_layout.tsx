@@ -22,6 +22,7 @@ import { isDefined } from '@togglecorp/fujs';
 import { User } from 'firebase/auth';
 import { Provider as UrqlProvider } from 'urql';
 
+import ChangeLogModal from '@/components/ChangeLogModal';
 import LoadingComponent from '@/components/Loader';
 import Page from '@/components/Page';
 import AuthContext, { AuthContextProps } from '@/contexts/auth';
@@ -211,6 +212,7 @@ export default function AppLayout() {
                         />
                     </Stack>
                     <Toast config={toastConfig} />
+                    <ChangeLogModal />
                 </AuthContext.Provider>
             </UrqlProvider>
         </GestureHandlerRootView>
