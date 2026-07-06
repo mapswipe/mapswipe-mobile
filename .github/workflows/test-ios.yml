@@ -1,0 +1,211 @@
+name: Test Build iOS
+
+# Staging-only build for TEST releases. Triggered by `test-*` tags created by
+# `deploy.sh` (test mode). No production stage, no manual approval — it exports
+# an app-store IPA and uploads it as a workflow artifact. Download it and upload
+# to TestFlight manually. Production releases use release-ios.yml (v*.*.*).
+
+on:
+  push:
+    tags:
+      - 'test-*'
+  workflow_dispatch:
+
+jobs:
+  build-staging:
+    name: Build and Deploy Staging IPA (test)
+    environment: staging
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    env:
+      EXPO_PUBLIC_COMMUNITY_DASHBOARD_URL : ${{ vars.EXPO_PUBLIC_COMMUNITY_DASHBOARD_URL }}
+      EXPO_PUBLIC_FIREBASE_API_KEY: ${{ vars.EXPO_PUBLIC_FIREBASE_API_KEY }}
+      EXPO_PUBLIC_FIREBASE_APP_ID: ${{ vars.EXPO_PUBLIC_FIREBASE_APP_ID }}
+      EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      EXPO_PUBLIC_FIREBASE_DATABASE_URL: ${{ vars.EXPO_PUBLIC_FIREBASE_DATABASE_URL }}
+      EXPO_PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
+      EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT: ${{ vars.EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT }}
+      EXPO_PUBLIC_GRAPHQL_ENDPOINT: ${{ vars.EXPO_PUBLIC_GRAPHQL_ENDPOINT }}
+      EXPO_PUBLIC_OSM_AUTH_URL: ${{ vars.EXPO_PUBLIC_OSM_AUTH_URL }}
+      EXPO_PUBLIC_REFERRER_ENDPOINT: ${{ vars.EXPO_PUBLIC_REFERRER_ENDPOINT }}
+
+    steps:
+      - name: Select Xcode with iOS 26 SDK
+        run: |
+          echo "Available Xcode versions:"
+          ls -d /Applications/Xcode*.app 2>/dev/null || true
+          # Pick the latest Xcode 26.x installed on the runner
+          XCODE_PATH=$(ls -d /Applications/Xcode_26.*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE_PATH" ]; then
+            echo "::error::No Xcode 26.x found on this runner"
+            exit 1
+          fi
+          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          echo "Selected: $XCODE_PATH"
+          xcodebuild -version
+          xcodebuild -showsdks | grep iphoneos
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create .env.local for codegen
+        run: |
+          echo "EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT=${{ vars.EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT }}" > .env.local
+
+      - name: Generate GraphQL types
+        run: pnpm generate:type
+
+      - name: Expo prebuild (staging)
+        run: APP_ENV=staging npx expo prebuild --platform ios --clean
+
+      - name: Detect Xcode workspace and scheme
+        id: xcode
+        run: |
+          WORKSPACE=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -1)
+          if [ -z "$WORKSPACE" ]; then
+            echo "::error::No .xcworkspace found in ios/"
+            exit 1
+          fi
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "workspace=$WORKSPACE" >> "$GITHUB_OUTPUT"
+          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
+          echo "Detected workspace: $WORKSPACE, scheme: $SCHEME"
+
+      - name: Import signing certificate and provisioning profile
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE_DEV }}
+        run: |
+          # ── Decode secrets to temp files ──
+          CERT_PATH="$RUNNER_TEMP/certificate.p12"
+          PROFILE_PATH="$RUNNER_TEMP/profile.mobileprovision"
+          echo "$APPLE_CERTIFICATE_P12" | base64 --decode > "$CERT_PATH"
+          echo "$APPLE_PROVISIONING_PROFILE" | base64 --decode > "$PROFILE_PATH"
+
+          # ── Create a dedicated temporary keychain ──
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 16)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # ── Import the .p12 certificate ──
+          security import "$CERT_PATH" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+
+          # Allow codesign to access the keychain non-interactively
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Make the temporary keychain findable by codesign
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+          security default-keychain -s "$KEYCHAIN_PATH"
+
+          # ── Install the provisioning profile ──
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
+          security cms -D -i "$PROFILE_PATH" > "$PROFILE_PLIST"
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" "$PROFILE_PLIST")
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print Name" "$PROFILE_PLIST")
+          cp "$PROFILE_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/"$PROFILE_UUID".mobileprovision
+
+          echo "Installed profile: $PROFILE_NAME ($PROFILE_UUID)"
+
+          # Persist values for later steps
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+
+      - name: Build Xcode archive
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcodebuild \
+            -workspace "${{ steps.xcode.outputs.workspace }}" \
+            -scheme "${{ steps.xcode.outputs.scheme }}" \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/MapSwipe.xcarchive" \
+            -destination "generic/platform=iOS" \
+            archive \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME"
+
+      - name: Export IPA
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          # Determine the bundle ID from the archive
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print ApplicationProperties:CFBundleIdentifier" \
+            "$RUNNER_TEMP/MapSwipe.xcarchive/Info.plist")
+          echo "Bundle ID: $BUNDLE_ID"
+
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+            "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+              <key>teamID</key>
+              <string>${APPLE_TEAM_ID}</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>${BUNDLE_ID}</key>
+                  <string>${PROFILE_NAME}</string>
+              </dict>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/MapSwipe.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/ipa"
+
+      - name: Get tag name
+        id: tag
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=test-$(date +%Y%m%d-%H%M%S)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapswipe-ios-${{ steps.tag.outputs.tag }}.ipa
+          path: ${{ runner.temp }}/ipa/*.ipa
+          if-no-files-found: error
+
+      - name: Cleanup keychain
+        if: always()
+        run: |
+          if [ -f "$KEYCHAIN_PATH" ]; then
+            security delete-keychain "$KEYCHAIN_PATH"
+          fi
