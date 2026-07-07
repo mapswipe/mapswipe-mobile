@@ -26,6 +26,8 @@ This application encompasses only the mobile Android & iOS clients. The role of 
 
 If you'd like to modify and improve MapSwipe, read through the following to get familiar with the project. Please also read [CONTRIBUTING](CONTRIBUTING.md).
 
+To cut a release, see [docs/deployment.md](docs/deployment.md).
+
 ## Technology Used
 
 1. The app is written entirely in [React Native](https://facebook.github.io/react-native/docs/getting-started.html)
