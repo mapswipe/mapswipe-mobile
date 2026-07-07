@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import {
     StyleSheet,
+    TouchableOpacity,
     useWindowDimensions,
     View,
 } from 'react-native';
@@ -19,12 +20,12 @@ import {
 import {
     CheckIcon,
     SelectionIcon,
-    SkipForwardIcon,
 } from 'phosphor-react-native';
 
 import Button from '@/components/Button';
 import InlineListView from '@/components/InlineListView';
 import LocateTile from '@/components/LocateTile';
+import Text from '@/components/Text';
 import { TutorialSessionProps } from '@/components/tutorial/types';
 import useTheme from '@/hooks/useTheme';
 import { TileTutorialTask } from '@/utils/tutorial';
@@ -52,6 +53,38 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    // Centered options bar shown in selection mode, mirroring the mapping
+    // session: pick an option to apply it to every selected cell.
+    optionsBarContainer: {
+        flexGrow: 0,
+        flexShrink: 0,
+        alignItems: 'center',
+    },
+    optionsBar: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 16,
+        borderWidth: 1,
+        maxWidth: '92%',
+    },
+    optionChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        borderRadius: 999,
+    },
+    optionDot: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
     },
 });
 
@@ -215,7 +248,9 @@ function LocateTutorialSession(props: TutorialSessionProps) {
         setSelectedCellsByTile({});
     }, []);
 
-    const handleCycleSelected = useCallback(() => {
+    // Applies the chosen option's value to every selected cell (across tiles),
+    // then clears the selection so the next batch can be selected fresh.
+    const handleApplyOptionToSelected = useCallback((value: number) => {
         const tilesWithSelection = Object.entries(selectedCellsByTile)
             .filter(([, cells]) => cells.length > 0);
         if (tilesWithSelection.length === 0) {
@@ -230,13 +265,20 @@ function LocateTutorialSession(props: TutorialSessionProps) {
                     : new Array<number>(cellsPerTile).fill(defaultCellValue);
                 const nextCells = [...prevCells];
                 cells.forEach((idx) => {
-                    nextCells[idx] = getNextValue(prevCells[idx]);
+                    nextCells[idx] = value;
                 });
                 next[tileKey] = nextCells;
             });
             return next;
         });
-    }, [selectedCellsByTile, onResultsChange, cellsPerTile, defaultCellValue, getNextValue]);
+        setSelectedCellsByTile({});
+    }, [selectedCellsByTile, onResultsChange, cellsPerTile, defaultCellValue]);
+
+    const selectedCount = useMemo(
+        () => Object.values(selectedCellsByTile)
+            .reduce((sum, cells) => sum + cells.length, 0),
+        [selectedCellsByTile],
+    );
 
     const tileWidth = useMemo(() => {
         const availWidth = tileSlotSize.width || (pageWidth - 24);
@@ -260,27 +302,16 @@ function LocateTutorialSession(props: TutorialSessionProps) {
                         </Button>
                     )}
                     {mode === 'selection' && (
-                        <>
-                            <Button
-                                name="cycle-selected"
-                                accessibilityLabel={t('cycleSelectedCells')}
-                                styleVariant="action"
-                                fullWidth={false}
-                                onPress={handleCycleSelected}
-                            >
-                                <SkipForwardIcon color={theme.textOnBrand} />
-                            </Button>
-                            <Button
-                                name="exit-selection"
-                                accessibilityLabel={t('exitSelectionMode')}
-                                colorVariant="primaryRed"
-                                styleVariant="action"
-                                fullWidth={false}
-                                onPress={handleExitSelectionMode}
-                            >
-                                <CheckIcon color={theme.textOnBrand} />
-                            </Button>
-                        </>
+                        <Button
+                            name="exit-selection"
+                            accessibilityLabel={t('exitSelectionMode')}
+                            colorVariant="primaryRed"
+                            styleVariant="action"
+                            fullWidth={false}
+                            onPress={handleExitSelectionMode}
+                        >
+                            <CheckIcon color={theme.textOnBrand} />
+                        </Button>
                     )}
                 </InlineListView>
             )}
@@ -329,6 +360,51 @@ function LocateTutorialSession(props: TutorialSessionProps) {
                     );
                 })}
             </View>
+            {effectiveSelectionMode && (
+                <View style={styles.optionsBarContainer} pointerEvents="box-none">
+                    <View
+                        style={StyleSheet.flatten([
+                            styles.optionsBar,
+                            {
+                                backgroundColor: theme.backgroundBrand,
+                                borderColor: theme.divider,
+                            },
+                        ])}
+                    >
+                        {options.map((option) => {
+                            const dotColor = option.color === 'transparent'
+                                ? theme.textMuted
+                                : option.color;
+                            return (
+                                <TouchableOpacity
+                                    key={option.value}
+                                    style={StyleSheet.flatten([
+                                        styles.optionChip,
+                                        {
+                                            backgroundColor: theme.inputBrandBackground,
+                                            opacity: selectedCount === 0 ? 0.5 : 1,
+                                        },
+                                    ])}
+                                    onPress={() => handleApplyOptionToSelected(option.value)}
+                                    disabled={selectedCount === 0}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={option.label}
+                                >
+                                    <View
+                                        style={StyleSheet.flatten([
+                                            styles.optionDot,
+                                            { backgroundColor: dotColor },
+                                        ])}
+                                    />
+                                    <Text variant="label" colorVariant="brand">
+                                        {option.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </View>
+                </View>
+            )}
         </View>
     );
 }

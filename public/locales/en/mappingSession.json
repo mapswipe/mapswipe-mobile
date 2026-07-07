@@ -18,6 +18,5 @@
   "discardSession": "Discard session",
   "discardSessionHelp": "Throw away your answers from this session and return to the home screen.",
   "enterSelectionMode": "Enter selection mode",
-  "cycleSelectedCells": "Cycle value of selected cells",
   "exitSelectionMode": "Exit selection mode"
 }

@@ -1,10 +1,14 @@
 import {
+    cloneElement,
     Dispatch,
+    isValidElement,
+    type ReactElement,
     type ReactNode,
     SetStateAction,
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import {
@@ -205,6 +209,8 @@ function TileGridMappingSession(props: Props) {
         );
     }, [tasks]);
 
+    const flatListRef = useRef<FlatList<typeof groupedTasks[number]>>(null);
+
     const tileWidth = Math.min(pageWidth / 2, pageHeight / 4);
 
     // The completion page is appended as a full-width page after the tile
@@ -233,6 +239,18 @@ function TileGridMappingSession(props: Props) {
             onReachedEnd?.();
         }
     }, [pageWidth, groupedTasks.length, contentPages, onReachedEnd]);
+
+    // "Go Back" on the outro scrolls back to the last task page so the user can
+    // revise their answers (the outro is the page after the final tasks).
+    const handleOutroGoBack = useCallback(() => {
+        if (contentPages === 0) {
+            return;
+        }
+        flatListRef.current?.scrollToOffset({
+            offset: (contentPages - 1) * pageWidth,
+            animated: true,
+        });
+    }, [contentPages, pageWidth]);
 
     const handleTilePress = useCallback((taskId: string) => {
         onResultsChange((prevResults) => {
@@ -312,6 +330,7 @@ function TileGridMappingSession(props: Props) {
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <View style={styles.tileGridWrapper} {...swipeResponder.panHandlers}>
                 <FlatList
+                    ref={flatListRef}
                     data={groupedTasks}
                     contentContainerStyle={styles.content}
                     keyExtractor={(groupedTaskItem) => groupedTaskItem.taskX}
@@ -365,7 +384,15 @@ function TileGridMappingSession(props: Props) {
                                 <View style={{ width: completionLeftFiller }} />
                             )}
                             <View style={{ width: pageWidth }}>
-                                {completionPage}
+                                {isValidElement(completionPage)
+                                    ? cloneElement(
+                                        completionPage as ReactElement<{ onGoBack?: () => void }>,
+                                        // handleOutroGoBack only reads the FlatList ref when
+                                        // invoked (on button press), never during render.
+                                        // eslint-disable-next-line react-hooks/refs
+                                        { onGoBack: handleOutroGoBack },
+                                    )
+                                    : completionPage}
                             </View>
                         </View>
                     ) : null}

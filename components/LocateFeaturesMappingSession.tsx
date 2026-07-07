@@ -1,10 +1,14 @@
 import {
+    cloneElement,
     Dispatch,
+    isValidElement,
+    type ReactElement,
     type ReactNode,
     SetStateAction,
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -192,6 +196,8 @@ function LocateFeaturesMappingSession(props: Props) {
         return buildTasks(projectDetails, groupDetails);
     }, [groupDetails, projectDetails]);
 
+    const flatListRef = useRef<FlatList<typeof tasks[number]>>(null);
+
     const options = useMemo<ResultOption[]>(() => {
         if (isDefined(projectDetails.customOptions) && projectDetails.customOptions.length > 0) {
             return projectDetails.customOptions.map((option) => ({
@@ -366,6 +372,18 @@ function LocateFeaturesMappingSession(props: Props) {
         }
     }, [pageWidth, tasks.length, onReachedEnd]);
 
+    // "Go Back" on the outro scrolls back to the last task so the user can
+    // revise their answer (the outro is the page after the final task).
+    const handleOutroGoBack = useCallback(() => {
+        if (tasks.length === 0) {
+            return;
+        }
+        flatListRef.current?.scrollToOffset({
+            offset: (tasks.length - 1) * pageWidth,
+            animated: true,
+        });
+    }, [tasks.length, pageWidth]);
+
     const tileWidth = Math.min(pageWidth - 20, pageHeight / 2);
     // The tile is vertically centered in the viewport, so its bottom edge sits
     // at (viewportHeight + tileHeight) / 2. Anchor the options bar just below
@@ -441,6 +459,7 @@ function LocateFeaturesMappingSession(props: Props) {
                 </InlineListView>
             </View>
             <FlatList
+                ref={flatListRef}
                 data={tasks}
                 style={styles.list}
                 contentContainerStyle={styles.content}
@@ -489,7 +508,15 @@ function LocateFeaturesMappingSession(props: Props) {
                             height: viewportHeight || undefined,
                         })}
                     >
-                        {completionPage}
+                        {isValidElement(completionPage)
+                            ? cloneElement(
+                                completionPage as ReactElement<{ onGoBack?: () => void }>,
+                                // handleOutroGoBack only reads the FlatList ref when
+                                // invoked (on button press), never during render.
+                                // eslint-disable-next-line react-hooks/refs
+                                { onGoBack: handleOutroGoBack },
+                            )
+                            : completionPage}
                     </View>
                 ) : null}
                 horizontal
