@@ -372,17 +372,16 @@ function LocateFeaturesMappingSession(props: Props) {
         }
     }, [pageWidth, tasks.length, onReachedEnd]);
 
-    // "Go Back" on the outro scrolls back to the last task so the user can
-    // revise their answer (the outro is the page after the final task).
+    // "Go Back" on the outro returns to the first task so the user reviews the
+    // group from the start. The jump is instant (not animated): animating all
+    // the way back from the completion page would render every intermediate
+    // page and is what made repeated go-backs unstable.
     const handleOutroGoBack = useCallback(() => {
-        if (tasks.length === 0) {
-            return;
-        }
         flatListRef.current?.scrollToOffset({
-            offset: (tasks.length - 1) * pageWidth,
-            animated: true,
+            offset: 0,
+            animated: false,
         });
-    }, [tasks.length, pageWidth]);
+    }, []);
 
     const tileWidth = Math.min(pageWidth - 20, pageHeight / 2);
     // The tile is vertically centered in the viewport, so its bottom edge sits

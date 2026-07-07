@@ -189,17 +189,16 @@ function CompareMappingSession(props: Props) {
 
     const flatListRef = useRef<FlatList<FbMappingTaskCompareCreateOnlyInput>>(null);
 
-    // "Go Back" on the outro scrolls back to the last task so the user can
-    // revise their answer (the outro is the page after the final task).
+    // "Go Back" on the outro returns to the first task so the user reviews the
+    // group from the start. The jump is instant (not animated): animating all
+    // the way back from the completion page would render every intermediate
+    // page and is what made repeated go-backs unstable.
     const handleOutroGoBack = useCallback(() => {
-        if (compressedTasks.length === 0) {
-            return;
-        }
         flatListRef.current?.scrollToOffset({
-            offset: (compressedTasks.length - 1) * pageWidth,
-            animated: true,
+            offset: 0,
+            animated: false,
         });
-    }, [compressedTasks.length, pageWidth]);
+    }, []);
 
     // FIXME: Discuss with Ankit on how to better define this
     const tileWidth = Math.min(pageWidth - 20, pageHeight / 2 - 120);

@@ -240,17 +240,16 @@ function TileGridMappingSession(props: Props) {
         }
     }, [pageWidth, groupedTasks.length, contentPages, onReachedEnd]);
 
-    // "Go Back" on the outro scrolls back to the last task page so the user can
-    // revise their answers (the outro is the page after the final tasks).
+    // "Go Back" on the outro returns to the first task so the user reviews the
+    // group from the start. The jump is instant (not animated): animating all
+    // the way back from the completion page would render every intermediate
+    // page and is what made repeated go-backs unstable.
     const handleOutroGoBack = useCallback(() => {
-        if (contentPages === 0) {
-            return;
-        }
         flatListRef.current?.scrollToOffset({
-            offset: (contentPages - 1) * pageWidth,
-            animated: true,
+            offset: 0,
+            animated: false,
         });
-    }, [contentPages, pageWidth]);
+    }, []);
 
     const handleTilePress = useCallback((taskId: string) => {
         onResultsChange((prevResults) => {
