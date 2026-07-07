@@ -174,6 +174,8 @@ function MapProjectIndex() {
                     </Text>
                     <Button
                         name="back-to-projects"
+                        colorVariant="primaryRed"
+                        styleVariant="filled"
                         title="Back to projects"
                         onPress={() => router.replace('/projects')}
                     />

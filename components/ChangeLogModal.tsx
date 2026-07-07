@@ -50,6 +50,13 @@ function ChangeLogModal() {
             return;
         }
         AsyncStorage.getItem(LAST_VIEWED_CHANGELOG_VERSION_KEY).then((value) => {
+            if (value === null) {
+                AsyncStorage.setItem(
+                    LAST_VIEWED_CHANGELOG_VERSION_KEY,
+                    currentVersion,
+                );
+                return;
+            }
             if (value !== currentVersion) {
                 setVisible(true);
             }
@@ -89,8 +96,9 @@ function ChangeLogModal() {
                     nestedScrollEnabled
                 >
                     <BlockListView spacing="xs">
-                        {currentVersionChanges.map((change) => (
-                            <View key={change} style={styles.changeRow}>
+                        {currentVersionChanges.map((change, index) => (
+                            // eslint-disable-next-line react/no-array-index-key
+                            <View key={index} style={styles.changeRow}>
                                 <Text>-</Text>
                                 <Text>{change}</Text>
                             </View>
