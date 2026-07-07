@@ -2,7 +2,7 @@
     "expo": {
         "name": "MapSwipe",
         "slug": "mapswipe-mobile",
-        "version": "3.0.0",
+        "version": "3.0.1",
         "orientation": "portrait",
         "icon": "./assets/images/icon.png",
         "scheme": "mapswipemobile",
@@ -11,7 +11,7 @@
         "userInterfaceStyle": "light",
         "ios": {
             "bundleIdentifier": "org.missingmaps.mapswipe",
-            "buildNumber": "13",
+            "buildNumber": "0",
             "backgroundColor": "#0D1949",
             "supportsTablet": true,
             "infoPlist": {

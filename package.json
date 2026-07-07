@@ -1,7 +1,7 @@
 {
     "name": "mapswipe-mobile",
     "main": "expo-router/entry",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "type": "module",
     "scripts": {
         "start": "expo start",
