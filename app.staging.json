@@ -26,6 +26,7 @@
             },
             "predictiveBackGestureEnabled": false,
             "package": "org.missingmaps.mapswipe.dev",
+            "versionCode": 3000100,
             "userInterfaceStyle": "light"
         },
         "web": {
