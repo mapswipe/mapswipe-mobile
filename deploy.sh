@@ -25,6 +25,7 @@ REMOTE="origin"
 DEVELOP_BRANCH="develop"
 VERSION_FILES=(package.json app.prod.json app.staging.json)
 BUILDNUMBER_FILES=(app.prod.json app.staging.json)
+VERSIONCODE_FILES=(app.prod.json app.staging.json)   # android.versionCode, derived from version+build
 
 # ── Pretty output ───────────────────────────────────────────────────────
 if [[ -t 1 ]]; then
@@ -154,6 +155,13 @@ read -rp "$(printf '%sNew build number%s [current: %s]: ' "$BOLD" "$RESET" "$cur
 [[ "$new_build" =~ ^[0-9]+$ ]] \
     || die "Build number must be a non-negative integer (got '$new_build')."
 
+# Android versionCode: one monotonic integer derived from version + build, using
+# the legacy MapSwipe scheme (major*1000000 + minor*10000 + patch*100 + build).
+# The 1e6 scale keeps 3.x codes above the old 2.x app already live on Play.
+# Assumes minor, patch and build each stay < 100 (10# forces base-10 on zeros).
+IFS=. read -r vc_major vc_minor vc_patch <<< "$new_version"
+new_version_code=$(( 10#$vc_major * 1000000 + 10#$vc_minor * 10000 + 10#$vc_patch * 100 + 10#$new_build ))
+
 read -rp "$(printf '%sOne-line release description:%s ' "$BOLD" "$RESET")" description
 description="${description#"${description%%[![:space:]]*}"}"   # ltrim
 description="${description%"${description##*[![:space:]]}"}"     # rtrim
@@ -187,6 +195,9 @@ fi
 if [[ "$mode" == "test" && "$new_version" != "$current_version" ]]; then
     warnings+=("Test release changes the version. This lands on '$DEVELOP_BRANCH' (directly, or via merge) — version bumps belong to production releases.")
 fi
+if (( 10#$vc_minor >= 100 || 10#$vc_patch >= 100 || 10#$new_build >= 100 )); then
+    warnings+=("versionCode formula assumes minor/patch/build < 100; a component is ≥ 100, so the derived code ($new_version_code) may collide with a neighbouring version. Revisit the scheme.")
+fi
 
 # ── 7. Summary + confirm ─────────────────────────────────────────────────
 printf '\n%s%s┌─ Release summary ─────────────────────────────────┐%s\n' "$BOLD" "$CYAN" "$RESET"
@@ -194,6 +205,7 @@ printf   '%s│%s  mode         %s%s%s\n'                "$CYAN" "$RESET" "$BOLD
 printf   '%s│%s  branch       %s\n'                    "$CYAN" "$RESET" "$current_branch"
 printf   '%s│%s  version      %s → %s%s%s\n'           "$CYAN" "$RESET" "$current_version" "$BOLD" "$new_version" "$RESET"
 printf   '%s│%s  buildNumber  %s → %s%s%s\n'           "$CYAN" "$RESET" "$current_build" "$BOLD" "$new_build" "$RESET"
+printf   '%s│%s  versionCode  %s%s%s  %s(android, derived)%s\n' "$CYAN" "$RESET" "$BOLD" "$new_version_code" "$RESET" "$DIM" "$RESET"
 printf   '%s│%s  commit       %s%s%s\n'                "$CYAN" "$RESET" "$DIM" "$commit_subject" "$RESET"
 printf   '%s│%s  tag          %s%s%s  (annotated)\n'   "$CYAN" "$RESET" "$BOLD" "$tag" "$RESET"
 printf   '%s│%s  push         %s → %s\n'               "$CYAN" "$RESET" "$push_target" "$REMOTE"
@@ -223,6 +235,11 @@ done
 info "Setting ios.buildNumber to $new_build…"
 for f in "${BUILDNUMBER_FILES[@]}"; do
     perl -i -pe 's/("buildNumber"\s*:\s*")[^"]*(")/${1}'"$new_build"'${2}/' "$f"
+done
+
+info "Setting android.versionCode to $new_version_code…"
+for f in "${VERSIONCODE_FILES[@]}"; do
+    perl -i -pe 's/("versionCode"\s*:\s*)[0-9]+/${1}'"$new_version_code"'/' "$f"
 done
 
 info "Committing…"
