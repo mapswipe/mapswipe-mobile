@@ -6,5 +6,11 @@
       "Improved tutorials and accessibility support.",
       "Various performance improvements and bug fixes."
     ]
+  },
+  "3.0.2": {
+    "changes": [
+      "Fix OSM login issue",
+      "Fix minor UI issues"
+    ]
   }
 }
