@@ -26,6 +26,7 @@ DEVELOP_BRANCH="develop"
 VERSION_FILES=(package.json app.prod.json app.staging.json)
 BUILDNUMBER_FILES=(app.prod.json app.staging.json)
 VERSIONCODE_FILES=(app.prod.json app.staging.json)   # android.versionCode, derived from version+build
+CHANGELOG_FILE="changeLog.json"                      # in-app "What's new" entries, keyed by X.Y.Z
 
 # ── Pretty output ───────────────────────────────────────────────────────
 if [[ -t 1 ]]; then
@@ -185,7 +186,91 @@ if [[ -n "$(git ls-remote --tags "$REMOTE" "refs/tags/$tag")" ]]; then
     die "Tag '$tag' already exists on $REMOTE."
 fi
 
-# ── 6. Warnings ──────────────────────────────────────────────────────────
+# ── 6. Changelog entry ───────────────────────────────────────────────────
+# changeLog.json is keyed by X.Y.Z; the in-app "What's new" modal shows the
+# entry whose key matches expo.version. Gather the bullets now, in $EDITOR
+# (one per line). If v$new_version already has an entry we pre-fill its bullets
+# so you can edit them; otherwise you start from an empty list. The file is
+# written and committed with the version bump in step 9.
+info "Preparing changelog for v$new_version…"
+
+existing_changes="$(node -e '
+    const fs = require("fs");
+    const [file, version] = process.argv.slice(1);
+    let data = {};
+    try { data = JSON.parse(fs.readFileSync(file, "utf8")); } catch (e) {}
+    const entry = data[version];
+    if (entry && Array.isArray(entry.changes)) {
+        process.stdout.write(entry.changes.join("\n"));
+    }
+' -- "$CHANGELOG_FILE" "$new_version")"
+
+if [[ -n "$existing_changes" ]]; then
+    changelog_state="edited"
+else
+    changelog_state="new"
+fi
+
+changelog_tmp="$(mktemp "${TMPDIR:-/tmp}/mapswipe-changelog.XXXXXX")"
+trap 'rm -f "$changelog_tmp"' EXIT
+
+{
+    if [[ -n "$existing_changes" ]]; then
+        printf '%s\n' "$existing_changes"
+    fi
+    printf '\n'
+    printf '# ── Changelog for v%s ──\n' "$new_version"
+    if [[ -n "$existing_changes" ]]; then
+        printf '# v%s already exists in %s — its bullets are pre-filled above.\n' "$new_version" "$CHANGELOG_FILE"
+        printf '# Edit them, then save and close to finalize.\n'
+    else
+        printf '# New version. Add one user-facing bullet per line above.\n'
+    fi
+    printf '#\n'
+    printf '# One sentence per line. Blank lines and lines starting with "#"\n'
+    printf '# are ignored. Save an empty file to abort the release.\n'
+} > "$changelog_tmp"
+
+# Resolve an editor the way git does (VISUAL/EDITOR, then git's configured one).
+changelog_editor="${VISUAL:-${EDITOR:-}}"
+if [[ -z "$changelog_editor" ]]; then
+    changelog_editor="$(git var GIT_EDITOR 2>/dev/null || true)"
+fi
+[[ -n "$changelog_editor" ]] || changelog_editor="vi"
+
+info "Opening $changelog_editor…"
+eval "$changelog_editor \"\$changelog_tmp\""
+
+# Strip comments/blank lines and trim what remains into an array of bullets.
+changelog_entries=()
+while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"   # ltrim
+    line="${line%"${line##*[![:space:]]}"}"     # rtrim
+    if [[ -z "$line" || "$line" == \#* ]]; then
+        continue
+    fi
+    changelog_entries+=("$line")
+done < "$changelog_tmp"
+
+(( ${#changelog_entries[@]} > 0 )) \
+    || die "No changelog entries provided. Aborted. Nothing was changed."
+
+# JSON-encode the bullets now (NUL-delimited stdin keeps quotes/dashes intact);
+# written into $CHANGELOG_FILE under the "$new_version" key in step 9.
+changelog_changes_json="$(printf '%s\0' "${changelog_entries[@]}" | node -e '
+    const chunks = [];
+    process.stdin.on("data", (d) => chunks.push(d));
+    process.stdin.on("end", () => {
+        const parts = Buffer.concat(chunks).toString("utf8").split("\0");
+        parts.pop();   // trailing empty field after the final NUL
+        process.stdout.write(JSON.stringify(parts));
+    });
+')"
+
+if (( ${#changelog_entries[@]} == 1 )); then changelog_word="entry"; else changelog_word="entries"; fi
+ok "Changelog: ${#changelog_entries[@]} $changelog_word for v$new_version ($changelog_state)."
+
+# ── 7. Warnings ──────────────────────────────────────────────────────────
 warnings=()
 if ver_lt "$new_version" "$current_version"; then
     warnings+=("Version $new_version is LOWER than current $current_version (version regression).")
@@ -199,13 +284,14 @@ if (( 10#$vc_minor >= 100 || 10#$vc_patch >= 100 || 10#$new_build >= 100 )); the
     warnings+=("versionCode formula assumes minor/patch/build < 100; a component is ≥ 100, so the derived code ($new_version_code) may collide with a neighbouring version. Revisit the scheme.")
 fi
 
-# ── 7. Summary + confirm ─────────────────────────────────────────────────
+# ── 8. Summary + confirm ─────────────────────────────────────────────────
 printf '\n%s%s┌─ Release summary ─────────────────────────────────┐%s\n' "$BOLD" "$CYAN" "$RESET"
 printf   '%s│%s  mode         %s%s%s\n'                "$CYAN" "$RESET" "$BOLD" "$mode" "$RESET"
 printf   '%s│%s  branch       %s\n'                    "$CYAN" "$RESET" "$current_branch"
 printf   '%s│%s  version      %s → %s%s%s\n'           "$CYAN" "$RESET" "$current_version" "$BOLD" "$new_version" "$RESET"
 printf   '%s│%s  buildNumber  %s → %s%s%s\n'           "$CYAN" "$RESET" "$current_build" "$BOLD" "$new_build" "$RESET"
 printf   '%s│%s  versionCode  %s%s%s  %s(android, derived)%s\n' "$CYAN" "$RESET" "$BOLD" "$new_version_code" "$RESET" "$DIM" "$RESET"
+printf   '%s│%s  changelog    %s%s %s%s  %s(%s)%s\n'   "$CYAN" "$RESET" "$BOLD" "${#changelog_entries[@]}" "$changelog_word" "$RESET" "$DIM" "$changelog_state" "$RESET"
 printf   '%s│%s  commit       %s%s%s\n'                "$CYAN" "$RESET" "$DIM" "$commit_subject" "$RESET"
 printf   '%s│%s  tag          %s%s%s  (annotated)\n'   "$CYAN" "$RESET" "$BOLD" "$tag" "$RESET"
 printf   '%s│%s  push         %s → %s\n'               "$CYAN" "$RESET" "$push_target" "$REMOTE"
@@ -225,7 +311,7 @@ printf '\n'
 
 confirm_or_die "Type 'yes' to proceed:"
 
-# ── 8. Apply changes ─────────────────────────────────────────────────────
+# ── 9. Apply changes ─────────────────────────────────────────────────────
 # `version` appears exactly once per file; `buildNumber` once per app config.
 info "Setting version to $new_version…"
 for f in "${VERSION_FILES[@]}"; do
@@ -242,8 +328,17 @@ for f in "${VERSIONCODE_FILES[@]}"; do
     perl -i -pe 's/("versionCode"\s*:\s*)[0-9]+/${1}'"$new_version_code"'/' "$f"
 done
 
+info "Writing changelog for v$new_version to $CHANGELOG_FILE…"
+node -e '
+    const fs = require("fs");
+    const [file, version, changesJson] = process.argv.slice(1);
+    const data = JSON.parse(fs.readFileSync(file, "utf8"));
+    data[version] = { changes: JSON.parse(changesJson) };
+    fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
+' -- "$CHANGELOG_FILE" "$new_version" "$changelog_changes_json"
+
 info "Committing…"
-git add "${VERSION_FILES[@]}"
+git add "${VERSION_FILES[@]}" "$CHANGELOG_FILE"
 git commit --quiet -m "$commit_subject"
 
 info "Tagging $tag…"
@@ -255,7 +350,7 @@ git push --quiet "$REMOTE" "$push_target"
 info "Pushing $tag…"
 git push --quiet "$REMOTE" "$tag"
 
-# ── 9. Done ──────────────────────────────────────────────────────────────
+# ── 10. Done ─────────────────────────────────────────────────────────────
 remote_url="$(git remote get-url "$REMOTE")"
 base_url="$(sed -E 's#(git@|https://)([^:/]+)[:/]([^/]+)/(.+)#https://\2/\3/\4#; s#\.git$##' <<< "$remote_url")"
 
