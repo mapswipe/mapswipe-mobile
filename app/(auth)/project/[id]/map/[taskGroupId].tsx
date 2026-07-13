@@ -206,14 +206,14 @@ function MapTaskGroup() {
         startTimestampRef.current = new Date().toISOString();
     }, []);
 
-    const infoButton = () => (
+    const infoButton = useCallback(() => (
         <IconButton
             name={!modal}
             iconName="information-outline"
             onPress={setModal}
             stylesContainer={styles.headerButtonPadding}
         />
-    );
+    ), [modal]);
 
     // Show the divider under the project summary only when a project-type
     // how-to follows it. STREET has none, so it shows just the summary.

@@ -71,14 +71,11 @@ const createStyles = (theme: AppTheme) => (StyleSheet.create({
         gap: CARD_GAP,
     },
     projects: {
-        padding: CARD_PADDING,
-        paddingTop: 0,
+        margin: CARD_PADDING,
+        borderRadius: 6,
         backgroundColor: theme.background,
     },
     projectsContent: {
-        gap: CARD_GAP,
-    },
-    featuredProjectsContent: {
         gap: CARD_GAP,
     },
     projectItemContainer: {
@@ -366,7 +363,9 @@ function Projects() {
                 columnWrapperStyle={styles.columnWrapper}
                 contentContainerStyle={styles.projectsContent}
                 ListHeaderComponent={(
-                    <BlockListView style={styles.featuredProjectsContent}>
+                    <BlockListView
+                        spacing="2xs"
+                    >
                         <AnnouncementBanner />
                         {featuredProjects.map((project) => (
                             <ProjectItem

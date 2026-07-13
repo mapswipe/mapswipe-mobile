@@ -108,6 +108,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     },
     description: {
         paddingHorizontal: SPACING_2XS,
+        paddingBottom: SPACING_2XS,
     },
 });
 
@@ -176,17 +177,16 @@ export default function ProjectDetail() {
                     spacing="xs"
                     style={styles.description}
                 >
-                    <View>
-                        <EnrichedMarkdownText
-                            markdown={project?.projectDetails ?? ''}
-                            markdownStyle={{
-                                paragraph: {
-                                    fontSize: FONT_SIZE_SM,
-                                    lineHeight: 20,
-                                },
-                            }}
-                        />
-                    </View>
+                    <EnrichedMarkdownText
+                        markdown={project?.projectDetails ?? ''}
+                        markdownStyle={{
+                            paragraph: {
+                                fontSize: FONT_SIZE_SM,
+                                lineHeight: 20,
+                                marginBottom: 4,
+                            },
+                        }}
+                    />
                     <Link
                         href={{
                             pathname: '/project/[id]/tutorial',
