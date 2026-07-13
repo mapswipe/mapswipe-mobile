@@ -15,8 +15,7 @@
             "backgroundColor": "#0D1949",
             "supportsTablet": true,
             "infoPlist": {
-                "ITSAppUsesNonExemptEncryption": false,
-                "NSLocationWhenInUseUsageDescription": "MapSwipe uses your location to show your position on the map while mapping."
+                "ITSAppUsesNonExemptEncryption": false
             }
         },
         "android": {
@@ -39,6 +38,7 @@
             "expo-system-ui",
             "@maplibre/maplibre-react-native",
             "./plugins/disable-liquid-glass.cjs",
+            "./plugins/strip-unused-permissions.cjs",
             [
                 "expo-splash-screen",
                 {

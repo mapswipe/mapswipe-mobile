@@ -8,6 +8,7 @@ import {
 import {
     Platform,
     StyleSheet,
+    View,
 } from 'react-native';
 import {
     useLocalSearchParams,
@@ -40,6 +41,7 @@ import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useHardwareBackHandler from '@/hooks/useHardwareBackHandler';
 import usePreventScreenRemove from '@/hooks/usePreventScreenRemove';
+import useTheme from '@/hooks/useTheme';
 import { firebaseRef } from '@/utils/firebase';
 import {
     getAnswerCounts,
@@ -61,6 +63,10 @@ const styles = StyleSheet.create({
     headerButtonPadding: {
         padding: 8,
     },
+    divider: {
+        height: StyleSheet.hairlineWidth,
+        alignSelf: 'stretch',
+    },
 });
 
 function MapTaskGroup() {
@@ -69,6 +75,7 @@ function MapTaskGroup() {
         taskGroupId,
     } = useLocalSearchParams<{id: string; taskGroupId: string;}>();
     const router = useRouter();
+    const theme = useTheme();
     const startTimestampRef = useRef<string | undefined>(undefined);
     const endTimestampRef = useRef<string | undefined>(undefined);
     const [modal, setModal] = useState<boolean>(false);
@@ -208,6 +215,11 @@ function MapTaskGroup() {
         />
     );
 
+    // Show the divider under the project summary only when a project-type
+    // how-to follows it. STREET has none, so it shows just the summary.
+    const showInstructionsDivider = isDefined(projectDetails)
+        && projectDetails.projectType !== PROJECT_TYPE_STREET;
+
     const openContinueModal = useCallback(() => {
         setContinueModal(true);
     }, []);
@@ -340,34 +352,51 @@ function MapTaskGroup() {
                 onClose={setModal}
                 closeButtonName="I understand"
             >
-                {(projectDetails?.projectType === PROJECT_TYPE_FIND
-                 || projectDetails?.projectType === PROJECT_TYPE_COMPLETENESS)
-                  && (
-                      <TileGridInstructions
-                          colorVariants="normal"
-                      />
-                  )}
-                {(projectDetails?.projectType === PROJECT_TYPE_VALIDATE
-                 || projectDetails?.projectType === PROJECT_TYPE_VALIDATE_IMAGE)
-                  && (
-                      <ValidateInstructions
-                          colorVariants="normal"
-                          customOptions={projectDetails.customOptions}
-                      />
-                  )}
-                {(projectDetails?.projectType === PROJECT_TYPE_COMPARE)
-                  && (
-                      <CompareInstructions
-                          colorVariants="normal"
-                      />
-                  )}
-                {(projectDetails?.projectType === PROJECT_TYPE_LOCATE_FEATURES)
-                  && (
-                      <LocateInstructions
-                          customOptions={projectDetails.customOptions}
-                          colorVariants="normal"
-                      />
-                  )}
+                <BlockListView spacing="sm">
+                    {isDefined(projectDetails) && (
+                        <BlockListView spacing="3xs">
+                            <Text variant="title" colorVariant="normal">
+                                {projectDetails.name}
+                            </Text>
+                            {isDefined(projectDetails.projectInstruction) && (
+                                <Text variant="description" colorVariant="normal">
+                                    {projectDetails.projectInstruction}
+                                </Text>
+                            )}
+                        </BlockListView>
+                    )}
+                    {showInstructionsDivider && (
+                        <View style={[styles.divider, { backgroundColor: theme.divider }]} />
+                    )}
+                    {(projectDetails?.projectType === PROJECT_TYPE_FIND
+                     || projectDetails?.projectType === PROJECT_TYPE_COMPLETENESS)
+                      && (
+                          <TileGridInstructions
+                              colorVariants="normal"
+                          />
+                      )}
+                    {(projectDetails?.projectType === PROJECT_TYPE_VALIDATE
+                     || projectDetails?.projectType === PROJECT_TYPE_VALIDATE_IMAGE)
+                      && (
+                          <ValidateInstructions
+                              colorVariants="normal"
+                              customOptions={projectDetails.customOptions}
+                          />
+                      )}
+                    {(projectDetails?.projectType === PROJECT_TYPE_COMPARE)
+                      && (
+                          <CompareInstructions
+                              colorVariants="normal"
+                          />
+                      )}
+                    {(projectDetails?.projectType === PROJECT_TYPE_LOCATE_FEATURES)
+                      && (
+                          <LocateInstructions
+                              customOptions={projectDetails.customOptions}
+                              colorVariants="normal"
+                          />
+                      )}
+                </BlockListView>
             </Modal>
             <Modal
                 visible={continueModal}
