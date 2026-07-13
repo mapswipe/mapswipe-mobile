@@ -69,6 +69,7 @@ function TitleWithPopup({ title, styles, maxWidth }:
             <TouchableOpacity
                 onLongPress={() => setVisible(true)}
                 activeOpacity={1}
+                style={{ maxWidth }}
             >
                 <Text
                     style={{ ...styles.headerTitle, maxWidth }}

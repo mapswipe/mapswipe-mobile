@@ -58,8 +58,8 @@ const createStyles = () => StyleSheet.create({
     // Give the hide button its own centered line below the map so it doesn't
     // sit flush against (and graze) the tiles.
     hideButtonRow: {
-        alignItems: 'center',
-        paddingVertical: 6,
+        alignItems: 'flex-end',
+        paddingHorizontal: 6,
     },
     hideButtonInner: {
         alignItems: 'center',

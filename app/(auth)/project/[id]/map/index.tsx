@@ -189,6 +189,7 @@ function MapProjectIndex() {
         <Page
             title="Map project"
             scrollable={false}
+            variant="brand"
         >
             <BlockListView
                 withPadding
@@ -196,7 +197,7 @@ function MapProjectIndex() {
                 style={styles.container}
             >
                 <ActivityIndicator size="large" />
-                <Text>
+                <Text colorVariant="brand">
                     Loading groups...
                 </Text>
             </BlockListView>

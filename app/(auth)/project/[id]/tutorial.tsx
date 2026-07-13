@@ -170,7 +170,7 @@ function Tutorial() {
 
     const [modal, setModal] = useState<boolean>(false);
 
-    const infoButton = () => (
+    const infoButton = useCallback(() => (
         <IconButton
             name={!modal}
             iconName="information-outline"
@@ -178,7 +178,7 @@ function Tutorial() {
             stylesButton={styles.infoBtn}
             stylesContainer={styles.headerButtonPadding}
         />
-    );
+    ), [modal]);
     return (
         <Page
             title={t('pageTitle')}
