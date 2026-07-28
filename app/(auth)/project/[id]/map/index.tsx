@@ -1,6 +1,5 @@
 import {
     useEffect,
-    useLayoutEffect,
     useMemo,
 } from 'react';
 import {
@@ -10,16 +9,15 @@ import {
 import {
     router,
     useLocalSearchParams,
-    useNavigation,
 } from 'expo-router';
 import {
     isDefined,
     isNotDefined,
 } from '@togglecorp/fujs';
 import {
+    limitToLast,
     orderByChild,
     query,
-    startAfter,
 } from 'firebase/database';
 
 import BlockListView from '@/components/BlockListView';
@@ -32,6 +30,14 @@ import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
 import useTheme from '@/hooks/useTheme';
 import { firebaseRef } from '@/utils/firebase';
+import { FbProject } from '@/utils/types';
+
+const TASK_CONTRIBUTION_COUNT_KEY = 'taskContributionCount';
+
+// A project can hold thousands of groups, so we only ever pull a small window
+// of them. 15 is what the previous app used and it leaves plenty of slack after
+// the already-mapped ones are filtered out.
+const GROUP_WINDOW_SIZE = 15;
 
 const styles = StyleSheet.create({
     container: {
@@ -45,7 +51,6 @@ const styles = StyleSheet.create({
 });
 
 function MapProjectIndex() {
-    const navigation = useNavigation();
     const theme = useTheme();
     const { user } = useAuth();
     const userId = user?.uid;
@@ -65,14 +70,17 @@ function MapProjectIndex() {
     // This screen only picks a group; a direct taskGroupId means that's done.
     const skipSelection = isDefined(taskGroupId);
 
-    // Groups that still need contributions (requiredCount > 0) — i.e. fewer than
-    // `verificationNumber` unique users have mapped them yet. Once a group has
-    // enough contributors its requiredCount is 0 and it drops out here.
+    // Ordering by requiredCount and taking the *last* slice puts the groups that
+    // still need the most mappers at the front of the queue. We deliberately do
+    // not filter on requiredCount > 0: a group whose count was never written by
+    // the import would be dropped by such a filter and become unmappable
+    // forever, whereas serving an already-satisfied group is harmless — a
+    // duplicate contribution is rejected server-side.
     const availableGroupsQuery = useMemo(
         () => query(
             firebaseRef(`v2/groups/${projectId}`),
             orderByChild('requiredCount'),
-            startAfter(0),
+            limitToLast(GROUP_WINDOW_SIZE),
         ),
         [projectId],
     );
@@ -82,6 +90,19 @@ function MapProjectIndex() {
         pending: groupsPending,
     } = useFirebaseDatabaseList<{ requiredCount?: number }>({
         query: availableGroupsQuery,
+        skip: skipSelection,
+    });
+
+    const projectQuery = useMemo(
+        () => firebaseRef(`v2/projects/${projectId}`),
+        [projectId],
+    );
+
+    const {
+        data: project,
+        pending: projectPending,
+    } = useFirebaseDatabase<FbProject>({
+        query: projectQuery,
         skip: skipSelection,
     });
 
@@ -102,13 +123,23 @@ function MapProjectIndex() {
         skip: skipSelection || isNotDefined(userId),
     });
 
-    const pending = groupsPending || contributionsPending;
+    const pending = groupsPending || contributionsPending || projectPending;
 
-    // Eligible = still needs contributions (query) AND not already mapped by this
-    // user AND not the group we just finished — that group's contribution and
-    // requiredCount are updated by the backend and may not have propagated yet.
-    const eligibleGroups = useMemo(() => {
-        const mappedGroupIds = new Set(Object.keys(userContributions ?? {}));
+    // A project can cap how much a single user contributes to it, so no one
+    // mapper dominates the results a group is verified against. Users can
+    // overshoot the cap mid-session, so this is a `>=` check, not `===`.
+    const tasksCompleted = Number(userContributions?.[TASK_CONTRIBUTION_COUNT_KEY] ?? 0);
+    const maxTasksPerUser = Number(project?.maxTasksPerUser ?? 0);
+    const userCanMap = maxTasksPerUser <= 0 || tasksCompleted < maxTasksPerUser;
+
+    // Drop the groups this user has already mapped, plus the one they just
+    // finished — its contribution is written by a Cloud Function and may not
+    // have propagated into `userContributions` yet.
+    const groupsToPickFrom = useMemo(() => {
+        const mappedGroupIds = new Set(
+            Object.keys(userContributions ?? {})
+                .filter((key) => key !== TASK_CONTRIBUTION_COUNT_KEY),
+        );
         return availableGroups.filter((group) => (
             !mappedGroupIds.has(group.key)
             && group.key !== previousGroupId
@@ -116,31 +147,36 @@ function MapProjectIndex() {
     }, [availableGroups, userContributions, previousGroupId]);
 
     useEffect(() => {
-        if (skipSelection || pending || eligibleGroups.length === 0) {
+        if (skipSelection || pending || !userCanMap || groupsToPickFrom.length === 0) {
             return;
         }
-        const index = Math.floor(Math.random() * eligibleGroups.length);
+        const index = Math.floor(Math.random() * groupsToPickFrom.length);
         router.replace({
             pathname: '/project/[id]/map/[taskGroupId]',
             params: {
                 id: projectId,
-                taskGroupId: eligibleGroups[index].key,
+                taskGroupId: groupsToPickFrom[index].key,
                 projectInstruction,
             },
         });
-    }, [skipSelection, pending, eligibleGroups, projectId, projectInstruction]);
-
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            title: String(projectInstruction),
-        });
-    }, [navigation, projectInstruction]);
+    }, [skipSelection, pending, userCanMap, groupsToPickFrom, projectId, projectInstruction]);
 
     if (skipSelection) {
         return null;
     }
 
-    if (!pending && eligibleGroups.length === 0) {
+    if (!pending && (!userCanMap || groupsToPickFrom.length === 0)) {
+        // The per-user cap is the one case we can explain precisely. Otherwise
+        // all we know is that this user's window of groups is exhausted, which
+        // says nothing about the project as a whole.
+        let title = 'All done!';
+        let description = 'You\'ve completed all available groups for this project. Thank you!';
+
+        if (!userCanMap) {
+            title = 'That\'s your limit for this project';
+            description = 'You\'ve reached the maximum number of tasks for this project. Thank you!';
+        }
+
         return (
             <Page
                 title="Map project"
@@ -164,13 +200,13 @@ function MapProjectIndex() {
                         colorVariant="brand"
                         style={styles.completedText}
                     >
-                        All done!
+                        {title}
                     </Text>
                     <Text
                         colorVariant="brand"
                         style={styles.completedText}
                     >
-                        You&apos;ve completed all available groups for this project. Thank you!
+                        {description}
                     </Text>
                     <Button
                         name="back-to-projects"
