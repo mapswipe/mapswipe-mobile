@@ -13,6 +13,7 @@ import InlineListView from '@/components/InlineListView';
 import { TutorialSessionProps } from '@/components/tutorial/types';
 import ImageWrapper from '@/components/ValidateImageWrapper';
 import { SPACING_3XS } from '@/constants/dimensions';
+import { getTutorialTaskKey } from '@/utils/tutorial';
 import {
     FbValidateImageTutorialTask,
     PROJECT_TYPE_VALIDATE_IMAGE,
@@ -80,7 +81,7 @@ function ValidateImageTutorialSession(props: TutorialSessionProps) {
         return null;
     }
 
-    const selectedValue = results[task.taskId];
+    const selectedValue = results[getTutorialTaskKey(task)];
     const disableOptions = disabled || !!imagesLoading[0];
     const bbox = task.bbox as [number, number, number, number] | undefined;
 
@@ -110,7 +111,7 @@ function ValidateImageTutorialSession(props: TutorialSessionProps) {
                         active={selectedValue === option.value}
                         disabled={disableOptions}
                         textColorVariant="brand"
-                        onPress={(value) => handleSelect(task.taskId, value)}
+                        onPress={(value) => handleSelect(getTutorialTaskKey(task), value)}
                     />
                 ))}
             </InlineListView>

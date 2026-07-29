@@ -26,7 +26,7 @@ import { firebaseRef } from '@/utils/firebase';
 import {
     AnyTutorialTask,
     decompressTasks,
-    groupTasksByScreen,
+    groupTasksByGroupAndScreen,
     TUTORIAL_MAX_ATTEMPTS,
 } from '@/utils/tutorial';
 import {
@@ -83,18 +83,18 @@ function Tutorial() {
         ));
     }, [tasksByGroup]);
 
-    const tasksByScreen = useMemo(() => groupTasksByScreen(allTasks), [allTasks]);
+    // Bucket tasks by (groupId, screen) so each scenario shows a single group's
+    // tiles. Different groups can reuse the same screen number and synthetic taskId,
+    // which would otherwise merge (and collide) into one scenario.
+    const taskBuckets = useMemo(() => groupTasksByGroupAndScreen(allTasks), [allTasks]);
 
     const stages = useMemo<TutorialStage[]>(() => {
         if (!tutorialDetails) {
             return [];
         }
-        // Task `screen` values aren't guaranteed to be sequential 0/1-based
-        // indices — some tutorials number them arbitrarily (e.g. 86–90). Map the
-        // i-th scenario to the i-th screen group in ascending screen order.
-        const sortedScreenKeys = Object.keys(tasksByScreen)
-            .map(Number)
-            .sort((a, b) => a - b);
+        // Map the i-th scenario to the i-th task bucket. Buckets are ordered by
+        // groupId then screen, so scenarios line up deterministically even when
+        // `screen` values aren't sequential 0/1-based indices.
         const list: TutorialStage[] = [];
         list.push({ type: 'intro', tutorial: tutorialDetails });
         (tutorialDetails.informationPages ?? []).forEach((page) => {
@@ -105,13 +105,13 @@ function Tutorial() {
                 type: 'scenario',
                 screen,
                 screenIndex: i,
-                tasks: tasksByScreen[sortedScreenKeys[i]] ?? [],
+                tasks: taskBuckets[i]?.tasks ?? [],
             });
         });
         list.push({ type: 'outro', tutorial: tutorialDetails });
         list.push({ type: 'end', tutorial: tutorialDetails });
         return list;
-    }, [tutorialDetails, tasksByScreen]);
+    }, [tutorialDetails, taskBuckets]);
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [scenarioResults, setScenarioResults] = useState<Record<number, Results>>({});

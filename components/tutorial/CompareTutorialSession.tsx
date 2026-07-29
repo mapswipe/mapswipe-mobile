@@ -20,6 +20,7 @@ import ImageTile from '@/components/ImageTile';
 import Text from '@/components/Text';
 import { TutorialSessionProps } from '@/components/tutorial/types';
 import { SPACING_3XS } from '@/constants/dimensions';
+import { getTutorialTaskKey } from '@/utils/tutorial';
 import {
     ResultOption,
     Results,
@@ -85,13 +86,13 @@ function CompareTutorialSession(props: TutorialSessionProps) {
             return;
         }
         onResultsChange((prev) => {
-            const missing = tasks.filter((task) => !(task.taskId in prev));
+            const missing = tasks.filter((task) => !(getTutorialTaskKey(task) in prev));
             if (missing.length === 0) {
                 return prev;
             }
             const next: Results = { ...prev };
             missing.forEach((task) => {
-                next[task.taskId] = OPTIONS[0].value;
+                next[getTutorialTaskKey(task)] = OPTIONS[0].value;
             });
             return next;
         });
@@ -136,16 +137,17 @@ function CompareTutorialSession(props: TutorialSessionProps) {
                     if (!('url' in task) || !('urlB' in task) || !task.url || !task.urlB) {
                         return null;
                     }
-                    const result = results[task.taskId];
+                    const taskKey = getTutorialTaskKey(task);
+                    const result = results[taskKey];
                     const selectedOption = typeof result === 'number'
                         ? optionsByValue[result]
                         : undefined;
 
                     return (
-                        <View key={task.taskId} style={styles.pair}>
+                        <View key={taskKey} style={styles.pair}>
                             <Text colorVariant="brand">{t('compareBefore')}</Text>
                             <ImageTile
-                                taskId={task.taskId}
+                                taskId={taskKey}
                                 url={task.url}
                                 urlB={undefined}
                                 width={tileWidth}
@@ -154,7 +156,7 @@ function CompareTutorialSession(props: TutorialSessionProps) {
                             />
                             <Text colorVariant="brand">{t('compareAfter')}</Text>
                             <ImageTile
-                                taskId={task.taskId}
+                                taskId={taskKey}
                                 url={task.urlB}
                                 urlB={undefined}
                                 width={tileWidth}
