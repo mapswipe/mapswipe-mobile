@@ -25,6 +25,7 @@ interface Props {
     colorVariant?: ColorVariant;
     numberOfLines?: number;
     ellipsizeMode?: TextProps['ellipsizeMode'];
+    allowFontScaling?: boolean;
 }
 
 function Text(props: Props) {
@@ -36,6 +37,7 @@ function Text(props: Props) {
         onPress,
         numberOfLines,
         ellipsizeMode,
+        allowFontScaling,
     } = props;
 
     const theme = useTheme();
@@ -78,6 +80,7 @@ function Text(props: Props) {
             onPress={onPress}
             numberOfLines={numberOfLines}
             ellipsizeMode={ellipsizeMode}
+            allowFontScaling={allowFontScaling}
             style={[
                 variant === 'heading' && styles.heading,
                 variant === 'title' && styles.title,

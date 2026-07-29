@@ -6,7 +6,10 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { isNotDefined } from '@togglecorp/fujs';
+import {
+    isDefined,
+    isNotDefined,
+} from '@togglecorp/fujs';
 import {
     equalTo,
     limitToFirst,
@@ -16,6 +19,7 @@ import {
 
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import BlockListView from '@/components/BlockListView';
+import Icon from '@/components/Icon';
 import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
@@ -71,11 +75,12 @@ const createStyles = (theme: AppTheme) => (StyleSheet.create({
         gap: CARD_GAP,
     },
     projects: {
-        margin: CARD_PADDING,
+        marginVertical: CARD_PADDING,
         borderRadius: 6,
         backgroundColor: theme.background,
     },
     projectsContent: {
+        paddingHorizontal: CARD_PADDING,
         gap: CARD_GAP,
     },
     projectItemContainer: {
@@ -104,6 +109,7 @@ const createProjectStyles = (
     },
     background: {
         flex: 1,
+        justifyContent: 'space-between',
     },
     backgroundImage: {
         position: 'absolute',
@@ -119,10 +125,16 @@ const createProjectStyles = (
         right: 0,
         height: '64%',
     },
+    topRow: {
+        padding: 9,
+        paddingBottom: 0,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        gap: 4,
+    },
     pill: {
-        position: 'absolute',
-        top: 9,
-        left: 9,
+        flexShrink: 1,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
@@ -131,16 +143,28 @@ const createProjectStyles = (
         paddingHorizontal: 8,
         paddingVertical: 4,
     },
+    pillRight: {
+        flexShrink: 0,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'rgba(60, 60, 67, 0.75)',
+        borderRadius: 99,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+    },
     pillText: {
+        flexShrink: 1,
         fontSize: 11,
         color: '#333',
         fontWeight: '500',
     },
+    pillNumberText: {
+        fontSize: 11,
+        color: '#fff',
+        fontWeight: '500',
+    },
     bottomContent: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
         padding: 12,
         gap: 6,
     },
@@ -162,11 +186,24 @@ const createProjectStyles = (
         borderRadius: 99,
         backgroundColor: theme.accentRed,
     },
+    metaRow: {
+        alignItems: 'center',
+        flexGrow: 0,
+    },
+    metaText: {
+        flex: 1,
+        color: 'rgba(255, 255, 255, 0.92)',
+        fontSize: 11.5,
+    },
     statRow: {
         alignItems: 'center',
         flexGrow: 0,
     },
+    statHeart: {
+        fontSize: 11.5,
+    },
     statText: {
+        flex: 1,
         color: 'rgba(255, 255, 255, 0.92)',
         fontSize: 11.5,
     },
@@ -208,26 +245,84 @@ function ProjectItem(props: ProjectItemProps) {
     const cardContent = (
         <>
             <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.72)']}
+                colors={['transparent', 'rgba(0,0,0,0.78)']}
                 style={styles.scrim}
             />
-            <View style={styles.pill}>
-                <ProjectTypeIcon
-                    type={project.projectType}
-                    size={12}
-                    color="#333"
-                />
-                <Text style={styles.pillText}>
-                    {projectTypeTextMapping[project.projectType]}
-                </Text>
+            <View style={styles.topRow}>
+                <View style={styles.pill}>
+                    <ProjectTypeIcon
+                        type={project.projectType}
+                        size={12}
+                        color="#333"
+                    />
+                    <Text
+                        style={styles.pillText}
+                        numberOfLines={1}
+                        allowFontScaling={false}
+                    >
+                        {projectTypeTextMapping[project.projectType]}
+                    </Text>
+                </View>
+                {isDefined(project.projectNumber) && (
+                    <View style={styles.pillRight}>
+                        <Text
+                            style={styles.pillNumberText}
+                            numberOfLines={1}
+                            allowFontScaling={false}
+                        >
+                            {project.projectNumber}
+                        </Text>
+                    </View>
+                )}
             </View>
             <View style={styles.bottomContent}>
                 <Text
                     style={styles.title}
                     numberOfLines={2}
+                    allowFontScaling={false}
                 >
                     {project.projectTopic}
                 </Text>
+                {isDefined(project.projectRegion) && (
+                    <InlineListView
+                        style={styles.metaRow}
+                        spacing="4xs"
+                        withoutWrap
+                    >
+                        <Icon
+                            name="map-pin"
+                            size={13}
+                            color="rgba(255, 255, 255, 0.92)"
+                        />
+                        <Text
+                            style={styles.metaText}
+                            numberOfLines={1}
+                            allowFontScaling={false}
+                        >
+                            {project.projectRegion}
+                        </Text>
+                    </InlineListView>
+                )}
+                {isDefined(project.requestingOrganisation) && (
+                    <InlineListView
+                        style={styles.metaRow}
+                        spacing="4xs"
+                        withoutWrap
+                    >
+                        <Icon
+                            name="buildings"
+                            size={13}
+                            color="rgba(255, 255, 255, 0.92)"
+                        />
+                        <Text
+                            style={styles.metaText}
+                            numberOfLines={1}
+                            allowFontScaling={false}
+                        >
+                            {project.requestingOrganisation}
+                        </Text>
+                    </InlineListView>
+                )}
                 <View style={styles.progressTrack}>
                     <View
                         style={[
@@ -239,11 +334,19 @@ function ProjectItem(props: ProjectItemProps) {
                 <InlineListView
                     style={styles.statRow}
                     spacing="4xs"
+                    withoutWrap
                 >
-                    <Text style={{ ...styles.statText, color: theme.accentRed }}>
+                    <Text
+                        style={{ ...styles.statHeart, color: theme.accentRed }}
+                        allowFontScaling={false}
+                    >
                         ❤
                     </Text>
-                    <Text style={styles.statText}>
+                    <Text
+                        style={styles.statText}
+                        numberOfLines={1}
+                        allowFontScaling={false}
+                    >
                         {`${progressLabel}% by ${project.contributorCount ?? 0} mapper${(project.contributorCount ?? 0) === 1 ? '' : 's'}`}
                     </Text>
                 </InlineListView>

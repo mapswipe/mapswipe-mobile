@@ -1,6 +1,7 @@
 import { isNotDefined } from '@togglecorp/fujs';
 import {
     ArrowClockwiseIcon,
+    BuildingsIcon,
     CaretLeftIcon,
     CaretRightIcon,
     CheckIcon,
@@ -21,6 +22,7 @@ import {
     type IconProps,
     InfoIcon,
     MagnifyingGlassIcon,
+    MapPinIcon,
     MinusIcon,
     PlusIcon,
     ProhibitIcon,
@@ -42,6 +44,8 @@ export type IconName =
     | 'add-outline'
     | 'alert-outline'
     | 'ban-outline'
+    | 'buildings'
+    | 'map-pin'
     | 'check'
     | 'checkmark-outline'
     | 'close-outline'
@@ -85,6 +89,8 @@ const iconMap: Record<IconName, PhosphorIcon> = {
     'add-outline': PlusIcon,
     'alert-outline': WarningIcon,
     'ban-outline': ProhibitIcon,
+    buildings: BuildingsIcon,
+    'map-pin': MapPinIcon,
     check: CheckIcon,
     'checkmark-outline': CheckIcon,
     'close-outline': XIcon,
