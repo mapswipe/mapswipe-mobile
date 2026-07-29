@@ -28,6 +28,7 @@ import Text from '@/components/Text';
 import { SUPPORTED_PROJECT_TYPES } from '@/constants/common';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
+import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
@@ -387,16 +388,39 @@ function ProjectItem(props: ProjectItemProps) {
 }
 
 function Projects() {
-    const projectsQuery = useMemo(() => (
-        query(
+    // The profile (and its teamId) is fetched once at the auth layer, so we read it
+    // from context here instead of refetching v2/users/{uid}.
+    const { userDetails, userDetailsPending } = useAuth();
+
+    // Users that belong to a private organization (team) must only ever see that
+    // team's projects, never public ones. So when the user has a teamId we query
+    // projects by teamId instead of by public "active" status. Mirrors the old app
+    // (RecommendedCards.subscribeToProjects) and the web app.
+    const teamId = userDetails?.teamId;
+
+    const projectsQuery = useMemo(() => {
+        if (isDefined(teamId)) {
+            return query(
+                firebaseRef('v2/projects'),
+                orderByChild('teamId'),
+                equalTo(teamId),
+                limitToFirst(40),
+            );
+        }
+        return query(
             firebaseRef('v2/projects'),
             orderByChild('status'),
             equalTo('active'),
             limitToFirst(40),
-        )
-    ), []);
+        );
+    }, [teamId]);
 
-    const { list: projectList } = useFirebaseDatabaseList<FbProject>({ query: projectsQuery });
+    // Hold off on fetching projects until the user's profile has loaded, otherwise a
+    // team member would briefly see public projects while teamId is still unknown.
+    const { list: projectList } = useFirebaseDatabaseList<FbProject>({
+        query: projectsQuery,
+        skip: userDetailsPending,
+    });
 
     const filteredProjects = useMemo(() => {
         const sortedProjects = [...projectList]

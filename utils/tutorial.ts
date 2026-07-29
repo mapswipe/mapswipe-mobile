@@ -1,4 +1,7 @@
-import { isNotDefined } from '@togglecorp/fujs';
+import {
+    compareNumber,
+    isNotDefined,
+} from '@togglecorp/fujs';
 import { decode } from 'base-64';
 import { inflate } from 'pako';
 
@@ -45,6 +48,19 @@ export function decompressTasks<T>(value: string | T[] | undefined | null): T[] 
     return JSON.parse(decompressed) as T[];
 }
 
+// Tutorial tasks carry a synthetic `taskId` that can repeat — across groups, and
+// even within one screen when it has more than 6 tiles (the backend cycles the
+// synthetic tile position every 6 tasks). `taskId_real`, present on tile-based
+// tutorial tasks, is the globally-unique real tile id. Prefer it for identity so
+// results and React keys don't collide; fall back to `taskId` for task types that
+// don't have it (validate / validate-image / street).
+export function getTutorialTaskKey(task: AnyTutorialTask): string {
+    if ('taskId_real' in task && typeof task.taskId_real === 'string') {
+        return task.taskId_real;
+    }
+    return task.taskId;
+}
+
 function getScreenIndex(task: AnyTutorialTask): number | undefined {
     if ('properties' in task && task.properties
         && typeof task.properties.screen === 'number') {
@@ -56,23 +72,58 @@ function getScreenIndex(task: AnyTutorialTask): number | undefined {
     return undefined;
 }
 
-export function groupTasksByScreen<T extends AnyTutorialTask>(
-    tasks: T[] | undefined,
-): Record<number, T[]> {
-    if (isNotDefined(tasks)) {
-        return {};
+function getTaskGroupId(task: AnyTutorialTask): string | undefined {
+    if ('groupId' in task
+        && (typeof task.groupId === 'string' || typeof task.groupId === 'number')) {
+        return String(task.groupId);
     }
-    return tasks.reduce<Record<number, T[]>>((acc, task) => {
+    return undefined;
+}
+
+function compareGroupId(a: string | undefined, b: string | undefined): number {
+    const aNum = a === undefined ? Number.NaN : Number(a);
+    const bNum = b === undefined ? Number.NaN : Number(b);
+    if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) {
+        return aNum - bNum;
+    }
+    return String(a ?? '').localeCompare(String(b ?? ''));
+}
+
+export interface TutorialTaskBucket {
+    groupId: string | undefined;
+    screen: number;
+    tasks: AnyTutorialTask[];
+}
+
+// Buckets tutorial tasks by (groupId, screen) so a single scenario only ever shows
+// tiles from one group. Tasks from different groups can reuse the same screen number
+// and synthetic taskId, so grouping by screen alone merges them into one scenario.
+// Ordered by groupId then screen so scenarios map onto buckets deterministically.
+// For single-group tutorials this is equivalent to grouping by screen.
+export function groupTasksByGroupAndScreen(
+    tasks: AnyTutorialTask[] | undefined,
+): TutorialTaskBucket[] {
+    if (isNotDefined(tasks)) {
+        return [];
+    }
+    const buckets = new Map<string, TutorialTaskBucket>();
+    tasks.forEach((task) => {
         const screen = getScreenIndex(task);
         if (isNotDefined(screen)) {
-            return acc;
+            return;
         }
-        if (!acc[screen]) {
-            acc[screen] = [];
+        const groupId = getTaskGroupId(task);
+        const key = `${groupId ?? ''}::${screen}`;
+        const existing = buckets.get(key);
+        if (existing) {
+            existing.tasks.push(task);
+        } else {
+            buckets.set(key, { groupId, screen, tasks: [task] });
         }
-        acc[screen].push(task);
-        return acc;
-    }, {});
+    });
+    return Array.from(buckets.values()).sort((a, b) => (
+        compareGroupId(a.groupId, b.groupId) || compareNumber(a.screen, b.screen)
+    ));
 }
 
 function getReferenceForTask(task: AnyTutorialTask): number | undefined {
@@ -129,7 +180,7 @@ export function getReferenceResults(
     tasks.forEach((task) => {
         const reference = getReferenceForTask(task);
         if (reference !== undefined) {
-            result[task.taskId] = reference;
+            result[getTutorialTaskKey(task)] = reference;
         }
     });
     return result;
@@ -168,6 +219,6 @@ export function isScenarioCorrect(
         if (isNotDefined(reference)) {
             return true;
         }
-        return results[task.taskId] === reference;
+        return results[getTutorialTaskKey(task)] === reference;
     });
 }

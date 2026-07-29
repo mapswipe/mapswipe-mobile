@@ -20,7 +20,10 @@ import {
 import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import ImageTile from '@/components/ImageTile';
 import { TutorialSessionProps } from '@/components/tutorial/types';
-import { TileTutorialTask } from '@/utils/tutorial';
+import {
+    getTutorialTaskKey,
+    TileTutorialTask,
+} from '@/utils/tutorial';
 import {
     PROJECT_TYPE_COMPLETENESS,
     ResultOption,
@@ -95,13 +98,13 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
             return;
         }
         onResultsChange((prev) => {
-            const missing = tasks.filter((t) => !(t.taskId in prev));
+            const missing = tasks.filter((t) => !(getTutorialTaskKey(t) in prev));
             if (missing.length === 0) {
                 return prev;
             }
             const next: Results = { ...prev };
             missing.forEach((task) => {
-                next[task.taskId] = OPTIONS[0].value;
+                next[getTutorialTaskKey(task)] = OPTIONS[0].value;
             });
             return next;
         });
@@ -166,7 +169,8 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
                     {groupedColumns.map((column) => (
                         <View key={column.taskX} style={styles.column}>
                             {column.rows.map((task) => {
-                                const result = results[task.taskId];
+                                const taskKey = getTutorialTaskKey(task);
+                                const result = results[taskKey];
                                 const selectedOption = typeof result === 'number'
                                     ? optionsByValue[result]
                                     : undefined;
@@ -177,8 +181,8 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
 
                                 return (
                                     <ImageTile
-                                        key={task.taskId}
-                                        taskId={task.taskId}
+                                        key={taskKey}
+                                        taskId={taskKey}
                                         url={task.url}
                                         urlB={
                                             tutorial.projectType === PROJECT_TYPE_COMPLETENESS

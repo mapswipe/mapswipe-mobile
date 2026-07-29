@@ -24,6 +24,7 @@ import {
     getBbox,
     getOptimalZoomLevel,
 } from '@/utils/geo';
+import { getTutorialTaskKey } from '@/utils/tutorial';
 import {
     FeatureGeoJson,
     PROJECT_TYPE_VALIDATE,
@@ -117,7 +118,7 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
     }
 
     const geoJson = 'geojson' in task ? task.geojson as FeatureGeoJson : undefined;
-    const selectedValue = results[task.taskId];
+    const selectedValue = results[getTutorialTaskKey(task)];
 
     // Scale-bar geometry, derived from the task's geojson the same way MapTile
     // frames it (optimal zoom for the bbox).
@@ -186,7 +187,7 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
                             active={selectedValue === option.value}
                             disabled={disabled}
                             textColorVariant="brand"
-                            onPress={(value) => handleSelect(task.taskId, value)}
+                            onPress={(value) => handleSelect(getTutorialTaskKey(task), value)}
                         />
                     ))}
                 </InlineListView>
