@@ -37,6 +37,15 @@
         "plugins": [
             "expo-router",
             "expo-system-ui",
+            [
+                "expo-build-properties",
+                {
+                    "android": {
+                        "compileSdkVersion": 36,
+                        "targetSdkVersion": 36
+                    }
+                }
+            ],
             "@maplibre/maplibre-react-native",
             "./plugins/disable-liquid-glass.cjs",
             "./plugins/strip-unused-permissions.cjs",
