@@ -20,14 +20,19 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { isDefined } from '@togglecorp/fujs';
 import { User } from 'firebase/auth';
+import { onValue } from 'firebase/database';
 import { Provider as UrqlProvider } from 'urql';
 
 import ChangeLogModal from '@/components/ChangeLogModal';
 import LoadingComponent from '@/components/Loader';
 import Page from '@/components/Page';
 import AuthContext, { AuthContextProps } from '@/contexts/auth';
+import { type FbUser } from '@/firebase/functions/generated/tsfirebase/extended_models';
 import { fetchCsrfToken } from '@/utils/csrfToken';
-import { firebaseAuth } from '@/utils/firebase';
+import {
+    firebaseAuth,
+    firebaseRef,
+} from '@/utils/firebase';
 import client from '@/utils/urqlClient';
 
 SplashScreen.preventAutoHideAsync();
@@ -124,6 +129,11 @@ export const toastConfig = {
 
 export default function AppLayout() {
     const [user, setUser] = useState<User | null | undefined>();
+    const [userDetails, setUserDetails] = useState<FbUser | undefined>();
+    // The uid whose profile has settled (loaded or errored). Used to derive
+    // `userDetailsPending` without a lagging boolean, so screens never briefly
+    // act on a stale/empty profile right after login.
+    const [userDetailsLoadedUid, setUserDetailsLoadedUid] = useState<string>();
 
     useEffect(() => {
         const unSubscribe = firebaseAuth.onAuthStateChanged((authUser) => {
@@ -131,6 +141,34 @@ export default function AppLayout() {
         });
         return unSubscribe;
     }, []);
+
+    // Fetch the signed-in user's profile once here and keep it live, so pages can
+    // read it (e.g. teamId) from AuthContext instead of each refetching it.
+    useEffect(() => {
+        if (!user) {
+            return undefined;
+        }
+        const { uid } = user;
+        const unsubscribe = onValue(
+            firebaseRef(`v2/users/${uid}`),
+            (snapshot) => {
+                setUserDetails(snapshot.exists() ? snapshot.val() : undefined);
+                setUserDetailsLoadedUid(uid);
+            },
+            (error) => {
+                // eslint-disable-next-line no-console
+                console.error(error);
+                setUserDetailsLoadedUid(uid);
+            },
+        );
+        return () => {
+            unsubscribe();
+            setUserDetails(undefined);
+            setUserDetailsLoadedUid(undefined);
+        };
+    }, [user]);
+
+    const userDetailsPending = isDefined(user) && user.uid !== userDetailsLoadedUid;
 
     useEffect(() => {
         fetchCsrfToken();
@@ -149,6 +187,8 @@ export default function AppLayout() {
                 isLoggedIn: false,
                 user,
                 setUser,
+                userDetails,
+                userDetailsPending,
             };
         }
 
@@ -158,6 +198,8 @@ export default function AppLayout() {
                 isLoggedIn: false,
                 user,
                 setUser,
+                userDetails,
+                userDetailsPending,
             };
         }
 
@@ -166,8 +208,10 @@ export default function AppLayout() {
             isLoggedIn: true,
             user,
             setUser,
+            userDetails,
+            userDetailsPending,
         };
-    }, [user]);
+    }, [user, userDetails, userDetailsPending]);
 
     if (user === undefined) {
         return (
