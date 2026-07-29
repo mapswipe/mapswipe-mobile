@@ -12,5 +12,13 @@
       "Fix OSM login issue",
       "Fix minor UI issues"
     ]
+  },
+  "3.0.3": {
+    "changes": [
+      "- Fixed tutorial rendering.",
+      "- Fixed private project listing by filtering projects based on team membership.",
+      "- Improved the Projects page to display the project topic, region, number, and organization (where available).",
+      "- Fixed an issue that prevented users from opening projects with progress below 100%."
+    ]
   }
 }
