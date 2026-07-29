@@ -107,7 +107,7 @@ function MapProjectIndex() {
     });
 
     // Groups this user has already contributed to in this project (keyed by
-    // groupId), so we never hand them the same group twice.
+    // groupId), so we can push them to the back of the queue.
     const contributionsQuery = useMemo(
         () => (isDefined(userId)
             ? firebaseRef(`v2/users/${userId}/contributions/${projectId}`)
@@ -132,18 +132,19 @@ function MapProjectIndex() {
     const maxTasksPerUser = Number(project?.maxTasksPerUser ?? 0);
     const userCanMap = maxTasksPerUser <= 0 || tasksCompleted < maxTasksPerUser;
 
-    // Drop the groups this user has already mapped, plus the one they just
-    // finished — its contribution is written by a Cloud Function and may not
-    // have propagated into `userContributions` yet.
     const groupsToPickFrom = useMemo(() => {
         const mappedGroupIds = new Set(
             Object.keys(userContributions ?? {})
                 .filter((key) => key !== TASK_CONTRIBUTION_COUNT_KEY),
         );
-        return availableGroups.filter((group) => (
-            !mappedGroupIds.has(group.key)
-            && group.key !== previousGroupId
-        ));
+        // Allowed Repeated Group
+        const repeatableGroups = availableGroups.filter(
+            (group) => group.key !== previousGroupId,
+        );
+        const unmappedGroups = repeatableGroups.filter(
+            (group) => !mappedGroupIds.has(group.key),
+        );
+        return unmappedGroups.length > 0 ? unmappedGroups : repeatableGroups;
     }, [availableGroups, userContributions, previousGroupId]);
 
     useEffect(() => {

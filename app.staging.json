@@ -15,7 +15,8 @@
             "backgroundColor": "#0D1949",
             "supportsTablet": true,
             "infoPlist": {
-                "ITSAppUsesNonExemptEncryption": false
+                "ITSAppUsesNonExemptEncryption": false,
+                "NSLocationWhenInUseUsageDescription": "MapSwipe does not collect or use your location. The map component that displays satellite imagery links Apple's location APIs, so iOS requires this description."
             }
         },
         "android": {
