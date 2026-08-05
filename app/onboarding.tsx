@@ -1,16 +1,8 @@
-import React, {
+import {
     useCallback,
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    FlatList,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    StyleSheet,
-    View,
-} from 'react-native';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -19,22 +11,25 @@ import welcome2 from '@/assets/images/custom/welcome2.png';
 import welcome3 from '@/assets/images/custom/welcome3.png';
 import welcome4 from '@/assets/images/custom/welcome4.png';
 import welcome5 from '@/assets/images/custom/welcome5.png';
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import InlineListView from '@/components/InlineListView';
-import Page from '@/components/Page';
-import Text from '@/components/Text';
-import {
-    FONT_SIZE_3XL,
-    FONT_SIZE_XL,
-    SCREEN_HEIGHT,
-    SCREEN_WIDTH,
-} from '@/constants/dimensions';
-import { AppTheme } from '@/constants/theme';
-import useTheme from '@/hooks/useTheme';
-import useThemedStyles from '@/hooks/useThemedStyles';
+import Box from '@/components/ui/Box';
+import Button from '@/components/ui/Button';
+import Media, { type MediaSource } from '@/components/ui/Media';
+import PageIndicator from '@/components/ui/PageIndicator';
+import Pager, { type PageGeometry } from '@/components/ui/Pager';
+import Positioned from '@/components/ui/Positioned';
+import Screen from '@/components/ui/Screen';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
+import { SCREEN_FRACTION } from '@/constants/size';
 
-const slides = [
+interface Slide {
+    id: string;
+    title: string;
+    description: string;
+    imageUrl: MediaSource;
+}
+
+const slides: Slide[] = [
     {
         id: '1',
         title: 'welcomeScreen:welcomeToMapSwipe',
@@ -67,71 +62,18 @@ const slides = [
     },
 ];
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
-    container: {
-        height: '100%',
-    },
-    mainContent: {
-        width: SCREEN_WIDTH,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    icon: {
-        resizeMode: 'contain',
-        height: SCREEN_HEIGHT * 0.3,
-        width: SCREEN_WIDTH * 0.8,
-    },
-    heading: {
-        color: theme.primaryBlue,
-        textAlign: 'center',
-        fontSize: FONT_SIZE_3XL,
-        fontWeight: 'bold',
-        width: SCREEN_WIDTH * 0.75,
-    },
-    text: {
-        color: theme.primaryBlue,
-        width: SCREEN_WIDTH * 0.8,
-        textAlign: 'center',
-        fontSize: FONT_SIZE_XL,
-    },
-    dotContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        position: 'absolute',
-        bottom: 40,
-        width: '100%',
-    },
-    dotBase: {
-        height: 8,
-        width: 8,
-        borderRadius: 4,
-        marginHorizontal: 6,
-    },
-    skip: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        width: 100,
-        zIndex: 1,
-    },
+function keySelector(item: Slide): string {
+    return item.id;
+}
 
-});
-export default function Onboarding() {
+function Onboarding() {
     const [index, setIndex] = useState(0);
-    const styles = useThemedStyles(createStyles);
-    const theme = useTheme();
     const router = useRouter();
     const { t } = useTranslation(['welcomeScreen', 'signup']);
 
-    const handleScroll = useCallback(
-        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-            const slideIndex = Math.round(
-                event.nativeEvent.contentOffset.x / SCREEN_WIDTH,
-            );
-            setIndex(slideIndex);
-        },
-        [],
-    );
+    const handleIndexChange = useCallback((pageIndex: number) => {
+        setIndex(pageIndex);
+    }, []);
 
     const handleSignUp = useCallback(async () => {
         try {
@@ -143,75 +85,117 @@ export default function Onboarding() {
         }
     }, [router]);
 
-    return (
-        <Page
-            title="onboarding"
-            scrollable={false}
-        >
-            <BlockListView style={styles.container}>
-                <InlineListView style={styles.skip}>
+    const renderPage = useCallback(
+        (item: Slide, itemIndex: number, geometry: PageGeometry) => (
+            <Stack
+                spacing="md"
+                padding="md"
+                align="center"
+                justify="center"
+                grow="fill"
+            >
+                {/* The footprint is a measured Box and the bitmap spans it: Media's spanning
+                    rungs are a fixed 200 and 240 tall, and this illustration is a fraction of
+                    the page it is dealt into. */}
+                <Box
+                    width={geometry.width * SCREEN_FRACTION.contentWidth}
+                    height={geometry.height * SCREEN_FRACTION.heroHeight}
+                >
+                    <Media
+                        source={item.imageUrl}
+                        sizeVariant="fill"
+                        fit="contain"
+                        withoutAccessibilityLabel
+                    />
+                </Box>
+                <Stack
+                    spacing="md"
+                    padding="md"
+                    align="center"
+                >
+                    {/* ui/Text has no width, so each block is bounded by the Box around it. Both
+                        fractions are of the measured page, as they were of SCREEN_WIDTH. */}
+                    <Box width={geometry.width * SCREEN_FRACTION.headingWidth}>
+                        <Text
+                            variant="display"
+                            // `brand`, whose content slot IS theme.primaryBlue. Not `default`:
+                            // that is textPrimary, a near-black that flips to near-white in the
+                            // dark theme, and this page is not a brand-backed one.
+                            colorVariant="brand"
+                            align="center"
+                        >
+                            {t(item.title)}
+                        </Text>
+                    </Box>
+                    <Box width={geometry.width * SCREEN_FRACTION.contentWidth}>
+                        <Text
+                            variant="description"
+                            colorVariant="brand"
+                            align="center"
+                        >
+                            {t(item.description)}
+                        </Text>
+                    </Box>
+                </Stack>
+                {/* Only render button on the last slide */}
+                {itemIndex === slides.length - 1 && (
                     <Button
-                        name="skip"
-                        title={t('welcomeScreen:skip')}
-                        colorVariant="primaryBlue"
-                        styleVariant="transparent"
+                        title={t('signup:signUp')}
+                        accessibilityLabel={t('signup:signUp')}
+                        colorVariant="negative"
                         onPress={handleSignUp}
                     />
-                </InlineListView>
-                <FlatList
-                    data={slides}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.container}
-                    onScroll={handleScroll}
-                    scrollEventThrottle={16}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item, index: itemIndex }) => (
-                        <BlockListView
-                            style={styles.mainContent}
-                            withCenteredContent
-                            withPadding
-                            key={item.id}
-                        >
-                            <Image
-                                style={styles.icon}
-                                source={item.imageUrl}
-                            />
-                            <BlockListView withCenteredContent withPadding>
-                                <Text style={styles.heading}>
-                                    {t(item.title)}
-                                </Text>
-                                <Text style={styles.text}>
-                                    {t(item.description)}
-                                </Text>
-                            </BlockListView>
-                            {/* Only render button on the last slide */}
-                            {itemIndex === slides.length - 1 && (
-                                <Button
-                                    name="Sign Up"
-                                    title={t('signup:signUp')}
-                                    colorVariant="primaryRed"
-                                    styleVariant="filled"
-                                    onPress={handleSignUp}
-                                />
-                            )}
-                        </BlockListView>
-                    )}
-                />
-                <View style={styles.dotContainer}>
-                    {slides.map((item, i) => (
-                        <View
-                            key={item.id}
-                            style={[
-                                styles.dotBase,
-                                // eslint-disable-next-line react-native/no-inline-styles
-                                { backgroundColor: i === index ? theme.backgroundBrand : '#ccc' },
-                            ]}
+                )}
+            </Stack>
+        ),
+        [t, handleSignUp],
+    );
+
+    return (
+        <Screen
+            title="onboarding"
+            layout="fill"
+            chrome={(
+                <>
+                    <Positioned
+                        anchor="topEnd"
+                        offset="3xs"
+                    >
+                        <Button
+                            title={t('welcomeScreen:skip')}
+                            accessibilityLabel={t('welcomeScreen:skip')}
+                            colorVariant="brand"
+                            styleVariant="transparent"
+                            width="hug"
+                            onPress={handleSignUp}
                         />
-                    ))}
-                </View>
-            </BlockListView>
-        </Page>
+                    </Positioned>
+                    <Positioned
+                        anchor="bottom"
+                        offsetBlock="3xl"
+                    >
+                        {/* `brand`: the active dot is the role's content, i.e. the same navy the
+                            page drew as backgroundBrand, and its spent dots are the grey rung.
+                            `onBrand` is the tutorial's white pair and would vanish here. */}
+                        <PageIndicator
+                            count={slides.length}
+                            currentIndex={index}
+                            colorVariant="brand"
+                            spacing="2xs"
+                        />
+                    </Positioned>
+                </>
+            )}
+        >
+            <Pager
+                data={slides}
+                keyExtractor={keySelector}
+                renderPage={renderPage}
+                onIndexChange={handleIndexChange}
+                sizeVariant="page"
+            />
+        </Screen>
     );
 }
+
+export default Onboarding;

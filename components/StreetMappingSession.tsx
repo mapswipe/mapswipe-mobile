@@ -1,10 +1,7 @@
-import {
-    useMemo,
-    useState,
-} from 'react';
+import { useMemo } from 'react';
 
-import BlockListView from '@/components/BlockListView';
-import Text from '@/components/Text';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
 import { StreetProject } from '@/utils/types';
@@ -20,24 +17,21 @@ function StreetMappingSession(props: Props) {
         projectDetails,
     } = props;
 
-    const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
-
     const taskQuery = useMemo(() => (
         firebaseRef(`v2/tasks/${projectDetails.projectId}/${taskGroupId}`)
     ), [projectDetails.projectId, taskGroupId]);
 
-    const { data: compressedTasks } = useFirebaseDatabase<string>({
+    // Tasks are fetched but nothing consumes them yet: the session UI is still a placeholder.
+    useFirebaseDatabase<string>({
         query: taskQuery,
     });
 
-    console.info(compressedTasks);
-
     return (
-        <BlockListView>
+        <Stack spacing="none">
             <Text>
                 Not implemented yet!
             </Text>
-        </BlockListView>
+        </Stack>
     );
 }
 

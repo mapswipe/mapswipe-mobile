@@ -6,9 +6,6 @@ import {
     Trans,
     useTranslation,
 } from 'react-i18next';
-import { StyleSheet } from 'react-native';
-import { Checkbox } from 'expo-checkbox';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import {
     isDefined,
@@ -20,19 +17,17 @@ import {
 } from 'firebase/auth';
 import { update } from 'firebase/database';
 
-import logo from '@/assets/images/icon.png';
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import InlineListView from '@/components/InlineListView';
-import Link from '@/components/Link';
-import Page from '@/components/Page';
-import Text from '@/components/Text';
-import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
-import { FONT_SIZE_XS } from '@/constants/dimensions';
-import { type AppTheme } from '@/constants/theme';
+import Button from '@/components/ui/Button';
+import { type ButtonStateType } from '@/components/ui/ButtonLayout';
+import Checkbox from '@/components/ui/Checkbox';
+import Link from '@/components/ui/Link';
+import Row from '@/components/ui/Row';
+import AuthScreen from '@/components/ui/Screen/AuthScreen';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
+import TextInput from '@/components/ui/TextInput';
 import useAsyncHandler from '@/hooks/useAsyncHandler';
-import useThemedStyles from '@/hooks/useThemedStyles';
 import {
     MAX_USERNAME_LENGTH,
     usernameExists,
@@ -43,27 +38,12 @@ import {
     firebaseRef,
 } from '@/utils/firebase';
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
-    icon: {
-        width: 128,
-        height: 128,
-    },
-    logoContainer: {
-        paddingTop: 96,
-    },
-    text: {
-        color: theme.textOnBrand,
-        fontSize: FONT_SIZE_XS,
-    },
-    privacyLink: {
-        color: theme.textOnBrand,
-        fontSize: FONT_SIZE_XS,
-        textDecorationLine: 'underline',
-    },
-    privacy: {
-        alignItems: 'center',
-    },
-});
+const APP_NAME = 'MapSwipe';
+
+const PRIVACY_AGREEMENT_LABEL = 'I agree to the Privacy Notice';
+const PRIVACY_NOTICE_LABEL = 'Privacy Notice';
+
+const PRIVACY_NOTICE_URI = 'https://mapswipe.org/';
 
 function Register() {
     const [username, setUsername] = useState<string>();
@@ -92,6 +72,13 @@ function Register() {
             newPassword.length < 6 ? t('passwordError') : undefined,
         );
     }, [t]);
+
+    const handlePrivacyNoticePress = useCallback(() => {
+        router.push({
+            pathname: '/WebviewWindow',
+            params: { uri: PRIVACY_NOTICE_URI },
+        });
+    }, [router]);
 
     const handleSignUpPress = useCallback(() => {
         handleAsync(
@@ -176,127 +163,121 @@ function Register() {
         });
     }, [handleAsync, username, email, password, t]);
 
-    const styles = useThemedStyles(createStyles);
+    const fieldStateVariant = loading ? 'disabled' : 'editable';
+
+    let signUpState: ButtonStateType = 'default';
+    if (loading) {
+        signUpState = 'pending';
+    } else if (!agreeToPrivacy) {
+        signUpState = 'disabled';
+    }
 
     return (
-        <Page
+        <AuthScreen
             title="Register"
-            variant="brand"
+            logoAccessibilityLabel={APP_NAME}
+            footer={(
+                <>
+                    <Link
+                        href={{
+                            pathname: '/login',
+                        }}
+                        title={t('loginExistingAccount')}
+                        accessibilityLabel={t('loginExistingAccount')}
+                        colorVariant="onBrand"
+                        styleVariant="transparent"
+                        padding="2xs"
+                    />
+                    <Link
+                        href={{
+                            pathname: '/login/osm',
+                        }}
+                        title={t('loginSignupWithOSM')}
+                        accessibilityLabel={t('loginSignupWithOSM')}
+                        colorVariant="onBrand"
+                        styleVariant="transparent"
+                        padding="2xs"
+                    />
+                </>
+            )}
         >
-            <BlockListView
-                spacing="sm"
-                withPadding
-            >
-                <BlockListView
-                    withCenteredContent
-                    style={styles.logoContainer}
+            <Stack spacing="md">
+                <TextInput
+                    contentVariant="username"
+                    accessibilityLabel={t('chooseUsername')}
+                    placeholder={t('chooseUsername')}
+                    hintText={t('usernamePublic')}
+                    value={username}
+                    errorText={usernameError}
+                    onChangeText={handleUsernameChange}
+                    maxLength={MAX_USERNAME_LENGTH}
+                    stateVariant={fieldStateVariant}
+                />
+                <TextInput
+                    contentVariant="email"
+                    accessibilityLabel={t('enterYourEmail')}
+                    placeholder={t('enterYourEmail')}
+                    value={email}
+                    onChangeText={setEmail}
+                    stateVariant={fieldStateVariant}
+                />
+                <TextInput
+                    contentVariant="password"
+                    accessibilityLabel={t('choosePassword')}
+                    placeholder={t('choosePassword')}
+                    value={password}
+                    onChangeText={handlePasswordChange}
+                    errorText={passwordError}
+                    stateVariant={fieldStateVariant}
+                />
+                {/* RN Text does not shrink, so without wrap the sentence overflows the row. */}
+                <Row
+                    spacing="3xs"
+                    wrap
                 >
-                    <Image
-                        style={styles.icon}
-                        source={logo}
+                    <Checkbox
+                        checked={agreeToPrivacy}
+                        onChange={setAgreeToPrivacy}
+                        colorVariant="positive"
+                        accessibilityLabel={PRIVACY_AGREEMENT_LABEL}
+                        disabled={loading}
                     />
-                </BlockListView>
-                <BlockListView>
-                    <TextInput
-                        variant="brand"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        placeholder={t('chooseUsername')}
-                        hintText={t('usernamePublic')}
-                        value={username}
-                        errorText={usernameError}
-                        onChangeText={handleUsernameChange}
-                        maxLength={MAX_USERNAME_LENGTH}
-                        readOnly={loading}
-                    />
-                    <TextInput
-                        variant="brand"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        autoComplete="email"
-                        keyboardType="email-address"
-                        placeholder={t('enterYourEmail')}
-                        value={email}
-                        onChangeText={setEmail}
-                        readOnly={loading}
-                    />
-                    <TextInput
-                        variant="brand"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        placeholder={t('choosePassword')}
-                        value={password}
-                        onChangeText={handlePasswordChange}
-                        errorText={passwordError}
-                        readOnly={loading}
-                        secureTextEntry
-                    />
-                    <InlineListView
-                        spacing="3xs"
-                        style={styles.privacy}
-                    >
-                        <Checkbox
-                            value={agreeToPrivacy}
-                            onValueChange={setAgreeToPrivacy}
-                            color={agreeToPrivacy ? '#4630EB' : undefined}
-                            disabled={loading}
-                        />
-                        <Text
-                            variant="label"
-                            style={styles.text}
-                        >
-                            <Trans
-                                i18nKey="signup:IagreeToPrivacyNotice"
-
-                            >
-                                I agree to the
-                                <Text
-                                    style={styles.privacyLink}
-                                    onPress={() => router.push({
-                                        pathname: '/WebviewWindow',
-                                        params: { uri: 'https://mapswipe.org/' },
-                                    })}
-                                >
-                                    Privacy Notice
-                                </Text>
-                            </Trans>
-                        </Text>
-                    </InlineListView>
-                </BlockListView>
-                <BlockListView>
                     <Text
-                        variant="label"
-                        style={styles.text}
+                        variant="caption"
+                        colorVariant="onBrand"
                     >
-                        {t('contributionWarningOnSignup')}
+                        <Trans i18nKey="signup:IagreeToPrivacyNotice">
+                            I agree to the
+                            <Text
+                                // A nested Text does not inherit the variant, so repeat it.
+                                variant="caption"
+                                colorVariant="onBrand"
+                                onPress={handlePrivacyNoticePress}
+                                accessibilityLabel={PRIVACY_NOTICE_LABEL}
+                                withUnderline
+                            >
+                                Privacy Notice
+                            </Text>
+                        </Trans>
                     </Text>
-                    <Button
-                        name={undefined}
-                        onPress={handleSignUpPress}
-                        title={t('signUp')}
-                        disabled={loading || !agreeToPrivacy}
-                        colorVariant="primaryRed"
-                        styleVariant="filled"
-                    />
-                    <BlockListView>
-                        <Link
-                            spacing="xs"
-                            href={{
-                                pathname: '/login',
-                            }}
-                            title={t('loginExistingAccount')}
-                        />
-                        <Link
-                            spacing="xs"
-                            href={{
-                                pathname: '/login/osm',
-                            }}
-                            title={t('loginSignupWithOSM')}
-                        />
-                    </BlockListView>
-                </BlockListView>
-            </BlockListView>
-        </Page>
+                </Row>
+            </Stack>
+            <Stack spacing="md">
+                <Text
+                    variant="caption"
+                    colorVariant="onBrand"
+                >
+                    {t('contributionWarningOnSignup')}
+                </Text>
+                <Button
+                    onPress={handleSignUpPress}
+                    title={t('signUp')}
+                    accessibilityLabel={t('signUp')}
+                    colorVariant="negative"
+                    state={signUpState}
+                />
+            </Stack>
+        </AuthScreen>
     );
 }
 

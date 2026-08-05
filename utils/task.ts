@@ -9,7 +9,6 @@ import {
 } from './types';
 
 const getQuadKeyFromCoordsAndZoom = (x: number, y: number, zoom: number) => {
-    // Create a quadkey for use with certain tileservers that use them, e.g. Bing
     let quadKey = '';
     for (let i = zoom; i > 0; i -= 1) {
         let digit = 0;

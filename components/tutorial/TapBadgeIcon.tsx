@@ -1,43 +1,29 @@
+import Badge from '@/components/ui/Badge';
+import Box from '@/components/ui/Box';
+import Icon, { type IconName } from '@/components/ui/Icon';
+import Positioned from '@/components/ui/Positioned';
 import {
-    StyleSheet,
-    View,
-} from 'react-native';
+    ICON_SIZE,
+    type IconSizeType,
+} from '@/constants/size';
+import { type ColorVariant } from '@/constants/theme';
 
-import Icon, { type IconName } from '@/components/Icon';
-import Text from '@/components/Text';
+const GLYPH_SIZE: IconSizeType = '5xl';
 
-const ICON_SIZE = 40;
-const BADGE_SIZE = 18;
-
-const styles = StyleSheet.create({
-    wrapper: {
-        width: ICON_SIZE,
-        height: ICON_SIZE,
-        position: 'relative',
-    },
-    badge: {
-        position: 'absolute',
-        top: -2,
-        right: -4,
-        width: BADGE_SIZE,
-        height: BADGE_SIZE,
-        borderRadius: BADGE_SIZE / 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    badgeText: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        lineHeight: BADGE_SIZE,
-    },
-});
+const BADGE_OVERHANG_BLOCK = -2;
+const BADGE_OVERHANG_INLINE = -4;
 
 interface Props {
     iconName?: IconName;
     badgeNumber?: number;
+
+    // Raw colour for Firebase author data; wins over badgeColorVariant.
     badgeColor?: string;
-    iconColor?: string;
+
+    badgeColorVariant?: ColorVariant;
+
+    colorVariant?: ColorVariant;
+
 }
 
 function TapBadgeIcon(props: Props) {
@@ -45,22 +31,36 @@ function TapBadgeIcon(props: Props) {
         iconName = 'tap',
         badgeNumber,
         badgeColor,
-        iconColor = '#FFFFFF',
+        badgeColorVariant,
+        colorVariant = 'onBrand',
     } = props;
 
     return (
-        <View style={styles.wrapper}>
+        <Box
+            width={ICON_SIZE[GLYPH_SIZE]}
+            height={ICON_SIZE[GLYPH_SIZE]}
+        >
             <Icon
                 name={iconName}
-                color={iconColor}
-                size={ICON_SIZE}
+                sizeVariant={GLYPH_SIZE}
+                colorVariant={colorVariant}
             />
-            {badgeNumber && badgeColor && (
-                <View style={[styles.badge, { backgroundColor: badgeColor }]}>
-                    <Text style={styles.badgeText}>{String(badgeNumber)}</Text>
-                </View>
+            {/* badgeNumber={0} renders a bare 0; callers never send it. */}
+            {badgeNumber && (badgeColor || badgeColorVariant) && (
+                <Positioned
+                    anchor="topEnd"
+                    offsetBlock={BADGE_OVERHANG_BLOCK}
+                    offsetInline={BADGE_OVERHANG_INLINE}
+                >
+                    <Badge
+                        sizeVariant="sm"
+                        colorVariant={badgeColorVariant}
+                        dotColor={badgeColor}
+                        label={String(badgeNumber)}
+                    />
+                </Positioned>
             )}
-        </View>
+        </Box>
     );
 }
 

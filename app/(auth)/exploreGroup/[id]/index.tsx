@@ -1,15 +1,9 @@
-import React, {
+import {
     useCallback,
     useMemo,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    Linking,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    View,
-} from 'react-native';
+import { Linking } from 'react-native';
 import {
     useLocalSearchParams,
     useRouter,
@@ -21,28 +15,28 @@ import {
 } from 'firebase/database';
 import { gql } from 'urql';
 
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import HeatMap from '@/components/HeatMap';
-import Icon from '@/components/Icon';
-import InfoCard, { StatsInfo } from '@/components/InfoCard';
-import InlineListView from '@/components/InlineListView';
-import Page from '@/components/Page';
 import showConfirm from '@/components/showConfirm';
-import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
+import Banner from '@/components/ui/Banner';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import Grid from '@/components/ui/Grid';
+import HeatMap from '@/components/ui/HeatMap';
+import InfoCard, { type InfoCardProps } from '@/components/ui/InfoCard';
+import ListRow from '@/components/ui/ListRow';
+import ListView from '@/components/ui/ListView';
+import Screen from '@/components/ui/Screen';
+import Section from '@/components/ui/Section';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 import {
     communityDashboardUrl,
     supportedLanguages,
 } from '@/constants/common';
-import { SPACING_XS } from '@/constants/dimensions';
-import { AppTheme } from '@/constants/theme';
 import { FbUserGroup } from '@/firebaseGenerated/extended_models';
 import { useUserGroupStatsQuery } from '@/generated/types/graphql';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
-import useTheme from '@/hooks/useTheme';
-import useThemedStyles from '@/hooks/useThemedStyles';
 import { getTimeSegments } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
 
@@ -67,35 +61,24 @@ const USER_GROUP_STATS = gql`
         }
     }
 `;
-const createStyles = (theme: AppTheme) => StyleSheet.create({
-    infoCardContainer: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-        gap: 10,
-    },
-    infoCard: {
-        width: '48%',
-        marginBottom: 12,
-    },
-    archivedInfo: {
-        padding: SPACING_XS,
-        backgroundColor: theme.overlay,
-    },
-    infoText: {
-        justifyContent: 'center',
-        flex: 1,
-    },
-});
+
+const BACK_LABEL = 'Back';
+
+const FALLBACK_TITLE = 'Explore Group';
+
+const MORE_STATS_LABEL = 'More Stats';
+
+// ListView is the only component that owns a RefreshControl, so the body rides in its header slot.
+const NO_ROWS: readonly never[] = [];
+const noRowKey = () => '';
+const noRow = () => null;
+
+type StatEntry = Pick<InfoCardProps, 'label' | 'value'>;
 
 function ExploreGroup() {
     const { id: userGroupId } = useLocalSearchParams<{ id: string }>();
     const { user } = useAuth();
     const userId = user?.uid;
-    const styles = useThemedStyles(createStyles);
-    const theme = useTheme();
     const router = useRouter();
     const { t, i18n } = useTranslation(['profileScreen', 'userGroupScreen']);
 
@@ -126,7 +109,7 @@ function ExploreGroup() {
         [i18n.language],
     );
 
-    const communityUserGroupStats: StatsInfo[] = useMemo(() => {
+    const communityUserGroupStats: StatEntry[] = useMemo(() => {
         const stats = communityUserGroupStatsData?.communityUserGroupStats?.stats;
         const {
             totalContributors,
@@ -149,7 +132,8 @@ function ExploreGroup() {
                 value: String(segment.value),
                 unit: segment.unit,
             }),
-        ); const totalSwipeAreaFormatted = formatNumber(
+        );
+        const totalSwipeAreaFormatted = formatNumber(
             Math.round(totalAreaSwiped ?? 0),
         );
         const totalOrganizationFormatted = formatNumber(totalOrganization ?? 0);
@@ -157,27 +141,27 @@ function ExploreGroup() {
 
         return [
             {
-                title: t('Total swipes'),
+                label: t('Total swipes'),
                 value: totalSwipesFormatted,
             },
             {
-                title: t('Total contributors'),
+                label: t('Total contributors'),
                 value: totalContributorsFormatted,
             },
             {
-                title: t('Total time spent swiping'),
+                label: t('Total time spent swiping'),
                 value: totalSwipeTimeSegments,
             },
             {
-                title: t('Total area swiped (sq.km)'),
+                label: t('Total area swiped (sq.km)'),
                 value: totalSwipeAreaFormatted,
             },
             {
-                title: t('Total projects'),
+                label: t('Total projects'),
                 value: totalMappingProjectsFormatted,
             },
             {
-                title: t('Organizations supported'),
+                label: t('Organizations supported'),
                 value: totalOrganizationFormatted,
             },
         ];
@@ -202,12 +186,10 @@ function ExploreGroup() {
 
             const proceed = async () => {
                 try {
-                    // Create log entry
                     const logRef = push(firebaseRef('/v2/userGroupMembershipLogs'));
                     const logKey = logRef.key;
                     if (!logKey) throw new Error('Cannot generate log key');
 
-                    // Prepare updates
                     const updates: Record<string, unknown> = {
                         [`/v2/users/${userId}/userGroups/${userGroupId}`]: isJoin ? true : null,
                         [`/v2/userGroups/${userGroupId}/users/${userId}`]: isJoin ? true : null,
@@ -221,7 +203,6 @@ function ExploreGroup() {
 
                     await update(firebaseRef('/'), updates);
 
-                    // Show success
                     showAlert({
                         title: `Usergroup ${isJoin ? 'joined' : 'left'}`,
                         message: isJoin
@@ -248,7 +229,7 @@ function ExploreGroup() {
         [userId, userGroupId, router],
     );
 
-    const calendarHeatmapData = React.useMemo(() => {
+    const calendarHeatmapData = useMemo(() => {
         const contributionStats = communityUserGroupStatsData
             ?.communityUserGroupStats?.filteredStats
             ?.swipeByDate;
@@ -270,126 +251,108 @@ function ExploreGroup() {
     const isUserMember = !!userId && !!userGroupData?.users?.[userId];
     const isGroupArchived = !!userGroupData?.archivedAt || !!userGroupData?.archivedBy;
 
-    return (
-        <Page
-            title={userGroupData?.name ?? 'Explore Group'}
-            scrollable={false}
-            showBackButton
-            headerTitleAlign="left"
-        >
-            {userGroupDetailPending && (
-                <BlockListView
-                    withCenteredContent
+    const body = (
+        <>
+            {!isUserMember && !isGroupArchived && userGroupData && (
+                <Stack
+                    spacing="2xs"
+                    padding="xs"
+                >
+                    <Button
+                        name="join"
+                        title={t('userGroupScreen:joinGroup')}
+                        accessibilityLabel={t('userGroupScreen:joinGroup')}
+                        colorVariant="positive"
+                        onPress={handleUserGroupAction}
+                    />
+                </Stack>
+            )}
+            {isGroupArchived && (
+                <Banner
+                    title={t('This group has been archived')}
+                    colorVariant="notice"
+                />
+            )}
+            <Stack
+                spacing="xs"
+                padding="xs"
+            >
+                <Text
+                    variant="label"
+                    colorVariant="secondary"
+                >
+                    All the stats are only updated once a day
+                </Text>
+                <Grid spacing="2xs">
+                    {communityUserGroupStats.map((item) => (
+                        <InfoCard
+                            key={item.label}
+                            label={item.label}
+                            value={item.value}
+                            flex="fill"
+                        />
+                    ))}
+                </Grid>
+            </Stack>
+            <Section
+                title={t('profileScreen:contributionHeatmap')}
+                withPadding
+            >
+                <HeatMap activityData={calendarHeatmapData} />
+                <ListRow
+                    name="moreStat"
+                    title={MORE_STATS_LABEL}
+                    accessibilityLabel={MORE_STATS_LABEL}
+                    affordance="external"
+                    onPress={handleMoreStatsClick}
+                />
+            </Section>
+            {isUserMember && (
+                <Section
+                    title={t('profileScreen:settings')}
                     withPadding
-                    style={styles.infoText}
                 >
-                    <Text>
-                        <Text>{t('Loading group details...')}</Text>
-                    </Text>
-                </BlockListView>
+                    <ListRow
+                        name="leave"
+                        title={t('userGroupScreen:leaveGroup')}
+                        accessibilityLabel={t('userGroupScreen:leaveGroup')}
+                        colorVariant="negative"
+                        onPress={handleUserGroupAction}
+                    />
+                </Section>
             )}
+        </>
+    );
 
-            {!userGroupDetailPending && userGroupData && (
-                <ScrollView
-                    refreshControl={(
-                        <RefreshControl
-                            refreshing={
-                                userGroupDetailPending
-                            || loadingUserGroupStats
-                            }
-                            onRefresh={refetchUserGroupStats}
-                        />
-                    )}
-                >
-                    {!userGroupDetailPending && !userGroupData && (
-                        <BlockListView
-                            withCenteredContent
-                            withPadding
-                            style={styles.infoText}
-                        >
-                            <Text>
-                                {t('Details not available for this User group')}
-                            </Text>
-                        </BlockListView>
-                    )}
-                    {!isUserMember && !isGroupArchived && userGroupData && (
-                        <InlineListView
-                            withPadding
-                            spacing="2xs"
-                        >
-                            <Button
-                                name="join"
-                                title={t('userGroupScreen:joinGroup')}
-                                colorVariant="success"
-                                onPress={handleUserGroupAction}
-                            />
-                        </InlineListView>
-                    ) }
-                    {isGroupArchived && (
-                        <View style={styles.archivedInfo}>
-                            <Text>{t('This group has been archived')}</Text>
-                        </View>
-                    )}
-                    <BlockListView
-                        withPadding
-                        spacing="xs"
-                    >
-                        <Text variant="label">
-                            All the stats are only updated once a day
-                        </Text>
-                        <View style={styles.infoCardContainer}>
-                            {communityUserGroupStats.map((item) => (
-                                <InfoCard
-                                    key={item.title}
-                                    title={item.title}
-                                    value={item.value}
-                                    style={styles.infoCard}
-                                />
-                            ))}
-                        </View>
-                    </BlockListView>
-                    <BlockListView
-                        withPadding
-                        spacing="xs"
-                    >
-                        <Text variant="title">
-                            {t('profileScreen:contributionHeatmap')}
-                        </Text>
-                        <HeatMap activityData={calendarHeatmapData} />
-                        <Button
-                            name="moreStat"
-                            title="More Stats"
-                            onPress={handleMoreStatsClick}
-                            action={(
-                                <Icon
-                                    name="sign-out"
-                                    size={18}
-                                    color={theme.info}
-                                />
-                            )}
-                            styleVariant="block"
-                        />
-                    </BlockListView>
-                    {isUserMember && (
-                        <BlockListView
-                            withPadding
-                            spacing="xs"
-                        >
-                            <Text variant="title">
-                                {t('profileScreen:settings')}
-                            </Text>
-                            <Button
-                                name="leave"
-                                title={t('userGroupScreen:leaveGroup')}
-                                onPress={handleUserGroupAction}
-                                styleVariant="block"
-                                colorVariant="danger"
-                            />
-                        </BlockListView>
-                    )}
-                </ScrollView>
+    return (
+        <Screen
+            title={userGroupData?.name ?? FALLBACK_TITLE}
+            withHeader
+            backAccessibilityLabel={BACK_LABEL}
+            // The navigator header already covers the status bar, so only the bottom is ours.
+            safeArea="bottom"
+            layout="fill"
+            headerTitleAlign="start"
+            pending={userGroupDetailPending}
+            pendingLabel={t('Loading group details...')}
+            empty={!userGroupData && (
+                <EmptyState
+                    title={t('Details not available for this User group')}
+                    sizeVariant="inline"
+                />
             )}
-        </Page>
+        >
+            <ListView
+                data={NO_ROWS}
+                keySelector={noRowKey}
+                renderItem={noRow}
+                spacing="none"
+                grow="slot"
+                header={body}
+                onRefresh={refetchUserGroupStats}
+                refreshing={userGroupDetailPending || loadingUserGroupStats}
+            />
+        </Screen>
     );
 }
 

@@ -1,58 +1,49 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
 
 import MapswipeMagnifierImage from '@/assets/images/custom/mapswipe_magnifying_glass.png';
-import useTheme from '@/hooks/useTheme';
+import Icon from '@/components/ui/Icon';
+import Media from '@/components/ui/Media';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 
-import BlockListView from '../BlockListView';
-import Icon from '../Icon';
-import Text from '../Text';
 import InstructionRow from './InstructionRow';
 import TapBadgeIcon from './TapBadgeIcon';
 
-const styles = StyleSheet.create({
-    image: {
-        width: 40,
-        height: 40,
-    },
-});
-
 function TileGridOutro() {
     const { t } = useTranslation('TutorialOutroScreen');
-    const theme = useTheme();
+
     return (
-        <BlockListView>
-            <Text colorVariant="brand" variant="title">
+        <Stack spacing="md">
+            <Text colorVariant="onBrand" variant="title">
                 {t('dontWorryIfYoureUnsure')}
             </Text>
             <InstructionRow
                 icon={(
                     <TapBadgeIcon
-                        iconColor="#FFFFFF"
+                        colorVariant="onBrand"
                         iconName="tap"
                         badgeNumber={2}
-                        badgeColor={theme.success}
+                        badgeColorVariant="positive"
                     />
                 )}
                 description={t('youCanAlwaysTapTwice')}
             />
             <InstructionRow
                 icon={(
-                    <Image
+                    <Media
                         source={MapswipeMagnifierImage}
-                        style={styles.image}
-                        contentFit="contain"
+                        sizeVariant="sm"
+                        fit="contain"
+                        withoutAccessibilityLabel
                     />
                 )}
                 description={t('everyImageViewedBy')}
             />
             <InstructionRow
-                icon={<Icon name="hand-left-outline" color="#FFFFFF" size={40} />}
+                icon={<Icon name="hand-left-outline" colorVariant="onBrand" sizeVariant="5xl" />}
                 description={t('holdZoom')}
             />
-        </BlockListView>
+        </Stack>
     );
 }
 

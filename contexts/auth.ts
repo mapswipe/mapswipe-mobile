@@ -25,8 +25,7 @@ export type AuthContextProps = (
     }
 ) & {
   setUser: Dispatch<SetStateAction<User | null | undefined>>;
-  // The signed-in user's realtime-database profile (v2/users/{uid}), fetched once
-  // at the auth layer so screens don't each refetch it. `teamId` lives here.
+  // The realtime-database profile at v2/users/{uid}; `teamId` lives here.
   userDetails: FbUser | undefined;
   userDetailsPending: boolean;
 };

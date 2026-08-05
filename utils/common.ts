@@ -17,10 +17,8 @@ import { firebaseRef } from './firebase';
 export const MIN_USERNAME_LENGTH = 3;
 export const MAX_USERNAME_LENGTH = 30;
 
-// Allowed: a-z A-Z 0-9 _ -
-// Must start and end with alphanumeric, no consecutive special chars (__ -- -_ _-)
-// NOTE: this validation is mirrored in the Firebase function at
-// python-mapswipe-workers/firebase/functions/src/utils/index.ts — keep in sync
+// Must start and end with alphanumeric; no consecutive _ or -.
+// Keep in sync with python-mapswipe-workers/firebase/functions/src/utils/index.ts.
 const USERNAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
 const CONSECUTIVE_SPECIAL_REGEX = /[_-]{2,}/;
 
@@ -61,8 +59,7 @@ export function rankedSearchOnList<T>(
 
 export async function usernameExists(username: string) {
     try {
-        // usernameKey is the lowercased username, so compare lowercased too
-        // for a case-insensitive uniqueness check.
+        // usernameKey is stored lowercased, so compare lowercased.
         const q = query(
             firebaseRef('v2/users'),
             orderByChild('usernameKey'),

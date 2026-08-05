@@ -1,136 +1,103 @@
 import {
     cloneElement,
-    Dispatch,
+    type Dispatch,
     isValidElement,
     type ReactElement,
     type ReactNode,
-    SetStateAction,
+    type SetStateAction,
     useCallback,
     useEffect,
     useMemo,
-    useRef,
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    FlatList,
-    StyleSheet,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
-} from 'react-native';
 import {
     compareNumber,
     isDefined,
     isNotDefined,
     listToMap,
 } from '@togglecorp/fujs';
-import {
-    CheckIcon,
-    SelectionIcon,
-} from 'phosphor-react-native';
 
-import Button from '@/components/Button';
-import InlineListView from '@/components/InlineListView';
+import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import LocateTile from '@/components/LocateTile';
-import ProgressBar from '@/components/ProgressBar';
 import ScaleBar from '@/components/ScaleBar';
-import Text from '@/components/Text';
-import { SCREEN_WIDTH } from '@/constants/dimensions';
+import Badge from '@/components/ui/Badge';
+import Box from '@/components/ui/Box';
+import IconButton from '@/components/ui/IconButton';
+import Pager, {
+    type PageGeometry,
+    type PagerPosition,
+} from '@/components/ui/Pager';
+import Positioned from '@/components/ui/Positioned';
+import ProgressBar from '@/components/ui/ProgressBar';
+import Row from '@/components/ui/Row';
+import Spacer from '@/components/ui/Spacer';
+import Stack from '@/components/ui/Stack';
+import Surface from '@/components/ui/Surface';
+import { LOCATE_DEFAULT_ANSWER_OPTIONS } from '@/constants/answers';
+import useAnswerColors from '@/hooks/useAnswerColors';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
-import useTheme from '@/hooks/useTheme';
-import useThemedStyles from '@/hooks/useThemedStyles';
+import useFittedTileWidth from '@/hooks/useFittedTileWidth';
+import useViewport from '@/hooks/useViewport';
 import { firebaseRef } from '@/utils/firebase';
 import { buildTasks } from '@/utils/task';
 import {
-    FbMappingGroupTileMapServiceCreateOnlyInput,
-    LocateFeaturesProject,
-    ResultOption,
-    Results,
+    type FbMappingGroupTileMapServiceCreateOnlyInput,
+    type LocateFeaturesProject,
+    type ResultOption,
+    type Results,
+    type TileTask,
 } from '@/utils/types';
 
-import HideTileSelectionButton from './HideTileSelectionButton';
+/**
+ * Inline chrome the tile does not get: a 10pt gutter on each side, so 20 for the pair. It has
+ * to be stated as the pair, because that is what useFittedTileWidth takes off the page before
+ * it divides.
+ */
+const TILE_RESERVE_INLINE = 20;
 
-const createStyles = () => StyleSheet.create({
-    content: {
-        alignItems: 'center',
-    },
-    taskContent: {
-        alignItems: 'center',
-        width: SCREEN_WIDTH,
-        paddingBottom: 40,
-    },
-    // Fill the content area so the tile is genuinely vertically centered and the
-    // measured height equals the full viewport (the bars are positioned against
-    // it). Without this the list is content-sized and the bars sit too high.
-    list: {
-        flex: 1,
-        width: '100%',
-    },
-    // Selection controls (enter / done) sit just above the centered tile, top-
-    // right aligned, mirroring the options bar below it. The bar spans the gap
-    // above the tile and bottom-aligns its content.
-    controlsBar: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        alignItems: 'flex-end',
-        justifyContent: 'flex-end',
-        paddingBottom: 8,
-        paddingHorizontal: 16,
-        zIndex: 20,
-        elevation: 20,
-    },
-    // Hide the selection-mode controls on the completion page.
-    hidden: {
-        display: 'none',
-    },
-    // Floating, centered options bar shown in selection mode. The container is
-    // full-width but box-none so the corner chrome stays tappable; only the
-    // centered pill receives touches.
-    optionsBarContainer: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        alignItems: 'center',
-        zIndex: 20,
-        elevation: 20,
-    },
-    optionsBar: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 8,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 16,
-        borderWidth: 1,
-        maxWidth: '92%',
-    },
-    optionChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderRadius: 999,
-    },
-    optionDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-    },
-});
+const TILE_ROWS = 2;
 
-const VIEWABILITY_CONFIG = {
-    viewAreaCoveragePercentThreshold: 50,
-};
+/**
+ * Gap kept between the bottom of the selection-controls bar and the top of the tile. The bar is
+ * sized to the space above the tile less this, so it never overlaps the imagery.
+ */
+const CONTROLS_BAR_CLEARANCE = 16;
+
+const OPTIONS_BAR_WIDTH_FRACTION = 0.92;
+
+/**
+ * What LocateTile paints onto a cell whose answer has no colour of its own. A sentinel and not
+ * a token: ResultOption.color is a required string, and the tile leaf has always taken this
+ * exact word to mean "leave the imagery bare".
+ */
+const TRANSPARENT_ANSWER = 'transparent';
+
+/** Frozen, so holding the hide-tiles button does not hand LocateTile a new map every render. */
+const NO_ANSWER_COLORS: Record<number, ResultOption> = {};
 
 // Locate features stores an array of cell values per task. CellResults is the
 // locate-specific projection of the shared Results union.
 type CellResults = Record<string, number[]>;
+
+/**
+ * An answer as this session needs it, and the one place the two colour sources are reconciled.
+ *
+ * A project's own `customOptions` are Firebase author data: `iconColor` is an arbitrary string
+ * that can never be a theme token. A project that ships none falls back to the two built-in
+ * locate answers, whose colours are tokens and are resolved through useAnswerColors, the bridge
+ * that exists because LocateTile has not moved into components/ui yet and still takes a colour
+ * string. Conflating the two would route author data through the token table, or paint a token
+ * answer in whatever colour a project happened to publish.
+ */
+interface LocateOption {
+    value: number;
+    label: string;
+    /** Cell tint. `undefined` leaves the imagery bare, which is what the "No" answer does. */
+    tintColor: string | undefined;
+    /** Fill for the chip's leading dot, or `undefined` for the muted swatch. */
+    dotColor: string | undefined;
+}
 
 interface Props {
     taskGroupId: string;
@@ -153,25 +120,22 @@ function LocateFeaturesMappingSession(props: Props) {
         onReachedEnd,
     } = props;
 
-    const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+    // The page showing now, counted the way the pager reports it: the tasks first, then the
+    // completion page. Held here rather than left to the pager because "Go Back" on the outro
+    // sets it.
+    const [pageIndex, setPageIndex] = useState(0);
     const [mode, setMode] = useState<'mapping' | 'selection'>('mapping');
     const [selectedCellsByTask, setSelectedCellsByTask] = useState<Record<string, number[]>>({});
-    // True while the swipeable completion page is showing, so the session
-    // chrome (scale bar, progress bar, hide-tiles button) can be hidden there.
-    const [atCompletion, setAtCompletion] = useState(false);
-    // Height of the scroll viewport, so the completion page can fill it and
-    // anchor its action buttons to the bottom.
+    // Height of the scroll viewport, so the completion page can fill it and the floating bars
+    // can be anchored against it.
     const [viewportHeight, setViewportHeight] = useState(0);
 
-    const theme = useTheme();
     const { t } = useTranslation('mappingSession');
-
-    const styles = useThemedStyles(createStyles);
 
     const {
         width: pageWidth,
         height: pageHeight,
-    } = useWindowDimensions();
+    } = useViewport();
 
     const gridSize = useMemo(() => (
         parseInt(projectDetails.subGridSize.split('x')[0], 10)
@@ -196,25 +160,54 @@ function LocateFeaturesMappingSession(props: Props) {
         return buildTasks(projectDetails, groupDetails);
     }, [groupDetails, projectDetails]);
 
-    const flatListRef = useRef<FlatList<typeof tasks[number]>>(null);
+    const taskCount = tasks.length;
 
-    const options = useMemo<ResultOption[]>(() => {
-        if (isDefined(projectDetails.customOptions) && projectDetails.customOptions.length > 0) {
-            return projectDetails.customOptions.map((option) => ({
-                value: option.value,
-                label: option.title,
-                color: option.iconColor,
-            })).sort((a, b) => compareNumber(a.value, b.value));
+    // The pager appends the completion page after the tasks, so its index is the task count.
+    const atCompletion = taskCount > 0 && pageIndex >= taskCount;
+    const currentTaskIndex = Math.min(pageIndex, taskCount - 1);
+
+    const builtInAnswerColors = useAnswerColors(LOCATE_DEFAULT_ANSWER_OPTIONS);
+
+    const { customOptions } = projectDetails;
+
+    const options = useMemo<LocateOption[]>(() => {
+        if (isDefined(customOptions) && customOptions.length > 0) {
+            return customOptions.map((option) => {
+                // The author's own sentinel for a colourless answer, handled here so a backend
+                // 'transparent' reaches the chip as the muted swatch rather than as a raw fill.
+                const color = option.iconColor === TRANSPARENT_ANSWER
+                    ? undefined
+                    : option.iconColor;
+
+                return {
+                    value: option.value,
+                    label: option.title,
+                    tintColor: color,
+                    dotColor: color,
+                };
+            }).sort((a, b) => compareNumber(a.value, b.value));
         }
 
-        return [
-            { value: 0, label: 'No', color: 'transparent' },
-            { value: 1, label: 'Yes', color: 'green' },
-        ];
-    }, [projectDetails.customOptions]);
+        // labelKey is not in public/locales yet, so defaultLabel is what renders: the same
+        // hardcoded 'No' / 'Yes' the fallback list shipped before, now translatable.
+        return LOCATE_DEFAULT_ANSWER_OPTIONS.map((option) => ({
+            value: option.value,
+            label: t(option.labelKey, option.defaultLabel),
+            tintColor: builtInAnswerColors[option.value]?.tintColor,
+            dotColor: builtInAnswerColors[option.value]?.badgeColor,
+        }));
+    }, [customOptions, builtInAnswerColors, t]);
 
     const optionsByValue = useMemo(() => (
-        listToMap(options, ({ value }) => value)
+        listToMap(
+            options,
+            ({ value }) => value,
+            (option): ResultOption => ({
+                value: option.value,
+                label: option.label,
+                color: option.tintColor ?? TRANSPARENT_ANSWER,
+            }),
+        )
     ), [options]);
 
     const defaultCellValue = options[0].value;
@@ -361,40 +354,44 @@ function LocateFeaturesMappingSession(props: Props) {
         ? (selectedCellsByTask[currentTaskId]?.length ?? 0)
         : 0;
 
-    const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { x: number } } }) => {
-        const offsetX = event.nativeEvent.contentOffset.x;
-        const pageIndex = Math.round(offsetX / pageWidth);
-        setCurrentTaskIndex(Math.min(pageIndex, tasks.length - 1));
-        const onCompletionPage = pageIndex >= tasks.length;
-        setAtCompletion(onCompletionPage);
-        if (onCompletionPage) {
+    const handleIndexChange = useCallback((index: number, position: PagerPosition) => {
+        setPageIndex(index);
+
+        if (position.isTrailingPage) {
             onReachedEnd?.();
         }
-    }, [pageWidth, tasks.length, onReachedEnd]);
+    }, [onReachedEnd]);
+
+    const handleGeometryChange = useCallback((geometry: PageGeometry) => {
+        setViewportHeight(geometry.height);
+    }, []);
 
     // "Go Back" on the outro returns to the first task so the user reviews the
     // group from the start. The jump is instant (not animated): animating all
     // the way back from the completion page would render every intermediate
     // page and is what made repeated go-backs unstable.
     const handleOutroGoBack = useCallback(() => {
-        flatListRef.current?.scrollToOffset({
-            offset: 0,
-            animated: false,
-        });
+        setPageIndex(0);
     }, []);
 
-    const tileWidth = Math.min(pageWidth - 20, pageHeight / 2);
+    const tileWidth = useFittedTileWidth({
+        availableInline: pageWidth,
+        availableBlock: pageHeight,
+        reserveInline: TILE_RESERVE_INLINE,
+        rows: TILE_ROWS,
+    });
+
     // The tile is vertically centered in the viewport, so its bottom edge sits
     // at (viewportHeight + tileHeight) / 2. Anchor the options bar just below
     // it, clear of the scale bar / progress bar / hide-tiles button.
     const optionsBarTop = (viewportHeight + tileWidth) / 2;
     // Mirror that above the tile: the controls bar spans the gap above the tile
-    // (height = the top gap) with its content bottom-aligned, so the selection
-    // controls sit just above the tile. Fall back to pageHeight before the
-    // viewport is measured so the control is visible from the first frame.
+    // (height = the top gap, less the clearance), so the selection controls sit
+    // in the band above the imagery. Fall back to pageHeight before the viewport
+    // is measured, so the control is visible from the first frame.
     const controlsBarHeight = Math.max(
         0,
-        ((viewportHeight || pageHeight) - tileWidth) / 2 - 16,
+        ((viewportHeight || pageHeight) - tileWidth) / 2 - CONTROLS_BAR_CLEARANCE,
     );
 
     const latitude = useMemo(() => {
@@ -418,196 +415,203 @@ function LocateFeaturesMappingSession(props: Props) {
         setHideTilePressValue(false);
     }, []);
 
+    const selectTaskKey = useCallback((task: TileTask) => task.taskId, []);
+
+    const renderTask = useCallback((task: TileTask) => {
+        if (!task.url) {
+            return null;
+        }
+
+        const existing = results[task.taskId];
+        const cellValues = Array.isArray(existing)
+            ? existing
+            : new Array<number>(cellsPerTile).fill(defaultCellValue);
+        const selectedCells = selectedCellsByTask[task.taskId] ?? [];
+
+        return (
+            <Stack
+                spacing="none"
+                grow="fill"
+                align="center"
+                justify="center"
+            >
+                <LocateTile
+                    url={task.url}
+                    width={tileWidth}
+                    gridSize={gridSize}
+                    cellValues={cellValues}
+                    optionsByValue={hideTilePressValue ? NO_ANSWER_COLORS : optionsByValue}
+                    selectedCells={selectedCells}
+                    selectionMode={mode === 'selection'}
+                    onCellPress={(cellIndex) => (
+                        handleCellPress(task.taskId, cellIndex)
+                    )}
+                    onCellSelect={(cellIndex, action) => (
+                        handleCellSelect(task.taskId, cellIndex, action)
+                    )}
+                />
+                {/* Below the tile and inside the centred group, so the pair is what gets
+                    centred: the tile ends up half a rung above the viewport's middle, clear
+                    of the scale bar and the progress bar. This is the page's 40pt bottom
+                    padding, which a centring parent spent the same way. */}
+                <Spacer size="3xl" />
+            </Stack>
+        );
+    }, [
+        results,
+        cellsPerTile,
+        defaultCellValue,
+        selectedCellsByTask,
+        tileWidth,
+        gridSize,
+        hideTilePressValue,
+        optionsByValue,
+        mode,
+        handleCellPress,
+        handleCellSelect,
+    ]);
+
+    const renderCompletionPage = useCallback(() => (
+        isValidElement(completionPage)
+            ? cloneElement(
+                completionPage as ReactElement<{ onGoBack?: () => void }>,
+                { onGoBack: handleOutroGoBack },
+            )
+            : completionPage
+    ), [completionPage, handleOutroGoBack]);
+
     return (
         <>
-            <View
-                style={StyleSheet.flatten([
-                    styles.controlsBar,
-                    { height: controlsBarHeight },
-                    atCompletion && styles.hidden,
-                ])}
+            <Positioned
+                anchor="top"
+                height={controlsBarHeight}
+                align="end"
+                justify="center"
+                paddingInline="xs"
+                paddingBlockEnd="3xs"
+                layer="chrome"
+                // Hide the selection-mode controls on the completion page, without unmounting.
+                hidden={atCompletion}
+                // Full-width, so the corner chrome underneath has to stay tappable.
                 pointerEvents="box-none"
             >
-                <InlineListView
-                    spacing="sm"
-                    withoutWrap
-                >
+                <Row spacing="sm">
                     {mode === 'mapping' && (
-                        <Button
+                        <IconButton
                             name="enter-selection"
+                            iconName="selection"
                             accessibilityLabel={t('enterSelectionMode')}
-                            styleVariant="action"
-                            fullWidth={false}
+                            colorVariant="onBrand"
                             onPress={handleEnterSelectionMode}
-                        >
-                            <SelectionIcon color={theme.textOnBrand} />
-                        </Button>
+                        />
                     )}
                     {mode === 'selection' && (
-                        <Button
+                        <IconButton
                             name="exit-selection"
+                            iconName="check"
                             accessibilityLabel={t('exitSelectionMode')}
-                            colorVariant="primaryRed"
-                            styleVariant="action"
-                            fullWidth={false}
+                            colorVariant="onBrand"
                             onPress={handleExitSelectionMode}
-                        >
-                            <CheckIcon color={theme.textOnBrand} />
-                        </Button>
+                        />
                     )}
-                </InlineListView>
-            </View>
-            <FlatList
-                ref={flatListRef}
+                </Row>
+            </Positioned>
+            <Pager
+                sizeVariant="page"
                 data={tasks}
-                style={styles.list}
-                contentContainerStyle={styles.content}
-                keyExtractor={(task) => task.taskId}
-                renderItem={({ item: task }) => {
-                    if (!task.url) {
-                        return null;
-                    }
-                    const existing = results[task.taskId];
-                    const cellValues = Array.isArray(existing)
-                        ? existing
-                        : new Array<number>(cellsPerTile).fill(defaultCellValue);
-                    const selectedCells = selectedCellsByTask[task.taskId] ?? [];
-
-                    return (
-                        <View
-                            key={task.taskId}
-                            style={styles.taskContent}
-                        >
-                            <LocateTile
-                                url={task.url}
-                                width={tileWidth}
-                                gridSize={gridSize}
-                                cellValues={cellValues}
-                                optionsByValue={
-                                    hideTilePressValue
-                                        ? {} as Record<number, ResultOption> : optionsByValue
-                                }
-                                selectedCells={selectedCells}
-                                selectionMode={mode === 'selection'}
-                                onCellPress={(cellIndex) => (
-                                    handleCellPress(task.taskId, cellIndex)
-                                )}
-                                onCellSelect={(cellIndex, action) => (
-                                    handleCellSelect(task.taskId, cellIndex, action)
-                                )}
-                            />
-                        </View>
-                    );
-                }}
-                onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
-                ListFooterComponent={tasks.length > 0 ? (
-                    <View
-                        style={StyleSheet.flatten({
-                            width: SCREEN_WIDTH,
-                            height: viewportHeight || undefined,
-                        })}
-                    >
-                        {isValidElement(completionPage)
-                            ? cloneElement(
-                                completionPage as ReactElement<{ onGoBack?: () => void }>,
-                                // handleOutroGoBack only reads the FlatList ref when
-                                // invoked (on button press), never during render.
-                                // eslint-disable-next-line react-hooks/refs
-                                { onGoBack: handleOutroGoBack },
-                            )
-                            : completionPage}
-                    </View>
-                ) : null}
-                horizontal
-                pagingEnabled
-                scrollEnabled={mode !== 'selection'}
-                decelerationRate="fast"
-                showsHorizontalScrollIndicator={false}
-                disableIntervalMomentum
-                snapToOffsets={Array.from(
-                    { length: tasks.length + 1 },
-                    (_, i) => i * pageWidth,
-                )}
-                viewabilityConfig={VIEWABILITY_CONFIG}
-                onScroll={handleScroll}
-                scrollEventThrottle={16}
-                windowSize={3}
-                initialNumToRender={2}
+                keyExtractor={selectTaskKey}
+                renderPage={renderTask}
+                renderTrailingPage={renderCompletionPage}
+                index={pageIndex}
+                onIndexChange={handleIndexChange}
+                onGeometryChange={handleGeometryChange}
+                // Holds the user on the tile while cells are being dragged out, where a swipe
+                // would otherwise be read as paging.
+                withPagingLocked={mode === 'selection'}
+                scrollBehavior="instant"
             />
             {!atCompletion && (
                 <>
-                    {latitude && (
-                        <ScaleBar
-                            latitude={latitude}
-                            position="bottom"
-                            referenceSize={tileWidth}
-                            tileSize={tileWidth}
-                            zoomLevel={projectDetails.zoomLevel}
-                            bottomPadding={40}
-                        />
+                    {isDefined(latitude) && (
+                        <Positioned
+                            anchor="bottomStart"
+                            offsetBlock="3xl"
+                            offsetInline="3xs"
+                        >
+                            <ScaleBar
+                                latitude={latitude}
+                                referenceSize={tileWidth}
+                                tileSize={tileWidth}
+                                zoomLevel={projectDetails.zoomLevel}
+                                inline
+                            />
+                        </Positioned>
                     )}
                     <HideTileSelectionButton
                         handleHideTileSelectionPressIn={handleHideTilePressIn}
                         handleHideTileSelectionPressOut={handleHideTilePressOut}
-                        isPressed={hideTilePressValue}
                     />
                     <ProgressBar
-                        currentValue={currentTaskIndex + 1}
-                        totalValue={tasks.length}
-                        colorVariant="brand"
+                        progress={(currentTaskIndex + 1) / taskCount}
+                        colorVariant="onBrand"
                     />
                 </>
             )}
             {mode === 'selection' && !atCompletion && (
-                <View
-                    style={StyleSheet.flatten([
-                        styles.optionsBarContainer,
-                        { top: optionsBarTop },
-                    ])}
+                <Positioned
+                    anchor="top"
+                    offsetBlock={optionsBarTop}
+                    align="center"
+                    layer="chrome"
+                    // Spans the window so the pill can centre in it, so it must not take the
+                    // touches meant for the corner chrome beside it.
                     pointerEvents="box-none"
                 >
-                    <View
-                        style={StyleSheet.flatten([
-                            styles.optionsBar,
-                            {
-                                backgroundColor: theme.backgroundBrand,
-                                borderColor: theme.divider,
-                            },
-                        ])}
-                    >
-                        {options.map((option) => {
-                            const dotColor = option.color === 'transparent'
-                                ? theme.textMuted
-                                : option.color;
-                            return (
-                                <TouchableOpacity
-                                    key={option.value}
-                                    style={StyleSheet.flatten([
-                                        styles.optionChip,
-                                        {
-                                            backgroundColor: theme.inputBrandBackground,
-                                            opacity: selectedCount === 0 ? 0.5 : 1,
-                                        },
-                                    ])}
-                                    onPress={() => handleApplyOptionToSelected(option.value)}
-                                    disabled={selectedCount === 0}
-                                    accessibilityRole="button"
-                                    accessibilityLabel={option.label}
-                                >
-                                    <View
-                                        style={StyleSheet.flatten([
-                                            styles.optionDot,
-                                            { backgroundColor: dotColor },
-                                        ])}
-                                    />
-                                    <Text variant="label" colorVariant="brand">
-                                        {option.label}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </View>
-                </View>
+                    <Box maxWidth={pageWidth * OPTIONS_BAR_WIDTH_FRACTION}>
+                        <Surface
+                            styleVariant="outlined"
+                            colorVariant="brand"
+                            // The hairline is the theme's divider, which the brand role's own
+                            // border slot does not carry.
+                            borderColorVariant="muted"
+                            radius="lg"
+                            paddingBlock="3xs"
+                            paddingInline="2xs"
+                        >
+                            <Row
+                                spacing="3xs"
+                                justify="center"
+                                wrap
+                            >
+                                {options.map((option) => (
+                                    <Badge
+                                        key={option.value}
+                                        shape="pill"
+                                        sizeVariant="md"
+                                        colorVariant="onBrand"
+                                        label={option.label}
+                                        accessibilityLabel={option.label}
+                                        onPress={() => handleApplyOptionToSelected(option.value)}
+                                        disabled={selectedCount === 0}
+                                    >
+                                        {isDefined(option.dotColor) ? (
+                                            <Badge
+                                                sizeVariant="xs"
+                                                dotColor={option.dotColor}
+                                            />
+                                        ) : (
+                                            <Badge
+                                                sizeVariant="xs"
+                                                colorVariant="muted"
+                                                styleVariant="swatch"
+                                            />
+                                        )}
+                                    </Badge>
+                                ))}
+                            </Row>
+                        </Surface>
+                    </Box>
+                </Positioned>
             )}
         </>
     );

@@ -1,25 +1,18 @@
+import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    ScrollView,
-    StyleSheet,
-} from 'react-native';
-import { Image } from 'expo-image';
 import {
     isDefined,
     isTruthyString,
 } from '@togglecorp/fujs';
 
-import BlockListView from '@/components/BlockListView';
-import Text from '@/components/Text';
 import CompareInstructions from '@/components/tutorial/CompareInstructions';
 import LocateInstructions from '@/components/tutorial/LocateInstructions';
 import TileGridInstructions from '@/components/tutorial/TileGridInstructions';
 import ValidateInstructions from '@/components/tutorial/ValidateInstructions';
-import {
-    IMAGE_SIZE_MD,
-    SPACING_SM,
-    SPACING_XS,
-} from '@/constants/dimensions';
+import ListView from '@/components/ui/ListView';
+import Media from '@/components/ui/Media';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 import {
     FbObjCustomOption,
     FbTutorial,
@@ -31,20 +24,17 @@ import {
     PROJECT_TYPE_VALIDATE_IMAGE,
 } from '@/utils/types';
 
-const styles = StyleSheet.create({
-    scroll: {
-        flex: 1,
-    },
-    content: {
-        padding: SPACING_SM,
-        gap: SPACING_XS,
-    },
-    image: {
-        width: '100%',
-        height: IMAGE_SIZE_MD,
-        borderRadius: 12,
-    },
-});
+// The page rides entirely in the list header, so there are no rows.
+const NO_ROWS: readonly never[] = [];
+
+// Unreachable, but ListView requires a key selector and a renderer.
+function selectNoKey(): string {
+    return '';
+}
+
+function renderNoRow(): null {
+    return null;
+}
 
 interface Props {
     tutorial: FbTutorial;
@@ -69,7 +59,7 @@ function TutorialIntroPage(props: Props) {
         return undefined;
     })();
 
-    let typeInstructions: React.ReactNode = null;
+    let typeInstructions: ReactNode = null;
     if (
         tutorial.projectType === PROJECT_TYPE_FIND
         || tutorial.projectType === PROJECT_TYPE_COMPLETENESS
@@ -89,28 +79,38 @@ function TutorialIntroPage(props: Props) {
     }
 
     return (
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-            <BlockListView spacing="xs">
-                <Text variant="heading" colorVariant="brand">
-                    {tutorial.name}
-                </Text>
-                {isDefined(instructionLine) && (
-                    <Text colorVariant="brand" variant="description">
-                        {instructionLine}
+        <ListView
+            data={NO_ROWS}
+            keySelector={selectNoKey}
+            renderItem={renderNoRow}
+            spacing="none"
+            padding="sm"
+            grow="slot"
+            header={(
+                <Stack spacing="xs">
+                    <Text variant="heading" colorVariant="onBrand">
+                        {tutorial.name}
                     </Text>
-                )}
-            </BlockListView>
-            {isDefined(tutorial.exampleImage1) && (
-                <Image
-                    source={tutorial.exampleImage1}
-                    style={styles.image}
-                />
+                    {isDefined(instructionLine) && (
+                        <Text colorVariant="onBrand" variant="description">
+                            {instructionLine}
+                        </Text>
+                    )}
+                    {isDefined(tutorial.exampleImage1) && (
+                        <Media
+                            source={tutorial.exampleImage1}
+                            sizeVariant="illustration"
+                            styleVariant="rounded"
+                            withoutAccessibilityLabel
+                        />
+                    )}
+                    {typeInstructions}
+                    <Text colorVariant="onBrand">
+                        {t('tutorialScreen:swipeThroughIntro')}
+                    </Text>
+                </Stack>
             )}
-            {typeInstructions}
-            <Text colorVariant="brand">
-                {t('tutorialScreen:swipeThroughIntro')}
-            </Text>
-        </ScrollView>
+        />
     );
 }
 

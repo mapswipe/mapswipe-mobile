@@ -6,17 +6,9 @@ import {
     useMemo,
     useState,
 } from 'react';
-import {
-    StyleSheet,
-    View,
-} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Toast, {
-    BaseToast,
-    ErrorToast,
-    type ToastProps,
-} from 'react-native-toast-message';
-import { Stack } from 'expo-router';
+import Toast from 'react-native-toast-message';
+import { Stack as RouterStack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { isDefined } from '@togglecorp/fujs';
 import { User } from 'firebase/auth';
@@ -24,9 +16,16 @@ import { onValue } from 'firebase/database';
 import { Provider as UrqlProvider } from 'urql';
 
 import ChangeLogModal from '@/components/ChangeLogModal';
-import LoadingComponent from '@/components/Loader';
-import Page from '@/components/Page';
+import Screen from '@/components/ui/Screen';
+import Spinner from '@/components/ui/Spinner';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
+import { toastConfig } from '@/components/ui/Toast/config';
 import AuthContext, { AuthContextProps } from '@/contexts/auth';
+import {
+    DEFAULT_COLOR_SCHEME,
+    ThemeProvider,
+} from '@/contexts/theme';
 import { type FbUser } from '@/firebase/functions/generated/tsfirebase/extended_models';
 import { fetchCsrfToken } from '@/utils/csrfToken';
 import {
@@ -38,101 +37,18 @@ import client from '@/utils/urqlClient';
 SplashScreen.preventAutoHideAsync();
 
 export {
-    // Catch any errors thrown by the Layout component.
     ErrorBoundary,
 } from 'expo-router';
 
-const styles = StyleSheet.create({
-    gestureHandlerRoot: {
-        flex: 1,
-    },
-    loadingContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 10,
-    },
-    toastContainer: {
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-    },
-    toastSuccess: {
-        borderLeftColor: 'green',
-        height: 'auto',
-    },
-    toastWarning: {
-        borderLeftColor: '#f4c542',
-        height: 'auto',
-    },
-    toastError: {
-        borderLeftColor: 'red',
-        height: 'auto',
-    },
-    toastInfo: {
-        borderLeftColor: 'blue',
-        height: 'auto',
-    },
-    toastText1: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    toastText2: {
-        fontSize: 14,
-    },
-});
+// Screen requires a title, but the bootstrap screen has no header, so it is never drawn.
+const APP_NAME = 'MapSwipe';
 
-export const toastConfig = {
-    success: (props: ToastProps) => (
-        <BaseToast
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...props}
-            style={styles.toastSuccess}
-            contentContainerStyle={styles.toastContainer}
-            text1Style={styles.toastText1}
-            text2Style={styles.toastText2}
-            text2NumberOfLines={0}
-        />
-    ),
-    warning: (props: ToastProps) => (
-        <BaseToast
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...props}
-            style={styles.toastWarning}
-            contentContainerStyle={styles.toastContainer}
-            text1Style={styles.toastText1}
-            text2Style={styles.toastText2}
-            text2NumberOfLines={0}
-        />
-    ),
-    error: (props: ToastProps) => (
-        <ErrorToast
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...props}
-            style={styles.toastError}
-            contentContainerStyle={styles.toastContainer}
-            text1Style={styles.toastText1}
-            text2Style={styles.toastText2}
-            text2NumberOfLines={0}
-        />
-    ),
-    info: (props: ToastProps) => (
-        <BaseToast
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...props}
-            style={styles.toastInfo}
-            text1Style={styles.toastText1}
-            text2Style={styles.toastText2}
-            text2NumberOfLines={0}
-        />
-    ),
-};
+const BOOTSTRAP_LABEL = 'Getting things ready...';
 
-export default function AppLayout() {
+function AppLayout() {
     const [user, setUser] = useState<User | null | undefined>();
     const [userDetails, setUserDetails] = useState<FbUser | undefined>();
-    // The uid whose profile has settled (loaded or errored). Used to derive
-    // `userDetailsPending` without a lagging boolean, so screens never briefly
-    // act on a stale/empty profile right after login.
+    // Tracked as a uid rather than a boolean, so no screen acts on a stale profile after login.
     const [userDetailsLoadedUid, setUserDetailsLoadedUid] = useState<string>();
 
     useEffect(() => {
@@ -142,8 +58,7 @@ export default function AppLayout() {
         return unSubscribe;
     }, []);
 
-    // Fetch the signed-in user's profile once here and keep it live, so pages can
-    // read it (e.g. teamId) from AuthContext instead of each refetching it.
+    // Kept live here so pages read teamId from AuthContext instead of each refetching it.
     useEffect(() => {
         if (!user) {
             return undefined;
@@ -215,50 +130,75 @@ export default function AppLayout() {
 
     if (user === undefined) {
         return (
-            <Page title="MapSwipe">
-                <View style={styles.loadingContainer}>
-                    <LoadingComponent label="Getting things ready..." />
-                </View>
-            </Page>
+            <Screen
+                title={APP_NAME}
+                colorVariant="brand"
+                layout="fill"
+            >
+                <Stack
+                    spacing="sm"
+                    grow="fill"
+                    align="center"
+                    justify="center"
+                >
+                    {/* Unlabelled on purpose: the line below already announces the wait. */}
+                    <Spinner styleVariant="splash" />
+                    <Text
+                        variant="title"
+                        colorVariant="onBrand"
+                        weight="regular"
+                    >
+                        {BOOTSTRAP_LABEL}
+                    </Text>
+                </Stack>
+            </Screen>
         );
     }
 
     const isAuthenticated = isDefined(user);
 
     return (
-        <GestureHandlerRootView style={styles.gestureHandlerRoot}>
+        <GestureHandlerRootView>
             <UrqlProvider value={client}>
                 <AuthContext.Provider value={authContextValue}>
 
-                    <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="index" />
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="languageSplashScreen" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="onboarding" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="login" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="register" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="forgotPassword" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={isAuthenticated}>
-                            <Stack.Screen name="(auth)" />
-                        </Stack.Protected>
-                        <Stack.Screen
+                    <RouterStack screenOptions={{ headerShown: false }}>
+                        <RouterStack.Screen name="index" />
+                        <RouterStack.Protected guard={!isAuthenticated}>
+                            <RouterStack.Screen name="languageSplashScreen" />
+                        </RouterStack.Protected>
+                        <RouterStack.Protected guard={!isAuthenticated}>
+                            <RouterStack.Screen name="onboarding" />
+                        </RouterStack.Protected>
+                        <RouterStack.Protected guard={!isAuthenticated}>
+                            <RouterStack.Screen name="login" />
+                        </RouterStack.Protected>
+                        <RouterStack.Protected guard={!isAuthenticated}>
+                            <RouterStack.Screen name="register" />
+                        </RouterStack.Protected>
+                        <RouterStack.Protected guard={!isAuthenticated}>
+                            <RouterStack.Screen name="forgotPassword" />
+                        </RouterStack.Protected>
+                        <RouterStack.Protected guard={isAuthenticated}>
+                            <RouterStack.Screen name="(auth)" />
+                        </RouterStack.Protected>
+                        <RouterStack.Screen
                             name="languageSelectionList"
                             options={{ headerShown: true }}
                         />
-                    </Stack>
+                    </RouterStack>
                     <Toast config={toastConfig} />
                     <ChangeLogModal />
                 </AuthContext.Provider>
             </UrqlProvider>
         </GestureHandlerRootView>
+    );
+}
+
+export default function RootLayout() {
+    return (
+        <ThemeProvider colorScheme={DEFAULT_COLOR_SCHEME}>
+            <AppLayout />
+        </ThemeProvider>
     );
 }

@@ -1,58 +1,48 @@
 import {
     useCallback,
     useEffect,
-    useMemo,
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    StyleSheet,
-    useWindowDimensions,
-    View,
-} from 'react-native';
-import {
-    isNotDefined,
-    listToMap,
-} from '@togglecorp/fujs';
+import { isNotDefined } from '@togglecorp/fujs';
 
 import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import ImageTile from '@/components/ImageTile';
-import Text from '@/components/Text';
 import { TutorialSessionProps } from '@/components/tutorial/types';
-import { SPACING_3XS } from '@/constants/dimensions';
+import Box from '@/components/ui/Box';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
+import { TILE_ANSWER_OPTIONS } from '@/constants/answers';
+import useAnswerColors from '@/hooks/useAnswerColors';
+import useFittedTileWidth from '@/hooks/useFittedTileWidth';
+import useViewport from '@/hooks/useViewport';
 import { getTutorialTaskKey } from '@/utils/tutorial';
-import {
-    ResultOption,
-    Results,
-} from '@/utils/types';
+import { Results } from '@/utils/types';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        minHeight: 0,
-    },
-    pairsArea: {
-        flex: 1,
-        minHeight: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: SPACING_3XS,
-        overflow: 'hidden',
-    },
-    pair: {
-        alignItems: 'center',
-        gap: SPACING_3XS,
-    },
-});
+/**
+ * The tap cycle: 0 No, 1 Yes, 2 Maybe, 3 Bad Imagery, in that order. These are the BUILT-IN
+ * answers, the same list CompareMappingSession maps with, so their colours are theme tokens
+ * resolved through useAnswerColors and never a project's customOptions. Spread out of the
+ * readonly tuple so findIndex can take it.
+ */
+const OPTIONS = [...TILE_ANSWER_OPTIONS];
 
-const OPTIONS: ResultOption[] = [
-    { value: 0, label: 'No', color: 'transparent' },
-    { value: 1, label: 'Yes', color: 'green' },
-    { value: 2, label: 'Maybe', color: 'yellow' },
-    { value: 3, label: 'Bad Imagery', color: 'red' },
-];
+// Before and After are stacked, so the two of them share the slot's block axis.
+const TILE_ROWS = 2;
 
-const optionsByValue = listToMap(OPTIONS, ({ value }) => value);
+/** A 12pt gutter on each side of the pair. */
+const TILE_RESERVE_INLINE = 24;
+
+const TILE_RESERVE_BLOCK = 64;
+
+/** Floor the pair never shrinks past, however short the scenario page gets. */
+const MIN_TILE_WIDTH = 80;
+
+/**
+ * Stand-in for the slot's block extent before onLayout reports one, as the window less the
+ * scenario page's chrome (the feedback banner, the Check Answer button and their gaps).
+ */
+const FALLBACK_BLOCK_CHROME = 300;
 
 function getNextValue(value: number | undefined) {
     if (isNotDefined(value)) {
@@ -75,10 +65,10 @@ function CompareTutorialSession(props: TutorialSessionProps) {
     } = props;
 
     const { t } = useTranslation('tutorialScreen');
-    const { width: pageWidth, height: pageHeight } = useWindowDimensions();
+    const { width: pageWidth, height: pageHeight } = useViewport();
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
-    // Measured size of the pair slot, so the before/after tiles fit the space
-    // available rather than a fixed fraction of the window.
+    // Measured size of the pair slot, so the before/after tiles fit the space available
+    // rather than a fixed fraction of the window.
     const [pairsSize, setPairsSize] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -98,13 +88,18 @@ function CompareTutorialSession(props: TutorialSessionProps) {
         });
     }, [tasks, onResultsChange]);
 
-    const tileWidth = useMemo(() => {
-        const availWidth = pairsSize.width || pageWidth;
-        const availHeight = pairsSize.height || (pageHeight - 300);
-        // Two tiles stacked, plus the Before/After labels and gaps between them.
-        const verticalBudget = (availHeight - 64) / 2;
-        return Math.max(80, Math.min(availWidth - 24, verticalBudget));
-    }, [pairsSize, pageWidth, pageHeight]);
+    const tileWidth = useFittedTileWidth({
+        availableInline: pairsSize.width,
+        availableBlock: pairsSize.height,
+        fallbackInline: pageWidth,
+        fallbackBlock: pageHeight - FALLBACK_BLOCK_CHROME,
+        reserveInline: TILE_RESERVE_INLINE,
+        reserveBlock: TILE_RESERVE_BLOCK,
+        rows: TILE_ROWS,
+        minSize: MIN_TILE_WIDTH,
+    });
+
+    const answerColors = useAnswerColors(OPTIONS);
 
     const handleTilePress = useCallback((taskId: string) => {
         if (disabled) {
@@ -128,51 +123,69 @@ function CompareTutorialSession(props: TutorialSessionProps) {
     }, []);
 
     return (
-        <View style={styles.container}>
-            <View
-                style={styles.pairsArea}
+        <Box
+            flex={1}
+            minHeight={0}
+        >
+            <Box
+                flex={1}
+                minHeight={0}
+                align="center"
+                justify="center"
+                clip
                 onLayout={(event) => setPairsSize(event.nativeEvent.layout)}
             >
-                {tasks.map((task) => {
-                    if (!('url' in task) || !('urlB' in task) || !task.url || !task.urlB) {
-                        return null;
-                    }
-                    const taskKey = getTutorialTaskKey(task);
-                    const result = results[taskKey];
-                    const selectedOption = typeof result === 'number'
-                        ? optionsByValue[result]
-                        : undefined;
+                {/* The Box above owns the slot and the measurement; this owns the rhythm
+                    between pairs, which is a spacing rung and so not Box's to state. */}
+                <Stack
+                    spacing="3xs"
+                    align="center"
+                >
+                    {tasks.map((task) => {
+                        if (!('url' in task) || !('urlB' in task) || !task.url || !task.urlB) {
+                            return null;
+                        }
+                        const taskKey = getTutorialTaskKey(task);
+                        const result = results[taskKey];
+                        const answer = typeof result === 'number'
+                            ? answerColors[result]
+                            : undefined;
+                        const tintColor = hideTilePressValue ? undefined : answer?.tintColor;
 
-                    return (
-                        <View key={taskKey} style={styles.pair}>
-                            <Text colorVariant="brand">{t('compareBefore')}</Text>
-                            <ImageTile
-                                taskId={taskKey}
-                                url={task.url}
-                                urlB={undefined}
-                                width={tileWidth}
-                                tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
-                                onPress={handleTilePress}
-                            />
-                            <Text colorVariant="brand">{t('compareAfter')}</Text>
-                            <ImageTile
-                                taskId={taskKey}
-                                url={task.urlB}
-                                urlB={undefined}
-                                width={tileWidth}
-                                tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
-                                onPress={handleTilePress}
-                            />
-                        </View>
-                    );
-                })}
-            </View>
+                        return (
+                            <Stack
+                                key={taskKey}
+                                spacing="3xs"
+                                align="center"
+                            >
+                                <Text colorVariant="onBrand">{t('compareBefore')}</Text>
+                                <ImageTile
+                                    taskId={taskKey}
+                                    url={task.url}
+                                    urlB={undefined}
+                                    width={tileWidth}
+                                    tintColor={tintColor}
+                                    onPress={handleTilePress}
+                                />
+                                <Text colorVariant="onBrand">{t('compareAfter')}</Text>
+                                <ImageTile
+                                    taskId={taskKey}
+                                    url={task.urlB}
+                                    urlB={undefined}
+                                    width={tileWidth}
+                                    tintColor={tintColor}
+                                    onPress={handleTilePress}
+                                />
+                            </Stack>
+                        );
+                    })}
+                </Stack>
+            </Box>
             <HideTileSelectionButton
                 handleHideTileSelectionPressIn={handleHideTilePressIn}
                 handleHideTileSelectionPressOut={handleHideTilePressOut}
-                isPressed={hideTilePressValue}
             />
-        </View>
+        </Box>
     );
 }
 

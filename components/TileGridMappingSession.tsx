@@ -1,23 +1,16 @@
 import {
     cloneElement,
-    Dispatch,
+    type Dispatch,
     isValidElement,
     type ReactElement,
     type ReactNode,
-    SetStateAction,
+    type SetStateAction,
     useCallback,
     useEffect,
     useMemo,
-    useRef,
     useState,
 } from 'react';
-import {
-    FlatList,
-    PanResponder,
-    StyleSheet,
-    useWindowDimensions,
-    View,
-} from 'react-native';
+import { PanResponder } from 'react-native';
 import {
     compareNumber,
     isDefined,
@@ -27,48 +20,70 @@ import {
     mapToList,
 } from '@togglecorp/fujs';
 
-import ProgressBar from '@/components/ProgressBar';
+import AccessibilityInfoModal from '@/components/AccessibilityInfoModal';
+import HideTileSelectionButton from '@/components/HideTileSelectionButton';
+import ImageTile from '@/components/ImageTile';
 import ScaleBar from '@/components/ScaleBar';
-import useAccessibility from '@/hooks/useAccessibility';
+import Box from '@/components/ui/Box';
+import Pager, { type PagerPosition } from '@/components/ui/Pager';
+import ProgressBar from '@/components/ui/ProgressBar';
+import Stack from '@/components/ui/Stack';
+import {
+    ANSWER_OPTIONS,
+    TILE_ANSWER_OPTIONS,
+} from '@/constants/answers';
+import useAnswerBadgesEnabled from '@/hooks/useAnswerBadgesEnabled';
+import useAnswerColors from '@/hooks/useAnswerColors';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
-import useThemedStyles from '@/hooks/useThemedStyles';
+import useFittedTileWidth from '@/hooks/useFittedTileWidth';
+import useViewport from '@/hooks/useViewport';
 import { firebaseRef } from '@/utils/firebase';
+import { resolveVisibleColumnRange } from '@/utils/grid';
 import { buildTasks } from '@/utils/task';
 import {
     CompletenessProject,
     FbMappingGroupTileMapServiceCreateOnlyInput,
     FindProject,
     PROJECT_TYPE_COMPLETENESS,
-    ResultOption,
     Results,
+    TileTask,
 } from '@/utils/types';
 
-import AccessibilityInfoModal from './AccessibilityInfoModal';
-import HideTileSelectionButton from './HideTileSelectionButton';
-import ImageTile from './ImageTile';
+/**
+ * The tap cycle, and the answer values that reach the backend: 0 No, 1 Yes, 2 Maybe,
+ * 3 Bad Imagery, in that order. Spread out of the readonly tuple so listToMap and findIndex
+ * can take it.
+ */
+const OPTIONS = [...TILE_ANSWER_OPTIONS];
 
-const createStyles = () => StyleSheet.create({
-    content: {
-        alignItems: 'center',
-    },
-    tileGridWrapper: {
-        flex: 1,
-        overflow: 'hidden',
-    },
-    // Give the hide button its own centered line below the map so it doesn't
-    // sit flush against (and graze) the tiles.
-    hideButtonRow: {
-        alignItems: 'flex-end',
-        paddingHorizontal: 6,
-    },
-    hideButtonInner: {
-        alignItems: 'center',
-    },
-});
+/** The answer a downward swipe over the grid writes onto every visible tile. */
+const BAD_IMAGERY_VALUE = ANSWER_OPTIONS.badImagery.value;
 
-const VIEWABILITY_CONFIG = {
-    viewAreaCoveragePercentThreshold: 50,
+/**
+ * Tiles across a page and down it. Both numbers are load-bearing twice over: they divide the
+ * tile out of the window, and `TILE_COLUMNS` is also how a page index is turned back into a
+ * column index, which is what the swipe-to-reject gesture marks.
+ */
+const TILE_COLUMNS = 2;
+const TILE_ROWS = 4;
+
+/**
+ * Distance the scale bar is lifted off the bottom of the session, clearing the hide-tiles row
+ * and the progress bar that sit under the grid. A ScaleBar prop rather than a style: the leaf
+ * has not moved into components/ui yet and takes its geometry as numbers.
+ */
+const SCALE_BAR_BOTTOM_INSET = 40;
+
+/** One column of the grid, after the tasks are sorted and grouped by their tile X. */
+type TileColumnTask = Omit<TileTask, 'taskX' | 'taskY'> & {
+    taskX: number;
+    taskY: number;
 };
+
+interface TileColumn {
+    taskX: string;
+    taskList: TileColumnTask[];
+}
 
 interface Props {
     taskGroupId: string;
@@ -91,23 +106,15 @@ function TileGridMappingSession(props: Props) {
         onReachedEnd,
     } = props;
 
-    const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
-    // True while the swipeable completion page is showing, so the session
-    // chrome (scale bar, progress bar, hide-tiles button) can be hidden there.
-    const [atCompletion, setAtCompletion] = useState(false);
-    // Height of the scroll viewport, so the completion page can fill it and
-    // anchor its action buttons to the bottom.
-    const [viewportHeight, setViewportHeight] = useState(0);
-    // Current page index (each page = two tile columns), used to drive the
-    // progress bar so it advances cleanly per page rather than per column.
+    // The page showing now, counted the way the pager reports it: the columns first (two to a
+    // page), then the completion page. Held here rather than left to the pager because "Go Back"
+    // on the outro sets it, and because the progress bar and the swipe gesture read it.
     const [currentPage, setCurrentPage] = useState(0);
-
-    const styles = useThemedStyles(createStyles);
 
     const {
         width: pageWidth,
         height: pageHeight,
-    } = useWindowDimensions();
+    } = useViewport();
 
     const taskGroupQuery = useMemo(() => (
         firebaseRef(`v2/groups/${projectDetails.projectId}/${taskGroupId}`)
@@ -119,33 +126,22 @@ function TileGridMappingSession(props: Props) {
         query: taskGroupQuery,
     });
 
-    const options = useMemo<ResultOption[]>(() => ([
-        { value: 0, label: 'No', color: 'transparent' },
-        { value: 1, label: 'Yes', color: 'green' },
-        { value: 2, label: 'Maybe', color: 'yellow' },
-        { value: 3, label: 'Bad Imagery', color: 'red' },
-    ]), []);
-
     const getNextValue = useCallback((value: number | undefined) => {
         if (isNotDefined(value)) {
-            return options[0].value;
+            return OPTIONS[0].value;
         }
 
-        const optionIndex = options.findIndex(
+        const optionIndex = OPTIONS.findIndex(
             ({ value: optionValue }) => value === optionValue,
         );
 
         const nextIndex = optionIndex + 1;
-        if (optionIndex === -1 || nextIndex >= options.length) {
-            return options[0].value;
+        if (optionIndex === -1 || nextIndex >= OPTIONS.length) {
+            return OPTIONS[0].value;
         }
 
-        return options[nextIndex].value;
-    }, [options]);
-
-    const optionsByValue = useMemo(() => (
-        listToMap(options, ({ value }) => value)
-    ), [options]);
+        return OPTIONS[nextIndex].value;
+    }, []);
 
     const tasks = useMemo(() => {
         if (isNotDefined(groupDetails)) {
@@ -167,12 +163,12 @@ function TileGridMappingSession(props: Props) {
             return listToMap(
                 tasks,
                 ({ taskId }) => taskId,
-                () => options[0].value,
+                () => OPTIONS[0].value,
             );
         });
-    }, [tasks, options, onResultsChange]);
+    }, [tasks, onResultsChange]);
 
-    const groupedTasks = useMemo(() => {
+    const groupedTasks = useMemo<TileColumn[]>(() => {
         if (isNotDefined(tasks) || tasks.length === 0) {
             return [];
         }
@@ -209,46 +205,40 @@ function TileGridMappingSession(props: Props) {
         );
     }, [tasks]);
 
-    const flatListRef = useRef<FlatList<typeof groupedTasks[number]>>(null);
+    const tileWidth = useFittedTileWidth({
+        availableInline: pageWidth,
+        availableBlock: pageHeight,
+        columns: TILE_COLUMNS,
+        rows: TILE_ROWS,
+    });
 
-    const tileWidth = Math.min(pageWidth / 2, pageHeight / 4);
-
-    // The completion page is appended as a full-width page after the tile
-    // columns. `completionLeftFiller` pads the columns up to the next page
-    // boundary so the outro always snaps cleanly (handles odd column counts and
-    // single-column groups). The trailing snap offset is the completion page.
+    // Counted here as well as inside the pager, and off the window for the same reason the tile
+    // is: the progress bar and the completion check need the page count before the pager has
+    // reported an index, and a column is narrower than a page so the two do not divide evenly.
     const columnsWidth = groupedTasks.length * tileWidth;
     const contentPages = groupedTasks.length === 0
         ? 0
         : Math.ceil(columnsWidth / pageWidth);
-    const completionLeftFiller = Math.round(contentPages * pageWidth - columnsWidth);
-    const pageSnapOffsets = useMemo(
-        () => Array.from({ length: contentPages + 1 }, (_, i) => i * pageWidth),
-        [contentPages, pageWidth],
-    );
 
-    const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { x: number } } }) => {
-        const offsetX = event.nativeEvent.contentOffset.x;
-        const pageIndex = Math.round(offsetX / pageWidth);
-        const itemIndex = Math.min(pageIndex * 2, groupedTasks.length - 1);
-        setCurrentTaskIndex(itemIndex);
-        setCurrentPage(pageIndex);
-        const onCompletionPage = pageIndex >= contentPages;
-        setAtCompletion(onCompletionPage);
-        if (onCompletionPage) {
+    const atCompletion = contentPages > 0 && currentPage >= contentPages;
+
+    // The leftmost column showing on the current page, which is where the swipe-to-reject
+    // gesture starts marking.
+    const currentTaskIndex = Math.min(currentPage * TILE_COLUMNS, groupedTasks.length - 1);
+
+    const handleIndexChange = useCallback((index: number, position: PagerPosition) => {
+        setCurrentPage(index);
+
+        if (position.isTrailingPage) {
             onReachedEnd?.();
         }
-    }, [pageWidth, groupedTasks.length, contentPages, onReachedEnd]);
+    }, [onReachedEnd]);
 
-    // "Go Back" on the outro returns to the first task so the user reviews the
-    // group from the start. The jump is instant (not animated): animating all
-    // the way back from the completion page would render every intermediate
-    // page and is what made repeated go-backs unstable.
+    // "Go Back" on the outro returns to the first task so the user reviews the group from the
+    // start. The jump is instant (not animated): animating all the way back from the completion
+    // page would render every intermediate page and is what made repeated go-backs unstable.
     const handleOutroGoBack = useCallback(() => {
-        flatListRef.current?.scrollToOffset({
-            offset: 0,
-            animated: false,
-        });
+        setCurrentPage(0);
     }, []);
 
     const handleTilePress = useCallback((taskId: string) => {
@@ -282,17 +272,20 @@ function TileGridMappingSession(props: Props) {
         setHideTilePressValue(false);
     }, []);
 
-    const BAD_IMAGERY_VALUE = 3;
-
     const markVisibleTilesAsWrong = useCallback(() => {
         onResultsChange((prevResults) => {
             const newResults = { ...prevResults };
-            const startIdx = currentTaskIndex;
-            const endIdx = Math.min(
-                currentTaskIndex + 1,
-                groupedTasks.length - 1,
-            );
-            for (let i = startIdx; i <= endIdx; i += 1) {
+            // Derived from TILE_COLUMNS rather than a hardcoded `+ 1`, so the gesture marks
+            // exactly the columns on screen if that layout number ever changes.
+            const range = resolveVisibleColumnRange({
+                firstColumnIndex: currentTaskIndex,
+                columns: TILE_COLUMNS,
+                columnCount: groupedTasks.length,
+            });
+            if (!range) {
+                return prevResults;
+            }
+            for (let i = range.startIndex; i <= range.endIndex; i += 1) {
                 groupedTasks[i].taskList.forEach((task) => {
                     newResults[task.taskId] = BAD_IMAGERY_VALUE;
                 });
@@ -313,130 +306,121 @@ function TileGridMappingSession(props: Props) {
         },
     }), [markVisibleTilesAsWrong]);
 
-    const { isAccessibilityEnabled } = useAccessibility();
+    const { isAnswerBadgesEnabled } = useAnswerBadgesEnabled();
 
-    const getAccessibilityBadge = useCallback((value: number | undefined) => {
-        switch (value) {
-            case 1: return { iconName: 'checkmark-outline', color: '#22C55E' } as const;
-            case 2: return { iconName: 'question-mark', color: '#F59E0B' } as const;
-            case 3: return { iconName: 'ban-outline', color: '#EF4444' } as const;
-            default: return undefined;
-        }
-    }, []);
+    const answerColors = useAnswerColors(OPTIONS);
+
+    const selectColumnKey = useCallback((column: TileColumn) => column.taskX, []);
+
+    const renderColumn = useCallback((column: TileColumn) => (
+        <Stack
+            spacing="none"
+            justify="center"
+            grow="fill"
+        >
+            {column.taskList.map((task) => {
+                if (!task.url) {
+                    return null;
+                }
+
+                const result = results[task.taskId];
+                const answer = typeof result === 'number' ? answerColors[result] : undefined;
+
+                const tintColor = hideTilePressValue ? undefined : answer?.tintColor;
+                const badge = isAnswerBadgesEnabled && !hideTilePressValue ? answer : undefined;
+
+                return (
+                    <ImageTile
+                        key={task.taskId}
+                        taskId={task.taskId}
+                        url={task.url}
+                        urlB={
+                            projectDetails.projectType === PROJECT_TYPE_COMPLETENESS
+                                ? task.urlB
+                                : undefined
+                        }
+                        width={tileWidth}
+                        tintColor={tintColor}
+                        onPress={handleTilePress}
+                        accessibilityBadgeIconName={badge?.iconName}
+                        accessibilityBadgeColor={badge?.badgeColor}
+                    />
+                );
+            })}
+        </Stack>
+    ), [
+        results,
+        answerColors,
+        hideTilePressValue,
+        isAnswerBadgesEnabled,
+        tileWidth,
+        handleTilePress,
+        projectDetails.projectType,
+    ]);
+
+    const renderCompletionPage = useCallback(() => (
+        isValidElement(completionPage)
+            ? cloneElement(
+                completionPage as ReactElement<{ onGoBack?: () => void }>,
+                { onGoBack: handleOutroGoBack },
+            )
+            : completionPage
+    ), [completionPage, handleOutroGoBack]);
 
     return (
         <>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <View style={styles.tileGridWrapper} {...swipeResponder.panHandlers}>
-                <FlatList
-                    ref={flatListRef}
+            {/* Clips the grid and owns the downward swipe that rejects the visible columns.
+                Box spreads the responder itself, so nothing else can ride in on it. */}
+            <Box
+                flex={1}
+                clip
+                panResponder={swipeResponder}
+            >
+                <Pager
+                    sizeVariant="strip"
+                    itemWidth={tileWidth}
                     data={groupedTasks}
-                    contentContainerStyle={styles.content}
-                    keyExtractor={(groupedTaskItem) => groupedTaskItem.taskX}
-                    renderItem={({ item: groupedTasksFromRenderer }) => (
-                        <View>
-                            {groupedTasksFromRenderer.taskList.map((task) => {
-                                const result = results[task.taskId];
-                                const selectedOption = typeof result === 'number'
-                                    ? optionsByValue[result]
-                                    : undefined;
-
-                                if (!task.url) {
-                                    return null;
-                                }
-                                const badge = isAccessibilityEnabled && !hideTilePressValue
-                                    ? getAccessibilityBadge(
-                                        typeof result === 'number' ? result : undefined,
-                                    )
-                                    : undefined;
-
-                                return (
-                                    <ImageTile
-                                        key={task.taskId}
-                                        taskId={task.taskId}
-                                        url={task.url}
-                                        urlB={
-                                            projectDetails.projectType === PROJECT_TYPE_COMPLETENESS
-                                                ? task.urlB
-                                                : undefined
-                                        }
-                                        width={tileWidth}
-                                        tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
-                                        onPress={handleTilePress}
-                                        accessibilityBadgeIconName={badge?.iconName}
-                                        accessibilityBadgeColor={badge?.color}
-                                    />
-                                );
-                            })}
-                        </View>
-                    )}
-                    onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
-                    ListFooterComponent={groupedTasks.length > 0 ? (
-                        <View
-                            style={StyleSheet.flatten({
-                                flexDirection: 'row',
-                                width: completionLeftFiller + pageWidth,
-                                height: viewportHeight || undefined,
-                            })}
-                        >
-                            {completionLeftFiller > 0 && (
-                                <View style={{ width: completionLeftFiller }} />
-                            )}
-                            <View style={{ width: pageWidth }}>
-                                {isValidElement(completionPage)
-                                    ? cloneElement(
-                                        completionPage as ReactElement<{ onGoBack?: () => void }>,
-                                        // handleOutroGoBack only reads the FlatList ref when
-                                        // invoked (on button press), never during render.
-                                        // eslint-disable-next-line react-hooks/refs
-                                        { onGoBack: handleOutroGoBack },
-                                    )
-                                    : completionPage}
-                            </View>
-                        </View>
-                    ) : null}
-                    horizontal
-                    pagingEnabled
-                    decelerationRate="fast"
-                    showsHorizontalScrollIndicator={false}
-                    disableIntervalMomentum
-                    snapToOffsets={pageSnapOffsets}
-                    viewabilityConfig={VIEWABILITY_CONFIG}
-                    onScroll={handleScroll}
-                    scrollEventThrottle={16}
-                    windowSize={3}
-                    initialNumToRender={2}
-                    // removeClippedSubviews
+                    keyExtractor={selectColumnKey}
+                    renderPage={renderColumn}
+                    renderTrailingPage={renderCompletionPage}
+                    index={currentPage}
+                    onIndexChange={handleIndexChange}
+                    scrollBehavior="instant"
                 />
-            </View>
+            </Box>
             {!atCompletion && (
                 <>
-                    {latitude && (
+                    {isDefined(latitude) && (
                         <ScaleBar
                             latitude={latitude}
                             position="bottom"
                             referenceSize={tileWidth}
                             tileSize={tileWidth}
                             zoomLevel={projectDetails?.zoomLevel}
-                            bottomPadding={40}
+                            bottomPadding={SCALE_BAR_BOTTOM_INSET}
                         />
                     )}
-                    <View style={styles.hideButtonRow}>
+                    {/* Its own line below the grid, so the button never grazes the tiles. */}
+                    <Stack
+                        spacing="none"
+                        align="end"
+                    >
                         <HideTileSelectionButton
                             handleHideTileSelectionPressIn={handleHideTilePressIn}
                             handleHideTileSelectionPressOut={handleHideTilePressOut}
-                            isPressed={hideTilePressValue}
-                            containerStyle={styles.hideButtonInner}
+                            // The row above already places this at the end of its own line, so
+                            // the button's default container padding would shift it inwards.
+                            withoutContainer
                         />
-                    </View>
+                    </Stack>
                     <ProgressBar
-                        currentValue={Math.min(currentPage + 1, contentPages)}
-                        totalValue={contentPages}
-                        colorVariant="brand"
+                        progress={Math.min(currentPage + 1, contentPages) / contentPages}
+                        colorVariant="onBrand"
+                        accessibilityLabel="Session progress"
                     />
                 </>
             )}
-            {isAccessibilityEnabled && <AccessibilityInfoModal />}
+            {isAnswerBadgesEnabled && <AccessibilityInfoModal />}
         </>
     );
 }

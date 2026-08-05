@@ -1,9 +1,6 @@
 #!/usr/bin/env ts-node
 
-/**
- * Script to copy APK files with git commit hash in filename
- * Usage: ts-node scripts/copy-apk.ts [debug|release]
- */
+// Usage: ts-node scripts/copy-apk.ts [debug|release]
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -23,7 +20,7 @@ function getGitCommitHash(): string {
     try {
         const hash = execSync('git rev-parse --short HEAD', { 
             encoding: 'utf8',
-            cwd: path.join(__dirname, '..') // Run from project root
+            cwd: path.join(__dirname, '..')
         }).trim();
         return hash;
     } catch (error) {
@@ -68,7 +65,6 @@ function copyApk(buildType: BuildType): ApkCopyResult {
     const destinationFilename = `app-${buildType}-${gitHash}.apk`;
     const destinationPath = path.join(outputDir, destinationFilename);
 
-    // Check if source file exists
     if (!fs.existsSync(sourcePath)) {
         console.error(`✗ Error: APK not found at ${sourcePath}`);
         console.error(`  Make sure the build completed successfully.`);
@@ -78,7 +74,6 @@ function copyApk(buildType: BuildType): ApkCopyResult {
         };
     }
 
-    // Copy the file
     try {
         fs.copyFileSync(sourcePath, destinationPath);
         const stats = fs.statSync(destinationPath);
@@ -107,9 +102,6 @@ function copyApk(buildType: BuildType): ApkCopyResult {
     }
 }
 
-/**
- * Main execution
- */
 function main(): void {
     const buildType = process.argv[2] as BuildType | undefined;
 

@@ -3,13 +3,7 @@ import {
     useMemo,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    Linking,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    View,
-} from 'react-native';
+import { Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -19,30 +13,27 @@ import {
 import { gql } from 'urql';
 
 import { ACCESSIBILITY_TUTORIAL_SEEN_KEY } from '@/components/AccessibilityInfoModal';
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import { ButtonLayoutProps } from '@/components/ButtonLayout';
-import Icon from '@/components/Icon';
-import InlineListView from '@/components/InlineListView';
-import Page from '@/components/Page';
-import ProfileHeader from '@/components/ProfileHeader';
-import ProfileStats from '@/components/ProfileStats';
+import ProfileHeader from '@/components/domain/ProfileHeader';
+import ProfileStats from '@/components/domain/ProfileStats';
 import showConfirm from '@/components/showConfirm';
-import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
+import Box from '@/components/ui/Box';
+import Checkbox from '@/components/ui/Checkbox';
+import ListRow from '@/components/ui/ListRow';
+import ListView from '@/components/ui/ListView';
+import Screen from '@/components/ui/Screen';
+import Section from '@/components/ui/Section';
+import Spacer from '@/components/ui/Spacer';
+import Surface from '@/components/ui/Surface';
 import {
     mapSwipeWebUrl,
     missingMapUrl,
     supportedLanguages,
 } from '@/constants/common';
-import { SPACING_MD } from '@/constants/dimensions';
-import { AppTheme } from '@/constants/theme';
 import { useUserStatsQuery } from '@/generated/types/graphql';
-import useAccessibility from '@/hooks/useAccessibility';
+import useAnswerBadgesEnabled from '@/hooks/useAnswerBadgesEnabled';
 import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
-import useTheme from '@/hooks/useTheme';
-import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseAuth } from '@/utils/firebase';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -69,35 +60,23 @@ const USER_STATS = gql`
   }
 `;
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
-    scrollView: {
-        backgroundColor: theme.backgroundMuted,
-    },
-    alignCenter: {
-        alignItems: 'center',
-    },
-    checkbox: {
-        width: 20,
-        height: 20,
-        borderRadius: 4,
-        borderWidth: 2,
-        borderColor: theme.primaryBlue,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    checkboxChecked: {
-        backgroundColor: theme.primaryBlue,
-    },
-});
+// ListView is the only scroll container with pull-to-refresh, so the body rides in its slots.
+const NO_ROWS: readonly never[] = [];
+
+function selectNoKey(): string {
+    return '';
+}
+
+function renderNoRow(): null {
+    return null;
+}
 
 function Profile() {
     const { user } = useAuth();
     const { currentUser } = firebaseAuth;
     const router = useRouter();
-    const styles = useThemedStyles(createStyles);
-    const { isAccessibilityEnabled, setAccessibility } = useAccessibility();
+    const { isAnswerBadgesEnabled, setAnswerBadgesEnabled } = useAnswerBadgesEnabled();
     const { t, i18n } = useTranslation('profileScreen');
-    const theme = useTheme();
     // FIXME: Update the use of this function
     const { handleAsync } = useAsyncHandler();
 
@@ -106,8 +85,7 @@ function Profile() {
         refetchUserStats,
     ] = useUserStatsQuery({
         variables: { firebaseId: user?.uid ?? '' },
-        // Don't query with an empty id before auth resolves — an empty
-        // firebaseId returns "No ContributorUser matches the given query."
+        // An empty firebaseId errors out, so wait for auth to resolve.
         pause: !user?.uid,
     });
 
@@ -135,11 +113,11 @@ function Profile() {
 
     const onHandleAccessibilityChange = useCallback(async () => {
         try {
-            await setAccessibility(!isAccessibilityEnabled);
+            await setAnswerBadgesEnabled(!isAnswerBadgesEnabled);
             await AsyncStorage.removeItem(ACCESSIBILITY_TUTORIAL_SEEN_KEY);
             showAlert({
                 title: 'Accessibility updated',
-                message: isAccessibilityEnabled ? 'Accessibility mode disabled.' : 'Accessibility mode enabled.',
+                message: isAnswerBadgesEnabled ? 'Accessibility mode disabled.' : 'Accessibility mode enabled.',
                 alertType: 'success',
             });
         } catch {
@@ -150,7 +128,7 @@ function Profile() {
                 shouldHideAfterDelay: false,
             });
         }
-    }, [isAccessibilityEnabled, setAccessibility]);
+    }, [isAnswerBadgesEnabled, setAnswerBadgesEnabled]);
 
     const onHandleMissingMapsClick = useCallback(() => {
         router.push({
@@ -247,131 +225,106 @@ function Profile() {
 
     const isOsmUser = user?.uid?.startsWith('osm:') ?? false;
 
-    const settingItems: ButtonLayoutProps[] = [
-        ...(!isOsmUser ? [{
-            title: t('changeUserName'),
-            onPress: onHandleChangeUsername,
-        }] : []),
-        {
-            title: t('changePassword'),
-            onPress: handleResetPasswordClick,
-        },
-        {
-            title: t('language'),
-            onPress: onHandleChangeLanguage,
-            action: (
-                <InlineListView
-                    spacing="4xs"
-                    style={styles.alignCenter}
-                >
-                    <Text>{currentLanguage?.name}</Text>
-                    <Icon name="caret-right" size={14} />
-                </InlineListView>
-            ),
-        },
-        {
-            title: t('accessibility'),
-            onPress: onHandleAccessibilityChange,
-            action: (
-                <View
-                    style={[
-                        styles.checkbox,
-                        isAccessibilityEnabled && styles.checkboxChecked,
-                    ]}
-                >
-                    {isAccessibilityEnabled && (
-                        <Icon
-                            name="checkmark-outline"
-                            color={theme.card}
-                            size={14}
-                        />
-                    )}
-                </View>
-            ),
-        },
-        {
-            title: t('signOut'),
-            onPress: onHandleSignoutClick,
-        },
-        {
-            title: 'Delete Account',
-            onPress: handleDeleteAccountClick,
-            colorVariant: 'danger',
-        },
-        { title: 'gap' },
-        {
-            title: t('mapswipeWebsite'),
-            onPress: onHandleMapSwipeWebsiteClick,
-            action: (
-                <Icon
-                    name="sign-out"
-                    size={18}
-                    color={theme.info}
-                />),
-        },
-        {
-            title: t('missingMaps'),
-            onPress: onHandleMissingMapsClick,
-            action: (
-                <Icon
-                    name="sign-out"
-                    size={18}
-                    color={theme.info}
-                />),
-        },
-        {
-            title: t('email'),
-            onPress: onHandleEmailClick,
-            action: <Icon name="sign-out" size={18} color={theme.info} />,
-        },
-    ];
-    return (
-        <Page
-            title="Profile"
-            variant="brand"
-            scrollable={false}
+    const settings = (
+        <Section
+            title={t('settings')}
+            withPadding
         >
-            <ProfileHeader />
-            <ScrollView
-                style={styles.scrollView}
-                refreshControl={(
-                    <RefreshControl
-                        refreshing={loadingUserStats}
-                        onRefresh={refreshPage}
-                    />
-                )}
-            >
-                <ProfileStats
-                    userStats={userStatsData}
+            {!isOsmUser && (
+                <ListRow
+                    title={t('changeUserName')}
+                    accessibilityLabel={t('changeUserName')}
+                    onPress={onHandleChangeUsername}
                 />
-                <BlockListView
-                    withPadding
-                    spacing="xs"
-                >
-                    <Text
-                        variant="title"
-                    >
-                        {t('settings')}
-                    </Text>
-                    {settingItems.map((item) => {
-                        if (item.title === 'gap') {
-                            return <View key={item.title} style={{ height: SPACING_MD }} />;
-                        }
-                        return (
-                            <Button
-                                name={item.title}
-                                key={item.title}
-                                title={item.title}
-                                onPress={item.onPress}
-                                action={item.action}
-                                colorVariant={item.colorVariant}
-                                styleVariant="block"
-                            />
-                        );
-                    })}
-                </BlockListView>
-            </ScrollView>
-        </Page>
+            )}
+            <ListRow
+                title={t('changePassword')}
+                accessibilityLabel={t('changePassword')}
+                onPress={handleResetPasswordClick}
+            />
+            <ListRow
+                title={t('language')}
+                accessibilityLabel={t('language')}
+                value={currentLanguage?.name}
+                affordance="chevron"
+                onPress={onHandleChangeLanguage}
+            />
+            <ListRow
+                title={t('accessibility')}
+                accessibilityLabel={t('accessibility')}
+                onPress={onHandleAccessibilityChange}
+            >
+                {/* No onChange: the row owns the press and the checkbox is a read-only
+                    indicator. */}
+                <Checkbox
+                    checked={isAnswerBadgesEnabled}
+                    colorVariant="brand"
+                />
+            </ListRow>
+            <ListRow
+                title={t('signOut')}
+                accessibilityLabel={t('signOut')}
+                onPress={onHandleSignoutClick}
+            />
+            <ListRow
+                title="Delete Account"
+                accessibilityLabel="Delete Account"
+                colorVariant="negative"
+                onPress={handleDeleteAccountClick}
+            />
+            <Spacer size="md" />
+            <ListRow
+                title={t('mapswipeWebsite')}
+                accessibilityLabel={t('mapswipeWebsite')}
+                affordance="external"
+                onPress={onHandleMapSwipeWebsiteClick}
+            />
+            <ListRow
+                title={t('missingMaps')}
+                accessibilityLabel={t('missingMaps')}
+                affordance="external"
+                onPress={onHandleMissingMapsClick}
+            />
+            <ListRow
+                title={t('email')}
+                accessibilityLabel={t('email')}
+                affordance="external"
+                onPress={onHandleEmailClick}
+            />
+        </Section>
+    );
+
+    return (
+        <Screen
+            title="Profile"
+            colorVariant="brand"
+            layout="fill"
+            hero={(
+                // The wrapper stops ProfileHeader's growing list from taking half the window.
+                <Box>
+                    <ProfileHeader />
+                </Box>
+            )}
+        >
+            {/* Painted, not transparent: the page behind is brand navy and the card text would
+                vanish into it. */}
+            <Surface
+                colorVariant="sunken"
+                flex="fill"
+            >
+                <ListView
+                    data={NO_ROWS}
+                    keySelector={selectNoKey}
+                    renderItem={renderNoRow}
+                    spacing="none"
+                    grow="slot"
+                    header={<ProfileStats userStats={userStatsData} />}
+                    footer={settings}
+                    onRefresh={refreshPage}
+                    refreshing={loadingUserStats}
+                />
+            </Surface>
+        </Screen>
     );
 }
 

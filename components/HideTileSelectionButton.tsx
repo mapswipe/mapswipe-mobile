@@ -1,70 +1,64 @@
-import React from 'react';
-import {
-    StyleSheet,
-    type ViewStyle,
-} from 'react-native';
+import { useTranslation } from 'react-i18next';
 
-import { AppTheme } from '@/constants/theme';
-import useThemedStyles from '@/hooks/useThemedStyles';
+import Box from '@/components/ui/Box';
+import IconButton from '@/components/ui/IconButton';
+import { getSpacingValue } from '@/utils/styles';
 
-import IconButton from './IconButton';
+type SizeVariant = 'small' | 'large';
 
-type sizeVariant = 'small' | 'large'
+/** 30 and 40, which are ui/IconButton's `sm` and `md` footprints. */
+const SIZE_RUNG = {
+    small: 'sm',
+    large: 'md',
+} as const satisfies Record<SizeVariant, 'sm' | 'md'>;
 
-const createStyles = (
-    theme: AppTheme,
-    options: { size: sizeVariant, isPressed : boolean },
-) => StyleSheet.create({
-    container: {
-        alignItems: 'flex-end',
-        paddingRight: options.size === 'small' ? 14 : 0,
-        paddingBottom: 20,
-    },
-    button: {
-        backgroundColor: `${theme.backgroundTrack}66`,
-        width: options.size === 'small' ? 30 : 40,
-        borderColor: theme.card,
-        borderWidth: 1,
-        opacity: options.isPressed ? 0.5 : 1,
-
-    },
-});
+const CONTAINER_INSET_END = getSpacingValue('2xs');
+const CONTAINER_INSET_BOTTOM = getSpacingValue('sm');
 
 interface HideTileSelectionButtonProps {
-    handleHideTileSelectionPressIn? : () => void;
-    handleHideTileSelectionPressOut? : () => void;
-    size?: sizeVariant;
-    isPressed: boolean;
-    // Replaces the default container (positioning/padding) — used to place the
-    // button as an absolute overlay, e.g. bottom-left of a map.
-    containerStyle?: ViewStyle | ViewStyle[];
+    /** Both halves, because ui/IconButton treats a hold that cannot end as a mistake. */
+    handleHideTileSelectionPressIn: () => void;
+    handleHideTileSelectionPressOut: () => void;
+    size?: SizeVariant;
+    /** For a caller that already positions the button, e.g. inside a Positioned corner. */
+    withoutContainer?: boolean;
 }
 
-function HideTileSelectionButton(props:HideTileSelectionButtonProps) {
+function HideTileSelectionButton(props: HideTileSelectionButtonProps) {
     const {
         handleHideTileSelectionPressIn,
         handleHideTileSelectionPressOut,
-        isPressed,
         size = 'small',
-        containerStyle,
+        withoutContainer,
     } = props;
 
-    const styles = useThemedStyles(createStyles, {
-        size,
-        isPressed,
-    });
+    const { t } = useTranslation('mappingSession');
 
-    return (
+    const button = (
         <IconButton
+            name="hide"
+            iconName="eye-closed"
+            accessibilityLabel={t('hideTileOverlay')}
+            sizeVariant={SIZE_RUNG[size]}
+            styleVariant="outlined"
+            colorVariant="onImage"
             onPressIn={handleHideTileSelectionPressIn}
             onPressOut={handleHideTileSelectionPressOut}
-            stylesContainer={containerStyle ?? styles.container}
-            stylesButton={styles.button}
-            iconName="eye-closed"
-            name="hide"
-            size={size === 'small' ? 16 : 20}
-
         />
+    );
+
+    if (withoutContainer) {
+        return button;
+    }
+
+    return (
+        <Box
+            align="end"
+            paddingEnd={size === 'small' ? CONTAINER_INSET_END : undefined}
+            paddingBlockEnd={CONTAINER_INSET_BOTTOM}
+        >
+            {button}
+        </Box>
     );
 }
 

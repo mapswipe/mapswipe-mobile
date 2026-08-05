@@ -15,6 +15,7 @@ import {
 
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import { resolveGridCellIndex } from '@/utils/grid';
 import { ResultOption } from '@/utils/types';
 
 const createTileStyles = (
@@ -144,6 +145,8 @@ function LocateTile(props: Props) {
     } = props;
 
     const styles = useThemedStyles(createTileStyles, { width });
+    // Presentation only. The hit-test derives its own from width/gridSize in utils/grid, so a
+    // change to how a cell is drawn cannot move where a tap lands.
     const cellSize = width / gridSize;
     const selectedSet = useMemo(() => new Set(selectedCells ?? []), [selectedCells]);
 
@@ -152,7 +155,6 @@ function LocateTile(props: Props) {
 
     const latestRef = useRef({
         width,
-        cellSize,
         gridSize,
         selectedSet,
         onCellSelect,
@@ -160,7 +162,6 @@ function LocateTile(props: Props) {
     useEffect(() => {
         latestRef.current = {
             width,
-            cellSize,
             gridSize,
             selectedSet,
             onCellSelect,
@@ -175,18 +176,15 @@ function LocateTile(props: Props) {
             return;
         }
         const { locationX, locationY } = e.nativeEvent;
-        if (
-            locationX < 0 || locationY < 0
-            || locationX >= latest.width || locationY >= latest.width
-        ) {
+        const idx = resolveGridCellIndex({
+            locationX,
+            locationY,
+            width: latest.width,
+            gridSize: latest.gridSize,
+        });
+        if (idx === undefined) {
             return;
         }
-        const col = Math.floor(locationX / latest.cellSize);
-        const row = Math.floor(locationY / latest.cellSize);
-        if (col < 0 || col >= latest.gridSize || row < 0 || row >= latest.gridSize) {
-            return;
-        }
-        const idx = row * latest.gridSize + col;
         gestureActionRef.current = latest.selectedSet.has(idx) ? 'deselect' : 'select';
         lastTouchedCellRef.current = idx;
         latest.onCellSelect(idx, gestureActionRef.current);
@@ -198,19 +196,13 @@ function LocateTile(props: Props) {
             return;
         }
         const { locationX, locationY } = e.nativeEvent;
-        if (
-            locationX < 0 || locationY < 0
-            || locationX >= latest.width || locationY >= latest.width
-        ) {
-            return;
-        }
-        const col = Math.floor(locationX / latest.cellSize);
-        const row = Math.floor(locationY / latest.cellSize);
-        if (col < 0 || col >= latest.gridSize || row < 0 || row >= latest.gridSize) {
-            return;
-        }
-        const idx = row * latest.gridSize + col;
-        if (idx === lastTouchedCellRef.current) {
+        const idx = resolveGridCellIndex({
+            locationX,
+            locationY,
+            width: latest.width,
+            gridSize: latest.gridSize,
+        });
+        if (idx === undefined || idx === lastTouchedCellRef.current) {
             return;
         }
         lastTouchedCellRef.current = idx;

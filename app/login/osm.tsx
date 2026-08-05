@@ -6,9 +6,6 @@ import {
     Trans,
     useTranslation,
 } from 'react-i18next';
-import { StyleSheet } from 'react-native';
-import { Checkbox } from 'expo-checkbox';
-import { Image } from 'expo-image';
 import {
     createURL,
     parse,
@@ -17,45 +14,19 @@ import { useRouter } from 'expo-router';
 import { openAuthSessionAsync } from 'expo-web-browser';
 import { signInWithCustomToken } from 'firebase/auth';
 
-import logo from '@/assets/images/icon.png';
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import InlineListView from '@/components/InlineListView';
-import Link from '@/components/Link';
-import LoadingComponent from '@/components/Loader';
-import Page from '@/components/Page';
-import Text from '@/components/Text';
 import { showAlert } from '@/components/Toast';
-import { FONT_SIZE_XS } from '@/constants/dimensions';
-import { type AppTheme } from '@/constants/theme';
-import useThemedStyles from '@/hooks/useThemedStyles';
+import Button from '@/components/ui/Button';
+import Checkbox from '@/components/ui/Checkbox';
+import Link from '@/components/ui/Link';
+import Row from '@/components/ui/Row';
+import Screen from '@/components/ui/Screen';
+import AuthScreen from '@/components/ui/Screen/AuthScreen';
+import Text from '@/components/ui/Text';
 import { firebaseAuth } from '@/utils/firebase';
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
-    mainContent: {
-        flexDirection: 'column',
-        gap: 48,
-    },
-    icon: {
-        width: 128,
-        height: 128,
-    },
-    page: {
-        paddingTop: 96,
-    },
-    text: {
-        color: theme.textOnBrand,
-        fontSize: FONT_SIZE_XS,
-    },
-    privacy: {
-        alignItems: 'center',
-    },
-    privacyLink: {
-        color: theme.textOnBrand,
-        fontSize: FONT_SIZE_XS,
-        textDecorationLine: 'underline',
-    },
-});
+const APP_NAME = 'MapSwipe';
+
+const PRIVACY_NOTICE_URI = 'https://mapswipe.org/';
 
 function LoginWithOsm() {
     const [agreeToPrivacy, setAgreeToPrivacy] = useState<boolean>(false);
@@ -99,91 +70,106 @@ function LoginWithOsm() {
         }
     }, [router]);
 
-    const styles = useThemedStyles(createStyles);
+    const handlePrivacyNoticePress = useCallback(
+        () => {
+            router.push({
+                pathname: '/WebviewWindow',
+                params: { uri: PRIVACY_NOTICE_URI },
+            });
+        },
+        [router],
+    );
 
     if (pending) {
-        return (<LoadingComponent label="Signing in..." />);
+        return (
+            <Screen
+                title={t('loginSignupWithOSM')}
+                colorVariant="brand"
+                pending
+                pendingLabel="Signing in..."
+            />
+        );
     }
 
     return (
-        <Page
+        <AuthScreen
             title={t('loginSignupWithOSM')}
-            variant="brand"
-            style={styles.page}
+            logoAccessibilityLabel={APP_NAME}
+            footer={(
+                // `transparent` on `onBrand`, not the `filled` default this inherited before:
+                // filled painted backgroundBrand, i.e. the page's own navy, so the box was never
+                // visible and only its inset ever showed.
+                <Link
+                    href={{
+                        pathname: '/login',
+                    }}
+                    title={t('loginExistingAccount')}
+                    accessibilityLabel={t('loginExistingAccount')}
+                    colorVariant="onBrand"
+                    styleVariant="transparent"
+                    padding="2xs"
+                />
+            )}
         >
-            <BlockListView
-                spacing="sm"
-                withPadding
+            <Text
+                variant="caption"
+                colorVariant="onBrand"
             >
-                <BlockListView withCenteredContent>
-                    <Image
-                        style={styles.icon}
-                        source={logo}
-                    />
-                </BlockListView>
-                <BlockListView spacing="sm">
-                    <Text
-                        variant="label"
-                        style={styles.text}
+                {t('usernamePublic')}
+            </Text>
+            {/* `wrap` keeps InlineListView's flexWrap: a Text is not shrinkable by default in
+                RN, so without it the sentence would overflow the row rather than move below
+                the box. */}
+            <Row
+                spacing="3xs"
+                wrap
+            >
+                <Checkbox
+                    checked={agreeToPrivacy}
+                    onChange={setAgreeToPrivacy}
+                    // The only role whose box AND tick are both theme-stable; see the report.
+                    colorVariant="positive"
+                    accessibilityLabel={t('IagreeToPrivacyNotice')}
+                    disabled={pending}
+                />
+                <Text
+                    variant="caption"
+                    colorVariant="onBrand"
+                >
+                    <Trans
+                        i18nKey="signup:IagreeToPrivacyNotice"
                     >
-                        {t('usernamePublic')}
-                    </Text>
-                    <InlineListView
-                        spacing="3xs"
-                        style={styles.privacy}
-                    >
-                        <Checkbox
-                            value={agreeToPrivacy}
-                            onValueChange={setAgreeToPrivacy}
-                            color={agreeToPrivacy ? '#4630EB' : undefined}
-                            disabled={pending}
-                        />
+                        I agree to the
                         <Text
-                            variant="label"
-                            style={styles.text}
+                            // Repeated: a nested Text does not inherit the variant, because the
+                            // variant sets fontSize outright.
+                            variant="caption"
+                            colorVariant="onBrand"
+                            onPress={handlePrivacyNoticePress}
+                            accessibilityLabel={t('IagreeToPrivacyNotice')}
+                            withUnderline
                         >
-                            <Trans
-                                i18nKey="signup:IagreeToPrivacyNotice"
-                            >
-                                I agree to the
-                                <Text
-                                    style={styles.privacyLink}
-                                    onPress={() => router.push({
-                                        pathname: '/WebviewWindow',
-                                        params: { uri: 'https://mapswipe.org/' },
-                                    })}
-                                >
-                                    Privacy Notice
-                                </Text>
-                            </Trans>
+                            Privacy Notice
                         </Text>
-                    </InlineListView>
-                    <Text
-                        variant="label"
-                        style={styles.text}
-                    >
-                        {t('OSMsignupExplanation')}
-                    </Text>
-                    <Button
-                        name={undefined}
-                        onPress={handleLoginPress}
-                        title={t('loginSignupWithOSM')}
-                        colorVariant="primaryRed"
-                        styleVariant="filled"
-                        disabled={!agreeToPrivacy || pending}
-                    />
-                    <BlockListView>
-                        <Link
-                            spacing="xs"
-                            href={{
-                                pathname: '/login',
-                            }}
-                            title={t('loginExistingAccount')}
-                        />
-                    </BlockListView>
-                </BlockListView>
-            </BlockListView>
-        </Page>
+                    </Trans>
+                </Text>
+            </Row>
+            <Text
+                variant="caption"
+                colorVariant="onBrand"
+            >
+                {t('OSMsignupExplanation')}
+            </Text>
+            <Button
+                onPress={handleLoginPress}
+                title={t('loginSignupWithOSM')}
+                accessibilityLabel={t('loginSignupWithOSM')}
+                colorVariant="negative"
+                // The pending branch returns above, so only 'default' and 'disabled' are
+                // reachable here.
+                state={agreeToPrivacy ? 'default' : 'disabled'}
+            />
+        </AuthScreen>
     );
 }
 

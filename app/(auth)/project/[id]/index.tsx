@@ -1,192 +1,65 @@
-import { useMemo } from 'react';
 import {
-    StyleSheet,
-    View,
-} from 'react-native';
+    useCallback,
+    useMemo,
+} from 'react';
 import { EnrichedMarkdownText } from 'react-native-enriched-markdown';
-import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
+import {
+    useLocalSearchParams,
+    useRouter,
+} from 'expo-router';
 
 import heartIcon from '@/assets/images/custom/heart_icon.png';
 import mmwhiteLogo from '@/assets/images/custom/mmwhite.png';
-import BackButton from '@/components/BackButton';
-import BlockListView from '@/components/BlockListView';
-import InlineListView from '@/components/InlineListView';
-import Link from '@/components/Link';
-import Page from '@/components/Page';
-import Text from '@/components/Text';
-import {
-    FONT_SIZE_SM,
-    SCREEN_WIDTH,
-    SPACING_2XS,
-} from '@/constants/dimensions';
-import { AppTheme } from '@/constants/theme';
+import Box from '@/components/ui/Box';
+import IconButton from '@/components/ui/IconButton';
+import Link from '@/components/ui/Link';
+import Media from '@/components/ui/Media';
+import MediaHeader from '@/components/ui/MediaHeader';
+import Screen from '@/components/ui/Screen';
+import Text from '@/components/ui/Text';
+import { WORDMARK_SIZE } from '@/constants/size';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
-import useThemedStyles from '@/hooks/useThemedStyles';
 import { getProjectProgressForDisplay } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
-import { FbProject } from '@/utils/types';
+import { type FbProject } from '@/utils/types';
 
-const PROJECT_CARD_HEIGHT = 240;
-const PROJECT_CARD_WIDTH = SCREEN_WIDTH;
+const BACK_LABEL = 'Go back';
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
-    name: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    image: {
-        width: '100%',
-        height: PROJECT_CARD_HEIGHT,
-    },
-    overlay: {
-        top: 0,
-        left: 0,
-        position: 'absolute',
-        width: PROJECT_CARD_WIDTH,
-        height: PROJECT_CARD_HEIGHT,
-        textAlign: 'center',
-        backgroundColor: 'rgba(52,52,52,0.7)',
-    },
-    overlayContainer: {
-        flex: 1,
-        justifyContent: 'flex-start',
-        position: 'absolute',
-        gap: 4,
-        top: 0,
-        left: 0,
-        width: PROJECT_CARD_WIDTH,
-        height: PROJECT_CARD_HEIGHT,
-    },
-    backButtonContainer: {
-        padding: 20,
-        position: 'absolute',
-        zIndex: 2,
-    },
-    projectDetails: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexGrow: 1,
-    },
-    projectDetailsText: {
-        paddingTop: 16,
-        color: theme.card,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    horizontalBar: {
-        borderWidth: 0.5,
-        borderBottomWidth: 0,
-        borderColor: theme.card,
-    },
-    heartIcon: {
-        height: 24,
-        width: 24,
-    },
-    mmLogo: {
-        width: 100,
-        height: 30,
-        resizeMode: 'contain',
-    },
-    contributionText: {
-        color: theme.card,
-        flexShrink: 1,
-    },
-    bottomBar: {
-        borderTopWidth: 1,
-        borderLeftWidth: 0,
-        borderRightWidth: 0,
-        borderBottomWidth: 0,
-        borderColor: '#212121',
-        backgroundColor: 'rgba(52,52,52,0.5)',
-        flexShrink: 0,
-        flexWrap: 'nowrap',
-        padding: 10,
-        alignItems: 'center',
-        flexGrow: 0,
-    },
-    description: {
-        paddingHorizontal: SPACING_2XS,
-        paddingBottom: SPACING_2XS,
-    },
-});
+const ORGANISATION_NAME = 'Missing Maps';
 
-export default function ProjectDetail() {
+function ProjectDetail() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
+    const router = useRouter();
 
     const projectQuery = useMemo(() => (
         firebaseRef(`v2/projects/${projectId}`)
     ), [projectId]);
 
-    const styles = useThemedStyles(createStyles, undefined);
-
     const { data: project } = useFirebaseDatabase<FbProject>({ query: projectQuery });
 
-    // A project at 100% global progress is done — block mapping (tutorial stays
-    // available). progress is a 0–100 percentage.
+    // progress is a percentage from 0 to 100. Completion blocks mapping, not the tutorial.
     const isProjectComplete = (project?.progress ?? 0) >= 100;
 
+    // This screen can open from a notification with no history behind it.
+    const handleBackPress = useCallback(() => {
+        if (router.canGoBack()) {
+            router.back();
+            return;
+        }
+
+        router.push('/');
+    }, [router]);
+
+    const contributionSummary = `${getProjectProgressForDisplay(project?.progress ?? 0)}% global progress by ${project?.contributorCount ?? 0} mappers just like you.`;
+
+    const mapLabel = isProjectComplete ? 'Project completed' : 'Map now';
+
     return (
-        <Page
+        <Screen
             title={project?.name ?? 'Project'}
-        >
-            <BlockListView
-                spacing="2xs"
-            >
-                <View>
-                    <Image
-                        source={project?.image}
-                        style={styles.image}
-                    />
-                    <View style={styles.overlay} />
-                    <View style={styles.overlayContainer}>
-                        <View style={styles.backButtonContainer}>
-                            <BackButton />
-                        </View>
-                        <View style={styles.projectDetails}>
-                            <Text
-                                variant="heading"
-                                style={styles.projectDetailsText}
-                            >
-                                {project?.projectTopic}
-                            </Text>
-                        </View>
-                        <InlineListView
-                            style={styles.bottomBar}
-                            spacing="3xs"
-                        >
-                            <Image
-                                style={styles.heartIcon}
-                                source={heartIcon}
-                            />
-                            <Text
-                                style={styles.contributionText}
-                                variant="label"
-                            >
-                                {`${getProjectProgressForDisplay(project?.progress ?? 0)}% global progress by ${project?.contributorCount ?? 0} mappers just like you.`}
-                            </Text>
-                            <Image
-                                style={styles.mmLogo}
-                                source={mmwhiteLogo}
-                            />
-                        </InlineListView>
-                    </View>
-                </View>
-                <BlockListView
-                    spacing="xs"
-                    style={styles.description}
-                >
-                    <EnrichedMarkdownText
-                        markdown={project?.projectDetails ?? ''}
-                        markdownStyle={{
-                            paragraph: {
-                                fontSize: FONT_SIZE_SM,
-                                lineHeight: 20,
-                                marginBottom: 4,
-                            },
-                        }}
-                    />
+            padding="xs"
+            footer={(
+                <>
                     <Link
                         href={{
                             pathname: '/project/[id]/tutorial',
@@ -194,8 +67,9 @@ export default function ProjectDetail() {
                                 id: projectId,
                             },
                         }}
-                        colorVariant="primaryGreen"
+                        colorVariant="positive"
                         title="Start tutorial"
+                        accessibilityLabel="Start tutorial"
                     />
                     <Link
                         href={{
@@ -205,11 +79,63 @@ export default function ProjectDetail() {
                                 projectInstruction: project?.projectInstruction,
                             },
                         }}
-                        title={isProjectComplete ? 'Project completed' : 'Map now'}
-                        disabled={isProjectComplete}
+                        colorVariant="brand"
+                        title={mapLabel}
+                        accessibilityLabel={mapLabel}
+                        // expo-router's Link ignores `disabled`, so the press is blocked via state.
+                        state={isProjectComplete ? 'disabled' : 'default'}
                     />
-                </BlockListView>
-            </BlockListView>
-        </Page>
+                </>
+            )}
+            hero={(
+                <MediaHeader
+                    source={project?.image}
+                    title={project?.projectTopic ?? ''}
+                    withoutImageAccessibilityLabel
+                    action={(
+                        <IconButton
+                            name="back"
+                            iconName="arrow-left"
+                            accessibilityLabel={BACK_LABEL}
+                            colorVariant="onImage"
+                            onPress={handleBackPress}
+                        />
+                    )}
+                    footer={(
+                        <>
+                            <Media
+                                source={heartIcon}
+                                sizeVariant="xs"
+                                withoutAccessibilityLabel
+                            />
+                            <Text
+                                variant="label"
+                                colorVariant="onImage"
+                                flex="shrink"
+                            >
+                                {contributionSummary}
+                            </Text>
+                            <Box
+                                width={WORDMARK_SIZE.width}
+                                height={WORDMARK_SIZE.height}
+                            >
+                                <Media
+                                    source={mmwhiteLogo}
+                                    sizeVariant="fill"
+                                    fit="contain"
+                                    accessibilityLabel={ORGANISATION_NAME}
+                                />
+                            </Box>
+                        </>
+                    )}
+                />
+            )}
+        >
+            <EnrichedMarkdownText
+                markdown={project?.projectDetails ?? ''}
+            />
+        </Screen>
     );
 }
+
+export default ProjectDetail;

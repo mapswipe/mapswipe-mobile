@@ -4,23 +4,20 @@ import {
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    ActivityIndicator,
-    StyleSheet,
-    View,
-} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { isDefined } from '@togglecorp/fujs';
 
-import IconButton from '@/components/IconButton';
-import Modal from '@/components/Modal';
-import Page from '@/components/Page';
 import TutorialPager from '@/components/tutorial/TutorialPager';
 import TutorialWelcomeInfo from '@/components/tutorial/TutorialWelcomeInfo';
 import {
     ScenarioState,
     TutorialStage,
 } from '@/components/tutorial/types';
+import Box from '@/components/ui/Box';
+import IconButton from '@/components/ui/IconButton';
+import Modal from '@/components/ui/Modal';
+import Screen from '@/components/ui/Screen';
+import Spinner from '@/components/ui/Spinner';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
 import {
@@ -35,24 +32,12 @@ import {
     Results,
 } from '@/utils/types';
 
-const styles = StyleSheet.create({
-    loaderContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    infoBtn: {
-        padding: 0,
-        margin: 0,
-    },
-    headerButtonPadding: {
-        padding: 8,
-    },
-});
+const INFO_LABEL = 'Tutorial information';
 
 function Tutorial() {
     const { id: projectId } = useLocalSearchParams<{ id: string }>();
     const { t } = useTranslation(['tutorialScreen', 'Tutorial']);
+    const { t: tChrome } = useTranslation('mappingSession');
     const projectQuery = useMemo(() => (
         firebaseRef(`v2/projects/${projectId}`)
     ), [projectId]);
@@ -83,18 +68,14 @@ function Tutorial() {
         ));
     }, [tasksByGroup]);
 
-    // Bucket tasks by (groupId, screen) so each scenario shows a single group's
-    // tiles. Different groups can reuse the same screen number and synthetic taskId,
-    // which would otherwise merge (and collide) into one scenario.
+    // Different groups reuse screen numbers and synthetic taskIds, so bucket by (groupId, screen).
     const taskBuckets = useMemo(() => groupTasksByGroupAndScreen(allTasks), [allTasks]);
 
     const stages = useMemo<TutorialStage[]>(() => {
         if (!tutorialDetails) {
             return [];
         }
-        // Map the i-th scenario to the i-th task bucket. Buckets are ordered by
-        // groupId then screen, so scenarios line up deterministically even when
-        // `screen` values aren't sequential 0/1-based indices.
+        // Buckets are ordered by groupId then screen, so the i-th scenario takes the i-th bucket.
         const list: TutorialStage[] = [];
         list.push({ type: 'intro', tutorial: tutorialDetails });
         (tutorialDetails.informationPages ?? []).forEach((page) => {
@@ -170,28 +151,45 @@ function Tutorial() {
 
     const [modal, setModal] = useState<boolean>(false);
 
-    const infoButton = useCallback(() => (
+    const handleInfoPress = useCallback(() => {
+        setModal((prevVisible) => !prevVisible);
+    }, []);
+
+    const handleInfoClose = useCallback(() => {
+        setModal(false);
+    }, []);
+
+    const headerActions = useCallback(() => (
         <IconButton
-            name={!modal}
+            name="info"
             iconName="information-outline"
-            onPress={setModal}
-            stylesButton={styles.infoBtn}
-            stylesContainer={styles.headerButtonPadding}
+            accessibilityLabel={INFO_LABEL}
+            colorVariant="onBrand"
+            onPress={handleInfoPress}
         />
-    ), [modal]);
+    ), [handleInfoPress]);
+
     return (
-        <Page
+        <Screen
             title={t('pageTitle')}
-            variant="brand"
-            scrollable={false}
-            showBackButton
+            colorVariant="brand"
+            layout="fill"
+            withHeader
+            backAccessibilityLabel={tChrome('goBack')}
+            // The navigator header already covers the status bar, so only the bottom is ours.
+            safeArea="bottom"
             headerTitleAlign="center"
-            headerRight={infoButton}
+            headerActions={headerActions}
         >
+            {/* Not Screen's `pending`: that slot replaces the children, hiding the info modal. */}
             {isLoading ? (
-                <View style={styles.loaderContainer}>
-                    <ActivityIndicator size="large" color="#ffffff" />
-                </View>
+                <Box
+                    flex={1}
+                    align="center"
+                    justify="center"
+                >
+                    <Spinner colorVariant="onBrand" />
+                </Box>
             ) : (
                 <TutorialPager
                     projectId={projectId}
@@ -214,14 +212,13 @@ function Tutorial() {
                 />
             )}
             <Modal
-                open={!modal}
                 visible={modal}
-                onClose={setModal}
-                closeButtonName="I understand"
+                onClose={handleInfoClose}
+                closeLabel="I understand"
             >
                 <TutorialWelcomeInfo />
             </Modal>
-        </Page>
+        </Screen>
     );
 }
 

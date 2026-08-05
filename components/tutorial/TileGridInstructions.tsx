@@ -3,39 +3,40 @@ import {
     useTranslation,
 } from 'react-i18next';
 
-import BlockListView from '@/components/BlockListView';
-import Icon from '@/components/Icon';
-import Text, { ColorVariant } from '@/components/Text';
-import useTheme from '@/hooks/useTheme';
+import Icon from '@/components/ui/Icon';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 
-import InstructionRow from './InstructionRow';
+import InstructionRow, {
+    INSTRUCTION_CONTENT_COLOR,
+    type InstructionColorVariant,
+} from './InstructionRow';
 import TapBadgeIcon from './TapBadgeIcon';
 
-const boldStyle = { fontWeight: 'bold' } as const;
+// A nested ui/Text sets fontSize outright, so a bold run must restate its parent's variant.
 
 interface TileGridInstructionsProps {
-    colorVariants? : ColorVariant
+    colorVariants? : InstructionColorVariant
 }
 
 function TileGridInstructions(props: TileGridInstructionsProps) {
     const { colorVariants = 'brand' } = props;
     const { t } = useTranslation('instructionsScreen');
-    const theme = useTheme();
-    const iconColor = colorVariants === 'brand' ? theme.textOnBrand : theme.textPrimary;
+    const contentColorVariant = INSTRUCTION_CONTENT_COLOR[colorVariants];
 
     return (
-        <BlockListView spacing="sm">
-            <Text colorVariant={colorVariants}>
+        <Stack spacing="sm">
+            <Text colorVariant={contentColorVariant}>
                 {t('tileGridIntro')}
             </Text>
 
             <InstructionRow
                 colorVariant={colorVariants}
-                icon={<Icon name="swipe-left" color={iconColor} size={40} />}
+                icon={<Icon name="swipe-left" colorVariant={contentColorVariant} sizeVariant="5xl" />}
                 description={(
                     <Trans i18nKey="instructionsScreen:tileGridSwipe">
                         If there&apos;s nothing relevant in the images, simply
-                        <Text style={boldStyle} colorVariant={colorVariants}>swipe</Text>
+                        <Text weight="bold" colorVariant={contentColorVariant}>swipe</Text>
                         to the next screen.
                     </Trans>
                 )}
@@ -44,16 +45,16 @@ function TileGridInstructions(props: TileGridInstructionsProps) {
                 colorVariant={colorVariants}
                 icon={(
                     <TapBadgeIcon
-                        iconColor={iconColor}
+                        colorVariant={contentColorVariant}
                         iconName="tap"
                         badgeNumber={1}
-                        badgeColor={theme.success}
+                        badgeColorVariant="positive"
                     />
                 )}
                 description={(
                     <Trans i18nKey="instructionsScreen:tileGridTapOnce">
                         If you see something in one of the images,
-                        <Text style={boldStyle} colorVariant={colorVariants}>tap once</Text>
+                        <Text weight="bold" colorVariant={contentColorVariant}>tap once</Text>
                         and the tile turns green.
                     </Trans>
                 )}
@@ -63,15 +64,15 @@ function TileGridInstructions(props: TileGridInstructionsProps) {
                 icon={(
                     <TapBadgeIcon
                         iconName="tap"
-                        iconColor={iconColor}
+                        colorVariant={contentColorVariant}
                         badgeNumber={2}
-                        badgeColor={theme.warning}
+                        badgeColorVariant="notice"
                     />
                 )}
                 description={(
                     <Trans i18nKey="instructionsScreen:tileGridTapTwice">
                         Not sure about what you see?
-                        <Text style={boldStyle} colorVariant={colorVariants}>Tap twice</Text>
+                        <Text weight="bold" colorVariant={contentColorVariant}>Tap twice</Text>
                         and the tile turns yellow.
                     </Trans>
                 )}
@@ -82,39 +83,39 @@ function TileGridInstructions(props: TileGridInstructionsProps) {
                     <TapBadgeIcon
                         iconName="tap"
                         badgeNumber={3}
-                        iconColor={iconColor}
-                        badgeColor={theme.error}
+                        colorVariant={contentColorVariant}
+                        badgeColorVariant="negative"
                     />
                 )}
                 description={(
                     <Trans i18nKey="instructionsScreen:tileGridTapThrice">
                         If there&apos;s an issue with the imagery,
-                        <Text style={boldStyle} colorVariant={colorVariants}>tap three times</Text>
+                        <Text weight="bold" colorVariant={contentColorVariant}>tap three times</Text>
                         and the tile turns red.
                     </Trans>
                 )}
             />
             <InstructionRow
                 colorVariant={colorVariants}
-                icon={<Icon name="tap" color={iconColor} size={40} />}
+                icon={<Icon name="tap" colorVariant={contentColorVariant} sizeVariant="5xl" />}
                 description={(
                     <Trans i18nKey="instructionsScreen:tileGridTapReset">
-                        <Text style={boldStyle} colorVariant={colorVariants}>tap again</Text>
+                        <Text weight="bold" colorVariant={contentColorVariant}>tap again</Text>
                         to return the tile to its original state.
                     </Trans>
                 )}
             />
             <InstructionRow
                 colorVariant={colorVariants}
-                icon={<Icon name="hand-left-outline" color={iconColor} size={40} />}
+                icon={<Icon name="hand-left-outline" colorVariant={contentColorVariant} sizeVariant="5xl" />}
                 description={(
                     <Trans i18nKey="instructionsScreen:tileGridTapHold">
-                        <Text style={boldStyle} colorVariant={colorVariants}>Tap and hold</Text>
+                        <Text weight="bold" colorVariant={contentColorVariant}>Tap and hold</Text>
                         to hide icons and overlay.
                     </Trans>
                 )}
             />
-        </BlockListView>
+        </Stack>
     );
 }
 

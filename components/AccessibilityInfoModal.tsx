@@ -4,49 +4,37 @@ import {
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    StyleSheet,
-    View,
-} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import BlockListView from '@/components/BlockListView';
-import Icon from '@/components/Icon';
-import Modal from '@/components/Modal';
-import Text from '@/components/Text';
 import InstructionRow from '@/components/tutorial/InstructionRow';
+import Badge from '@/components/ui/Badge';
+import Box from '@/components/ui/Box';
+import Modal from '@/components/ui/Modal';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
+import { ANSWER_OPTIONS } from '@/constants/answers';
+import { ICON_SIZE } from '@/constants/size';
+import useAnswerColors from '@/hooks/useAnswerColors';
 
 export const ACCESSIBILITY_TUTORIAL_SEEN_KEY = 'accessibility_tutorial_seen';
 
-const BADGE_SIZE = 28;
+// Built-in answers only: a project's customOptions never reach this legend.
+const LEGEND = [
+    { option: ANSWER_OPTIONS.yes, descriptionKey: 'tickIconInfo' },
+    { option: ANSWER_OPTIONS.maybe, descriptionKey: 'questionMarkIconInfo' },
+    { option: ANSWER_OPTIONS.badImagery, descriptionKey: 'badImageIconInfo' },
+] as const;
 
-const styles = StyleSheet.create({
-    badge: {
-        width: BADGE_SIZE,
-        height: BADGE_SIZE,
-        borderRadius: 4,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
+const LEGEND_OPTIONS = LEGEND.map(({ option }) => option);
 
-interface BadgeProps {
-    color: string;
-    iconName: 'checkmark-outline' | 'question-mark' | 'ban-outline';
-}
-
-function AccessibilityBadge(props: BadgeProps) {
-    const { color, iconName } = props;
-    return (
-        <View style={[styles.badge, { backgroundColor: color }]}>
-            <Icon name={iconName} color="#ffffff" size={16} weight="bold" />
-        </View>
-    );
-}
+// Must match the badge footprint so the last row's text lines up with the rows above.
+const BADGE_EXTENT = ICON_SIZE['3xl'];
 
 function AccessibilityInfoModal() {
     const { t } = useTranslation('AccessibilityInstruction');
     const [visible, setVisible] = useState(false);
+
+    const answerColors = useAnswerColors(LEGEND_OPTIONS);
 
     useEffect(() => {
         AsyncStorage.getItem(ACCESSIBILITY_TUTORIAL_SEEN_KEY).then((value) => {
@@ -63,35 +51,35 @@ function AccessibilityInfoModal() {
 
     return (
         <Modal
-            open="accessibility-info"
             visible={visible}
             onClose={handleClose}
-            closeButtonName={t('dontShowAgain', "Don't show me this again")}
+            closeLabel={t('dontShowAgain', "Don't show me this again")}
         >
-            <BlockListView spacing="sm">
+            <Stack spacing="sm">
                 <Text variant="title">{t('heading')}</Text>
                 <Text>{t('descriptions')}</Text>
+                {LEGEND.map(({ option, descriptionKey }) => (
+                    <InstructionRow
+                        key={option.value}
+                        icon={(
+                            <Badge
+                                shape="square"
+                                sizeVariant="lg"
+                                dotColor={answerColors[option.value].badgeColor}
+                                iconName={option.iconName}
+                                iconEmphasis="strong"
+                            />
+                        )}
+                        description={t(descriptionKey)}
+                        colorVariant="normal"
+                    />
+                ))}
                 <InstructionRow
-                    icon={<AccessibilityBadge color="#22C55E" iconName="checkmark-outline" />}
-                    description={t('tickIconInfo')}
-                    colorVariant="normal"
-                />
-                <InstructionRow
-                    icon={<AccessibilityBadge color="#F59E0B" iconName="question-mark" />}
-                    description={t('questionMarkIconInfo')}
-                    colorVariant="normal"
-                />
-                <InstructionRow
-                    icon={<AccessibilityBadge color="#EF4444" iconName="ban-outline" />}
-                    description={t('badImageIconInfo')}
-                    colorVariant="normal"
-                />
-                <InstructionRow
-                    icon={<View style={{ width: BADGE_SIZE }} />}
+                    icon={<Box width={BADGE_EXTENT} />}
                     description={t('turnOnOffDescription')}
                     colorVariant="normal"
                 />
-            </BlockListView>
+            </Stack>
         </Modal>
     );
 }

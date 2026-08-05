@@ -1,175 +1,36 @@
+import {
+    useCallback,
+    useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
-    View,
-} from 'react-native';
-import { isDefined } from '@togglecorp/fujs';
+import { type LayoutChangeEvent } from 'react-native';
 
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import Icon from '@/components/Icon';
-import InlineListView from '@/components/InlineListView';
-import Text from '@/components/Text';
-import {
-    FONT_SIZE_2XL,
-    FONT_SIZE_MD,
-    FONT_SIZE_SM,
-    SPACING_2XS,
-    SPACING_3XS,
-    SPACING_4XS,
-    SPACING_MD,
-    SPACING_SM,
-    SPACING_XS,
-} from '@/constants/dimensions';
-import { type AppTheme } from '@/constants/theme';
-import useTheme from '@/hooks/useTheme';
+import AnswerSummaryCard from '@/components/domain/AnswerSummaryCard';
+import Badge from '@/components/ui/Badge';
+import Box from '@/components/ui/Box';
+import Button from '@/components/ui/Button';
+import { type ButtonStateType } from '@/components/ui/ButtonLayout';
+import Icon from '@/components/ui/Icon';
+import ListView from '@/components/ui/ListView';
+import Row from '@/components/ui/Row';
+import Spacer from '@/components/ui/Spacer';
+import Spinner from '@/components/ui/Spinner';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 import { type AnswerCount } from '@/utils/results';
 
 export type ResultSyncStatus = 'not-started' | 'in-progress' | 'failed' | 'successful';
 
-// Result option colors are stored as named CSS colors ('green'/'red'/...) for
-// the tile projects, or as hex for custom options. Map them to theme tokens so
-// the summary matches the rest of the app (and 'transparent' reads as muted).
-function getDisplayColor(color: string, theme: AppTheme): string {
-    switch (color) {
-        case 'green': return theme.success;
-        case 'yellow': return theme.warning;
-        case 'red': return theme.error;
-        case 'transparent': return theme.textMuted;
-        default: return color;
-    }
+// Rowless on purpose: the outro is one block, carried as the list header just to get a scroller.
+const NO_ROWS: readonly never[] = [];
+
+function selectNoKey(): string {
+    return '';
 }
 
-function formatDuration(ms: number): string {
-    const totalSeconds = Math.max(0, Math.round(ms / 1000));
-    if (totalSeconds < 60) {
-        return `${totalSeconds} sec`;
-    }
-    return `${Math.round(totalSeconds / 60)} min`;
+function renderNoRow(): null {
+    return null;
 }
-
-// The outro is wrapped in a ScrollView whose content uses flexGrow:1: on tall
-// screens the spacer pushes the action buttons to the bottom, and on short
-// screens (or the taller 4-button Validate variant) the content scrolls so no
-// button ends up hidden behind the device navigation bar.
-const styles = StyleSheet.create({
-    scroll: {
-        flex: 1,
-        width: '100%',
-    },
-    scrollContent: {
-        flexGrow: 1,
-    },
-    container: {
-        flexGrow: 1,
-        width: '100%',
-        padding: SPACING_MD,
-        alignItems: 'center',
-    },
-    // Pushes the action buttons to the bottom, leaving a gap above them.
-    spacer: {
-        flex: 1,
-        minHeight: SPACING_MD,
-    },
-    centerText: {
-        textAlign: 'center',
-    },
-    glow: {
-        width: 96,
-        height: 96,
-        borderRadius: 48,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(50, 169, 41, 0.18)',
-    },
-    checkCircle: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#32A929',
-    },
-    headerBlock: {
-        alignItems: 'center',
-    },
-    card: {
-        width: '100%',
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.12)',
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        paddingVertical: SPACING_SM,
-        paddingHorizontal: SPACING_XS,
-    },
-    // Answers are full-width rows (label + count on one line) separated by
-    // divider lines, so they fill the width and read clearly.
-    statsList: {
-        width: '100%',
-    },
-    statRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: SPACING_2XS,
-        paddingVertical: SPACING_4XS,
-    },
-    statRowLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: SPACING_3XS,
-        flexShrink: 1,
-    },
-    statCount: {
-        fontSize: FONT_SIZE_2XL,
-        fontWeight: 'bold',
-        includeFontPadding: false,
-    },
-    dot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-    },
-    horizontalDivider: {
-        height: StyleSheet.hairlineWidth,
-        width: '100%',
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        marginVertical: SPACING_XS,
-    },
-    cardFooterRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 8,
-    },
-    footerItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    buttonGroup: {
-        width: '100%',
-    },
-    continueContent: {
-        alignItems: 'center',
-    },
-    continueTitle: {
-        color: '#FFFFFF',
-        fontSize: FONT_SIZE_MD,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        includeFontPadding: false,
-    },
-    continueSubtitle: {
-        color: 'rgba(255, 255, 255, 0.85)',
-        fontSize: FONT_SIZE_SM,
-        textAlign: 'center',
-        includeFontPadding: false,
-        marginTop: 2,
-    },
-});
 
 interface Props {
     resultSyncStatus: ResultSyncStatus;
@@ -177,11 +38,7 @@ interface Props {
     onCompleteSession: () => void;
     onGoBack?: () => void;
     onDiscardSession: () => void;
-    // When the outro is reachable as a page the user can swipe back from, we
-    // hide the redundant "Go back" button and show a swipe-back hint instead.
     swipeBackHint?: boolean;
-    // Session summary: per-answer counts, total tiles reviewed, and the time
-    // spent mapping (ms). All optional so the outro still renders without them.
     answerCounts?: AnswerCount[];
     reviewedCount?: number;
     durationMs?: number;
@@ -200,181 +57,198 @@ function SessionOutro(props: Props) {
         durationMs,
     } = props;
     const { t } = useTranslation('mappingSession');
-    const theme = useTheme();
+
+    // Measured so the content is held to a screenful and the spacer can push the buttons down.
+    const [viewportHeight, setViewportHeight] = useState(0);
+
+    const handleViewportLayout = useCallback((event: LayoutChangeEvent) => {
+        setViewportHeight(event.nativeEvent.layout.height);
+    }, []);
 
     const inProgress = resultSyncStatus === 'in-progress';
     const failed = resultSyncStatus === 'failed';
     const succeeded = resultSyncStatus === 'successful';
 
+    const buttonState: ButtonStateType = inProgress ? 'disabled' : 'default';
+
     // Show every answer option, including those with a count of 0.
     const visibleAnswers = answerCounts ?? [];
-    const showCard = visibleAnswers.length > 0
-        || isDefined(durationMs)
-        || (isDefined(reviewedCount) && reviewedCount > 0);
 
-    return (
-        <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-        >
-            <BlockListView
-                style={styles.container}
+    const content = (
+        <Box minHeight={viewportHeight}>
+            <Stack
                 spacing="lg"
+                padding="md"
+                grow="fill"
             >
-                <View style={styles.glow}>
-                    <View style={styles.checkCircle}>
-                        <Icon
-                            name="checkmark-outline"
-                            color={theme.textOnPrimary}
-                            size={32}
-                        />
-                    </View>
-                </View>
+                {/* The medallion is a fixed-size box, so the column's stretch cannot centre it. */}
+                <Box align="center">
+                    <Badge
+                        shape="circle"
+                        sizeVariant="3xl"
+                        colorVariant="positive"
+                        styleVariant="filled"
+                        iconName="checkmark-outline"
+                    />
+                </Box>
 
-                <BlockListView style={styles.headerBlock} spacing="3xs">
-                    <Text variant="heading" colorVariant="brand" style={styles.centerText}>
+                <Stack
+                    spacing="3xs"
+                    align="center"
+                >
+                    <Text
+                        variant="heading"
+                        colorVariant="onBrand"
+                        align="center"
+                    >
                         {t('sessionCompleteTitle')}
                     </Text>
                     <Text
-                        colorVariant="brand"
                         variant="description"
-                        style={styles.centerText}
+                        colorVariant="onBrand"
+                        align="center"
                     >
                         {swipeBackHint ? t('swipeBackToRevise') : t('sessionCompleteMessage')}
                     </Text>
-                </BlockListView>
+                </Stack>
 
-                {showCard && (
-                    <View style={styles.card}>
-                        {visibleAnswers.length > 0 && (
-                            <View style={styles.statsList}>
-                                {visibleAnswers.map((answer) => {
-                                    const answerColor = getDisplayColor(answer.color, theme);
-                                    return (
-                                        <View key={answer.value} style={styles.statRow}>
-                                            <View style={styles.statRowLeft}>
-                                                <View
-                                                    style={StyleSheet.flatten([
-                                                        styles.dot,
-                                                        { backgroundColor: answerColor },
-                                                    ])}
-                                                />
-                                                <Text variant="description" colorVariant="brand">
-                                                    {answer.label}
-                                                </Text>
-                                            </View>
-                                            <Text
-                                                style={StyleSheet.flatten([
-                                                    styles.statCount,
-                                                    { color: answerColor },
-                                                ])}
-                                            >
-                                                {String(answer.count)}
-                                            </Text>
-                                        </View>
-                                    );
-                                })}
-                            </View>
-                        )}
-                        {visibleAnswers.length > 0 && <View style={styles.horizontalDivider} />}
-                        <View style={styles.cardFooterRow}>
-                            {isDefined(reviewedCount) && (
-                                <Text variant="label" colorVariant="brand">
-                                    {t('tilesReviewed', { count: reviewedCount })}
-                                </Text>
-                            )}
-                            {isDefined(durationMs) && (
-                                <View style={styles.footerItem}>
-                                    <Icon
-                                        name="time-outline"
-                                        color={theme.textOnBrand}
-                                        size={14}
-                                    />
-                                    <Text variant="label" colorVariant="brand">
-                                        {t('timeMapping', { duration: formatDuration(durationMs) })}
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-                    </View>
-                )}
+                <AnswerSummaryCard
+                    answerCounts={visibleAnswers}
+                    reviewedCount={reviewedCount}
+                    durationMs={durationMs}
+                />
 
                 {inProgress && (
-                    <InlineListView withCenteredContent withoutWrap spacing="2xs">
-                        <ActivityIndicator size="small" color={theme.textOnBrand} />
-                        <Text colorVariant="brand" variant="description">
+                    <Row
+                        spacing="2xs"
+                        justify="center"
+                    >
+                        {/* Unlabelled on purpose: the text beside it would be announced twice. */}
+                        <Spinner
+                            sizeVariant="sm"
+                            colorVariant="onBrand"
+                        />
+                        <Text
+                            variant="description"
+                            colorVariant="onBrand"
+                        >
                             {t('savingProgress')}
                         </Text>
-                    </InlineListView>
+                    </Row>
                 )}
                 {failed && (
-                    <InlineListView withCenteredContent withoutWrap spacing="2xs">
-                        <Icon name="warning-outline" color={theme.error} size={20} />
-                        <Text colorVariant="brand" variant="description">
+                    <Row
+                        spacing="2xs"
+                        justify="center"
+                    >
+                        <Icon
+                            name="warning-outline"
+                            sizeVariant="xl"
+                            colorVariant="negative"
+                        />
+                        <Text
+                            variant="description"
+                            colorVariant="onBrand"
+                        >
                             {t('saveFailed')}
                         </Text>
-                    </InlineListView>
+                    </Row>
                 )}
                 {succeeded && (
-                    <InlineListView withCenteredContent withoutWrap spacing="2xs">
-                        <Icon name="checkmark-outline" color={theme.success} size={20} />
-                        <Text colorVariant="brand" variant="description">
+                    <Row
+                        spacing="2xs"
+                        justify="center"
+                    >
+                        <Icon
+                            name="checkmark-outline"
+                            sizeVariant="xl"
+                            colorVariant="positive"
+                        />
+                        <Text
+                            variant="description"
+                            colorVariant="onBrand"
+                        >
                             {t('saveSucceeded')}
                         </Text>
-                    </InlineListView>
+                    </Row>
                 )}
 
-                <View style={styles.spacer} />
+                <Spacer
+                    size="md"
+                    grow
+                />
 
-                {/* Order matches the design: the prominent Continue first, then
-                    Save & finish, then the de-emphasized Discard last. */}
-                <BlockListView style={styles.buttonGroup} spacing="sm">
+                <Stack spacing="sm">
                     <Button
-                        name="continue"
-                        colorVariant="primaryGreen"
+                        accessibilityLabel={t('continueMapping')}
+                        colorVariant="positive"
                         styleVariant="filled"
-                        disabled={inProgress}
+                        state={buttonState}
                         onPress={onContinueMapping}
                     >
-                        <View style={styles.continueContent}>
-                            <Text style={styles.continueTitle}>
+                        <Stack
+                            spacing="none"
+                            align="center"
+                        >
+                            <Text
+                                weight="bold"
+                                colorVariant="onBrand"
+                                align="center"
+                            >
                                 {t('continueMapping')}
                             </Text>
-                            <Text style={styles.continueSubtitle}>
+                            <Text
+                                variant="label"
+                                weight="regular"
+                                colorVariant="onBrand"
+                                align="center"
+                            >
                                 {t('startNewTasks')}
                             </Text>
-                        </View>
+                        </Stack>
                     </Button>
                     <Button
-                        name="complete"
+                        accessibilityLabel={t('saveAndFinish')}
                         title={t('saveAndFinish')}
-                        colorVariant="white"
+                        colorVariant="onBrand"
                         styleVariant="outline"
-                        disabled={inProgress}
+                        state={buttonState}
                         onPress={onCompleteSession}
                     />
                     {onGoBack && (
                         <Button
-                            name="go-back"
+                            accessibilityLabel={t('goBack')}
                             title={t('goBack')}
-                            colorVariant="white"
+                            colorVariant="onBrand"
                             styleVariant="outline"
-                            disabled={inProgress}
+                            state={buttonState}
                             onPress={onGoBack}
                         />
                     )}
+                    {/* `negative`, not `accent`: a different red, reserved for errors. */}
                     <Button
-                        name="discard"
+                        accessibilityLabel={t('discardSession')}
                         title={t('discardSession')}
-                        colorVariant="primaryRed"
+                        colorVariant="negative"
                         styleVariant="transparent"
-                        disabled={inProgress}
+                        state={buttonState}
                         onPress={onDiscardSession}
                     />
-                </BlockListView>
-            </BlockListView>
-        </ScrollView>
+                </Stack>
+            </Stack>
+        </Box>
+    );
+
+    return (
+        <ListView
+            data={NO_ROWS}
+            keySelector={selectNoKey}
+            renderItem={renderNoRow}
+            spacing="none"
+            grow="fill"
+            header={content}
+            onLayout={handleViewportLayout}
+        />
     );
 }
 

@@ -1,50 +1,39 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
-import {
-    CheckIcon,
-    SelectionIcon,
-} from 'phosphor-react-native';
 
-import BlockListView from '@/components/BlockListView';
-import Icon from '@/components/Icon';
-import Text, { ColorVariant } from '@/components/Text';
-import useTheme from '@/hooks/useTheme';
+import Icon from '@/components/ui/Icon';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 import { FbObjCustomOption } from '@/utils/types';
 
-import InstructionRow from './InstructionRow';
+import InstructionRow, {
+    INSTRUCTION_CONTENT_COLOR,
+    type InstructionColorVariant,
+} from './InstructionRow';
 import TapBadgeIcon from './TapBadgeIcon';
-
-const styles = StyleSheet.create({
-    sectionHeading: {
-        fontWeight: 'bold',
-    },
-});
 
 interface Props {
     customOptions?: FbObjCustomOption[];
-        colorVariants? : ColorVariant
-
+    colorVariants? : InstructionColorVariant
 }
 
 function LocateInstructions(props: Props) {
     const { customOptions, colorVariants = 'brand' } = props;
     const { t } = useTranslation('instructionsScreen');
-    const theme = useTheme();
-    const iconColor = colorVariants === 'brand' ? theme.textOnBrand : theme.textPrimary;
+    const contentColorVariant = INSTRUCTION_CONTENT_COLOR[colorVariants];
 
     const tapOptions = (customOptions ?? [])
         .filter((option) => option.value > 0)
         .sort((a, b) => a.value - b.value);
 
     return (
-        <BlockListView spacing="sm">
-            <Text colorVariant={colorVariants}>
+        <Stack spacing="sm">
+            <Text colorVariant={contentColorVariant}>
                 {t('locateIntro')}
             </Text>
 
             <InstructionRow
                 colorVariant={colorVariants}
-                icon={<Icon name="hand-left-outline" color={iconColor} size={40} />}
+                icon={<Icon name="hand-left-outline" colorVariant={contentColorVariant} sizeVariant="5xl" />}
                 description={t('locateSwipe')}
             />
 
@@ -54,9 +43,10 @@ function LocateInstructions(props: Props) {
                     key={option.value}
                     icon={(
                         <TapBadgeIcon
-                            iconColor={iconColor}
+                            colorVariant={contentColorVariant}
                             iconName="tap"
                             badgeNumber={option.value}
+                            // Author data off Firebase, so a raw colour and not a token.
                             badgeColor={option.iconColor}
                         />
                     )}
@@ -67,26 +57,26 @@ function LocateInstructions(props: Props) {
 
             <InstructionRow
                 colorVariant={colorVariants}
-                icon={<Icon name="tap" color={iconColor} size={40} />}
+                icon={<Icon name="tap" colorVariant={contentColorVariant} sizeVariant="5xl" />}
                 description={t('locateTapReset')}
             />
 
-            <Text colorVariant={colorVariants} style={styles.sectionHeading}>
+            <Text weight="bold" colorVariant={contentColorVariant}>
                 {t('locateMultiSelectSection')}
             </Text>
 
             <InstructionRow
                 colorVariant={colorVariants}
-                icon={<SelectionIcon color={iconColor} size={40} />}
+                icon={<Icon name="selection" colorVariant={contentColorVariant} sizeVariant="5xl" />}
                 description={t('locateMultiSelectDrag')}
             />
 
             <InstructionRow
                 colorVariant={colorVariants}
-                icon={<CheckIcon color={iconColor} size={40} />}
+                icon={<Icon name="check" colorVariant={contentColorVariant} sizeVariant="5xl" />}
                 description={t('locateMultiSelectConfirm')}
             />
-        </BlockListView>
+        </Stack>
     );
 }
 

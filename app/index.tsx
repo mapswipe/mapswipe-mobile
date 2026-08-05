@@ -2,9 +2,16 @@ import { useEffect } from 'react';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import LoadingComponent from '@/components/Loader';
-import Page from '@/components/Page';
+import Screen from '@/components/ui/Screen';
+import Spinner from '@/components/ui/Spinner';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 import useAuth from '@/hooks/useAuth';
+
+// Screen requires a title, but this screen has no header, so it is never drawn.
+const APP_NAME = 'MapSwipe';
+
+const LOADING_LABEL = 'loading...';
 
 function AppIndex() {
     const {
@@ -40,9 +47,28 @@ function AppIndex() {
         checkNavigation();
     }, [authPending, isLoggedIn, user]);
     return (
-        <Page title="MapSwipe">
-            <LoadingComponent label="loading..." />
-        </Page>
+        <Screen
+            title={APP_NAME}
+            colorVariant="brand"
+            layout="fill"
+        >
+            <Stack
+                spacing="sm"
+                grow="fill"
+                align="center"
+                justify="center"
+            >
+                {/* Unlabelled on purpose: the line below already announces the wait. */}
+                <Spinner styleVariant="splash" />
+                <Text
+                    variant="title"
+                    colorVariant="onBrand"
+                    weight="regular"
+                >
+                    {LOADING_LABEL}
+                </Text>
+            </Stack>
+        </Screen>
     );
 }
 

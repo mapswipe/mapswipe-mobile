@@ -10,9 +10,12 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 
-import Icon, { type IconName } from '@/components/Icon';
 import Modal from '@/components/Modal';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
+import {
+    ICON_GLYPH,
+    type IconName,
+} from '@/constants/icons';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 
@@ -116,6 +119,10 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
         setPreviewVisible(false);
     }, []);
 
+    const BadgeGlyph = accessibilityBadgeIconName === undefined
+        ? undefined
+        : ICON_GLYPH[accessibilityBadgeIconName];
+
     return (
         <>
             <Pressable
@@ -143,12 +150,13 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
                                 { backgroundColor: accessibilityBadgeColor },
                             ]}
                         >
-                            <Icon
-                                name={accessibilityBadgeIconName}
-                                color="#ffffff"
-                                size={14}
-                                weight="bold"
-                            />
+                            {BadgeGlyph !== undefined && (
+                                <BadgeGlyph
+                                    color="#ffffff"
+                                    size={14}
+                                    weight="bold"
+                                />
+                            )}
                         </View>
                     )}
                 </ImageBackground>

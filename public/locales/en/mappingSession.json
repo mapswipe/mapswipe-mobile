@@ -18,5 +18,6 @@
   "discardSession": "Discard session",
   "discardSessionHelp": "Throw away your answers from this session and return to the home screen.",
   "enterSelectionMode": "Enter selection mode",
-  "exitSelectionMode": "Exit selection mode"
+  "exitSelectionMode": "Exit selection mode",
+  "hideTileOverlay": "Hold to hide icons and overlay"
 }

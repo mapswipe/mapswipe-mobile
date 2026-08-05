@@ -3,38 +3,20 @@ import {
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { isTruthyString } from '@togglecorp/fujs';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
-import logo from '@/assets/images/icon.png';
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import Link from '@/components/Link';
-import Page from '@/components/Page';
-import Text from '@/components/Text';
-import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
-import { FONT_SIZE_XS } from '@/constants/dimensions';
-import { type AppTheme } from '@/constants/theme';
-import useThemedStyles from '@/hooks/useThemedStyles';
+import Button from '@/components/ui/Button';
+import Link from '@/components/ui/Link';
+import AuthScreen from '@/components/ui/Screen/AuthScreen';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
+import TextInput from '@/components/ui/TextInput';
 import { firebaseAuth } from '@/utils/firebase';
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
-    icon: {
-        width: 128,
-        height: 128,
-    },
-    logoContainer: {
-        paddingTop: 96,
-    },
-    text: {
-        color: theme.textOnBrand,
-        fontSize: FONT_SIZE_XS,
-    },
-});
+const APP_NAME = 'MapSwipe';
 
 function Login() {
     const [email, setEmail] = useState<string>();
@@ -77,81 +59,75 @@ function Login() {
         }
     }, [email, password]);
 
-    const styles = useThemedStyles(createStyles);
-
     return (
-        <Page
+        <AuthScreen
             title="Login"
-            variant="brand"
+            logoAccessibilityLabel={APP_NAME}
+            footer={(
+                <>
+                    {/* `transparent` on `onBrand`, not the `filled` default these inherited
+                        before: filled painted backgroundBrand, i.e. the page's own navy, so the
+                        box was never visible and only its inset ever showed. */}
+                    <Link
+                        href={{
+                            pathname: '/forgotPassword',
+                        }}
+                        title={t('forgotPassword')}
+                        accessibilityLabel={t('forgotPassword')}
+                        colorVariant="onBrand"
+                        styleVariant="transparent"
+                        padding="2xs"
+                    />
+                    <Link
+                        href={{
+                            pathname: '/register',
+                        }}
+                        title={t('createNewAccount')}
+                        accessibilityLabel={t('createNewAccount')}
+                        colorVariant="onBrand"
+                        styleVariant="transparent"
+                        padding="2xs"
+                    />
+                </>
+            )}
         >
-            <BlockListView
-                spacing="sm"
-                withPadding
-            >
-                <BlockListView
-                    withCenteredContent
-                    style={styles.logoContainer}
+            {/* The fields sit 24 apart where the page rhythm is 20, which is what Field's
+                internal 8 is cut against. */}
+            <Stack spacing="md">
+                <TextInput
+                    contentVariant="email"
+                    placeholder={t('enterYourEmail')}
+                    // The placeholder is gone by the second keystroke, so the name repeats it.
+                    accessibilityLabel={t('enterYourEmail')}
+                    value={email}
+                    onChangeText={setEmail}
+                    stateVariant={pending ? 'disabled' : 'editable'}
+                />
+                <TextInput
+                    contentVariant="password"
+                    placeholder={t('enterYourPassword')}
+                    accessibilityLabel={t('enterYourPassword')}
+                    value={password}
+                    onChangeText={setPassword}
+                    stateVariant={pending ? 'disabled' : 'editable'}
+                />
+            </Stack>
+            <Stack spacing="md">
+                <Text
+                    variant="caption"
+                    colorVariant="onBrand"
                 >
-                    <Image
-                        style={styles.icon}
-                        source={logo}
-                    />
-                </BlockListView>
-                <BlockListView>
-                    <TextInput
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        autoComplete="email"
-                        keyboardType="email-address"
-                        placeholder={t('enterYourEmail')}
-                        value={email}
-                        onChangeText={setEmail}
-                        readOnly={pending}
-                    />
-                    <TextInput
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        placeholder={t('enterYourPassword')}
-                        value={password}
-                        onChangeText={setPassword}
-                        readOnly={pending}
-                        secureTextEntry
-                    />
-                </BlockListView>
-                <BlockListView>
-                    <Text
-                        variant="label"
-                        style={styles.text}
-                    >
-                        {t('contributionWarningOnSignup')}
-                    </Text>
-                    <Button
-                        name={undefined}
-                        onPress={handleLoginPress}
-                        title={t('login')}
-                        disabled={pending}
-                        colorVariant="primaryRed"
-                        styleVariant="filled"
-                    />
-                    <BlockListView>
-                        <Link
-                            spacing="xs"
-                            href={{
-                                pathname: '/forgotPassword',
-                            }}
-                            title={t('forgotPassword')}
-                        />
-                        <Link
-                            spacing="xs"
-                            href={{
-                                pathname: '/register',
-                            }}
-                            title={t('createNewAccount')}
-                        />
-                    </BlockListView>
-                </BlockListView>
-            </BlockListView>
-        </Page>
+                    {t('contributionWarningOnSignup')}
+                </Text>
+                <Button
+                    onPress={handleLoginPress}
+                    title={t('login')}
+                    accessibilityLabel={t('login')}
+                    colorVariant="negative"
+                    state={pending ? 'pending' : 'default'}
+                />
+            </Stack>
+        </AuthScreen>
     );
 }
 

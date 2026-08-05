@@ -6,92 +6,49 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    StyleSheet,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
-} from 'react-native';
-import {
     isNotDefined,
     listToGroupList,
     listToMap,
     mapToList,
 } from '@togglecorp/fujs';
-import {
-    CheckIcon,
-    SelectionIcon,
-} from 'phosphor-react-native';
 
-import Button from '@/components/Button';
-import InlineListView from '@/components/InlineListView';
 import LocateTile from '@/components/LocateTile';
-import Text from '@/components/Text';
 import { TutorialSessionProps } from '@/components/tutorial/types';
-import useTheme from '@/hooks/useTheme';
+import Badge from '@/components/ui/Badge';
+import Box from '@/components/ui/Box';
+import Button from '@/components/ui/Button';
+import Icon from '@/components/ui/Icon';
+import Row from '@/components/ui/Row';
+import Stack from '@/components/ui/Stack';
+import Surface from '@/components/ui/Surface';
+import { LOCATE_DEFAULT_ANSWER_OPTIONS } from '@/constants/answers';
+import useAnswerColors from '@/hooks/useAnswerColors';
+import useFittedTileWidth from '@/hooks/useFittedTileWidth';
+import useViewport from '@/hooks/useViewport';
 import { TileTutorialTask } from '@/utils/tutorial';
 import {
     ResultOption,
     Results,
 } from '@/utils/types';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        minHeight: 0,
-        gap: 12,
-    },
-    controls: {
-        flexGrow: 0,
-        flexShrink: 0,
-        alignSelf: 'flex-end',
-    },
-    // The tile fills this slot; minHeight:0 + overflow:hidden keep it from
-    // overflowing the controls/Check Answer button when the window is short.
-    tileSlot: {
-        flex: 1,
-        minHeight: 0,
-        overflow: 'hidden',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    // Centered options bar shown in selection mode, mirroring the mapping
-    // session: pick an option to apply it to every selected cell.
-    optionsBarContainer: {
-        flexGrow: 0,
-        flexShrink: 0,
-        alignItems: 'center',
-    },
-    optionsBar: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 8,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 16,
-        borderWidth: 1,
-        maxWidth: '92%',
-    },
-    optionChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderRadius: 999,
-    },
-    optionDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-    },
-});
+/**
+ * The sentinel LocateTile and the option chips already agree on for "this answer paints no
+ * tile". ResultOption.color is a required string, so the built-in "No" answer, which tints
+ * nothing, has to say so with a value rather than by omission. It is not a palette entry, which
+ * is why it is not a token.
+ */
+const NO_TINT = 'transparent';
 
-const DEFAULT_OPTIONS: ResultOption[] = [
-    { value: 0, label: 'No', color: 'transparent' },
-    { value: 1, label: 'Yes', color: 'green' },
-];
+/** Floor the tile never shrinks past, however short the scenario page gets. */
+const MIN_TILE_WIDTH = 120;
+
+/** Stand-in inline extent before onLayout reports one: the window less a 12pt gutter a side. */
+const FALLBACK_INLINE_CHROME = 24;
+
+/** Stand-in block extent before onLayout reports one, as a share of the window. */
+const FALLBACK_BLOCK_FRACTION = 0.6;
+
+const OPTIONS_BAR_MAX_WIDTH_FRACTION = 0.92;
 
 type LocateTutorialCellTask = TileTutorialTask & {
     taskPartitionIndex: number;
@@ -109,13 +66,20 @@ function LocateTutorialSession(props: TutorialSessionProps) {
         projectCustomOptions,
     } = props;
 
-    const { width: pageWidth, height: pageHeight } = useWindowDimensions();
-    const theme = useTheme();
+    const { width: pageWidth, height: pageHeight } = useViewport();
     const { t } = useTranslation('mappingSession');
 
     const [mode, setMode] = useState<'mapping' | 'selection'>('mapping');
     const [selectedCellsByTile, setSelectedCellsByTile] = useState<Record<string, number[]>>({});
     const [tileSlotSize, setTileSlotSize] = useState({ width: 0, height: 0 });
+
+    /**
+     * The fallback answers are BUILT-IN, so their colours are theme tokens and this hook is the
+     * bridge that resolves them to the plain strings LocateTile still takes. A project's own
+     * customOptions below are the other source entirely: `iconColor` is Firebase author data,
+     * an arbitrary colour that no token could name.
+     */
+    const defaultAnswerColors = useAnswerColors(LOCATE_DEFAULT_ANSWER_OPTIONS);
 
     const options = useMemo<ResultOption[]>(() => {
         if (projectCustomOptions && projectCustomOptions.length > 0) {
@@ -127,8 +91,15 @@ function LocateTutorialSession(props: TutorialSessionProps) {
                     color: option.iconColor,
                 }));
         }
-        return DEFAULT_OPTIONS;
-    }, [projectCustomOptions]);
+        return LOCATE_DEFAULT_ANSWER_OPTIONS.map((option) => ({
+            value: option.value,
+            // The wording the hardcoded list shipped. ANSWER_OPTIONS carries a labelKey too,
+            // but public/locales has no entry for it yet, so translating here would change
+            // the copy rather than the styling.
+            label: option.defaultLabel,
+            color: defaultAnswerColors[option.value]?.tintColor ?? NO_TINT,
+        }));
+    }, [projectCustomOptions, defaultAnswerColors]);
 
     const optionsByValue = useMemo(() => (
         listToMap(options, ({ value }) => value)
@@ -280,43 +251,71 @@ function LocateTutorialSession(props: TutorialSessionProps) {
         [selectedCellsByTile],
     );
 
-    const tileWidth = useMemo(() => {
-        const availWidth = tileSlotSize.width || (pageWidth - 24);
-        const availHeight = tileSlotSize.height || (pageHeight * 0.6);
-        return Math.max(120, Math.min(availWidth, availHeight));
-    }, [tileSlotSize, pageWidth, pageHeight]);
+    const tileWidth = useFittedTileWidth({
+        availableInline: tileSlotSize.width,
+        availableBlock: tileSlotSize.height,
+        fallbackInline: pageWidth - FALLBACK_INLINE_CHROME,
+        fallbackBlock: pageHeight * FALLBACK_BLOCK_FRACTION,
+        minSize: MIN_TILE_WIDTH,
+    });
+
+    // Measured geometry, so a number: the bar is centred in the same box the tile is, which is
+    // why the tile slot's width is the one the 92% is taken from.
+    const optionsBarMaxWidth = tileSlotSize.width > 0
+        ? tileSlotSize.width * OPTIONS_BAR_MAX_WIDTH_FRACTION
+        : undefined;
 
     return (
-        <View style={styles.container}>
+        <Stack
+            spacing="2xs"
+            grow="slot"
+        >
             {!disabled && (
-                <InlineListView style={styles.controls} spacing="sm">
-                    {mode === 'mapping' && (
-                        <Button
-                            name="enter-selection"
-                            accessibilityLabel={t('enterSelectionMode')}
-                            styleVariant="action"
-                            fullWidth={false}
-                            onPress={handleEnterSelectionMode}
-                        >
-                            <SelectionIcon color={theme.textOnBrand} />
-                        </Button>
-                    )}
-                    {mode === 'selection' && (
-                        <Button
-                            name="exit-selection"
-                            accessibilityLabel={t('exitSelectionMode')}
-                            colorVariant="primaryRed"
-                            styleVariant="action"
-                            fullWidth={false}
-                            onPress={handleExitSelectionMode}
-                        >
-                            <CheckIcon color={theme.textOnBrand} />
-                        </Button>
-                    )}
-                </InlineListView>
+                <Box selfAlign="end">
+                    <Row spacing="sm">
+                        {mode === 'mapping' && (
+                            <Button
+                                name="enter-selection"
+                                accessibilityLabel={t('enterSelectionMode')}
+                                styleVariant="transparent"
+                                colorVariant="onBrand"
+                                width="hug"
+                                onPress={handleEnterSelectionMode}
+                            >
+                                <Icon
+                                    name="selection"
+                                    sizeVariant="2xl"
+                                    colorVariant="onBrand"
+                                />
+                            </Button>
+                        )}
+                        {mode === 'selection' && (
+                            <Button
+                                name="exit-selection"
+                                accessibilityLabel={t('exitSelectionMode')}
+                                colorVariant="negative"
+                                styleVariant="transparent"
+                                width="hug"
+                                onPress={handleExitSelectionMode}
+                            >
+                                <Icon
+                                    name="check"
+                                    sizeVariant="2xl"
+                                    colorVariant="onBrand"
+                                />
+                            </Button>
+                        )}
+                    </Row>
+                </Box>
             )}
-            <View
-                style={styles.tileSlot}
+            {/* The tile fills this slot; a shrinkable slot plus clipping keep it from
+                overflowing the controls or the Check Answer button when the window is short. */}
+            <Box
+                flex={1}
+                minHeight={0}
+                clip
+                align="center"
+                justify="center"
                 onLayout={(event) => setTileSlotSize(event.nativeEvent.layout)}
             >
                 {tileGroups.map((group) => {
@@ -359,53 +358,61 @@ function LocateTutorialSession(props: TutorialSessionProps) {
                         />
                     );
                 })}
-            </View>
+            </Box>
             {effectiveSelectionMode && (
-                <View style={styles.optionsBarContainer} pointerEvents="box-none">
-                    <View
-                        style={StyleSheet.flatten([
-                            styles.optionsBar,
-                            {
-                                backgroundColor: theme.backgroundBrand,
-                                borderColor: theme.divider,
-                            },
-                        ])}
-                    >
-                        {options.map((option) => {
-                            const dotColor = option.color === 'transparent'
-                                ? theme.textMuted
-                                : option.color;
-                            return (
-                                <TouchableOpacity
-                                    key={option.value}
-                                    style={StyleSheet.flatten([
-                                        styles.optionChip,
-                                        {
-                                            backgroundColor: theme.inputBrandBackground,
-                                            opacity: selectedCount === 0 ? 0.5 : 1,
-                                        },
-                                    ])}
-                                    onPress={() => handleApplyOptionToSelected(option.value)}
-                                    disabled={selectedCount === 0}
-                                    accessibilityRole="button"
-                                    accessibilityLabel={option.label}
-                                >
-                                    <View
-                                        style={StyleSheet.flatten([
-                                            styles.optionDot,
-                                            { backgroundColor: dotColor },
-                                        ])}
-                                    />
-                                    <Text variant="label" colorVariant="brand">
-                                        {option.label}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </View>
-                </View>
+                <Box
+                    align="center"
+                    pointerEvents="box-none"
+                >
+                    <Box maxWidth={optionsBarMaxWidth}>
+                        {/* `brand` is the navy the bar is filled with; the ring is the neutral
+                            divider, which no brand slot reaches, so it names its own role. */}
+                        <Surface
+                            styleVariant="outlined"
+                            colorVariant="brand"
+                            borderColorVariant="secondary"
+                            radius="lg"
+                            paddingBlock="3xs"
+                            paddingInline="2xs"
+                        >
+                            <Row
+                                spacing="3xs"
+                                justify="center"
+                                wrap
+                            >
+                                {options.map((option) => (
+                                    /* A pressable capsule with a colour swatch and a caption,
+                                       which is exactly ui/Badge's `pill` at the `md` rung. */
+                                    <Badge
+                                        key={option.value}
+                                        shape="pill"
+                                        sizeVariant="md"
+                                        colorVariant="onBrand"
+                                        label={option.label}
+                                        accessibilityLabel={option.label}
+                                        disabled={selectedCount === 0}
+                                        onPress={() => handleApplyOptionToSelected(option.value)}
+                                    >
+                                        {option.color === NO_TINT ? (
+                                            <Badge
+                                                sizeVariant="xs"
+                                                styleVariant="swatch"
+                                                colorVariant="muted"
+                                            />
+                                        ) : (
+                                            <Badge
+                                                sizeVariant="xs"
+                                                dotColor={option.color}
+                                            />
+                                        )}
+                                    </Badge>
+                                ))}
+                            </Row>
+                        </Surface>
+                    </Box>
+                </Box>
             )}
-        </View>
+        </Stack>
     );
 }
 

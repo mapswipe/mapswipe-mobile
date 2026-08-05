@@ -11,7 +11,6 @@ import {
 
 import { getCsrfToken } from './csrfToken';
 
-// Custom fetch function to inject CSRF token
 const csrfFetch: typeof fetch = async (
     input: RequestInfo | URL,
     init?: RequestInit,
@@ -20,7 +19,7 @@ const csrfFetch: typeof fetch = async (
 
     return fetch(input, {
         ...init,
-        credentials: 'include', // send cookies
+        credentials: 'include',
         headers: {
             ...(init?.headers ?? {}),
             'X-CSRFToken': csrfToken ?? '',
@@ -29,7 +28,6 @@ const csrfFetch: typeof fetch = async (
     });
 };
 
-// Create URQL client
 const client = createClient({
     url: gqlEndpoint,
     exchanges: [cacheExchange, fetchExchange],

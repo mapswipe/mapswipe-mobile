@@ -5,14 +5,7 @@ import {
     useRef,
     useState,
 } from 'react';
-import {
-    ActivityIndicator,
-    LayoutChangeEvent,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { type LayoutChangeEvent } from 'react-native';
 import {
     Gesture,
     GestureDetector,
@@ -27,52 +20,34 @@ import {
     type ImageLoadEventData,
 } from 'expo-image';
 
-import HideTileSelectionButton from './HideTileSelectionButton';
+import HideTileSelectionButton from '@/components/HideTileSelectionButton';
+import Box from '@/components/ui/Box';
+import EmptyState from '@/components/ui/EmptyState';
+import Positioned from '@/components/ui/Positioned';
+import Spinner from '@/components/ui/Spinner';
+import { BORDER_WIDTH_MD } from '@/constants/border';
 
 // expo-image (memory+disk cache, fast decode) wrapped so the pinch-zoom
 // transform can animate it via reanimated.
 const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 2,
-        justifyContent: 'center',
-        position: 'relative',
-        alignItems: 'center',
-        // Fill the slot rather than a hardcoded screen width — the tutorial slot
-        // is padded/narrower, and a fixed SCREEN_WIDTH overflowed it and pushed
-        // the centered hide button off-center.
-        width: '100%',
-    },
-    image: {
-        width: '100%',
-        height: '100%',
-    },
-    loader: {
-        position: 'absolute',
-        zIndex: 1,
-    },
-    retryContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    retryText: {
-        color: 'white',
-        fontSize: 16,
-        marginTop: 10,
-    },
-    svg: {
-        zIndex: 11,
-    },
-    hideButton: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        alignItems: 'center',
-    },
-});
+/**
+ * Spanning the parent is the one extent no size token can express, and RN only accepts it as
+ * a percentage string. It is stated here, inside the animated style, rather than on a ui/ box
+ * around the node: the two nodes it sizes are third-party ones an outer primitive cannot
+ * reach, see the note on `pinchStyle`.
+ */
+const FULL_EXTENT = '100%';
+
+/**
+ * Paint for the shape outline drawn over the image. Neither colour is a theme token and
+ * neither wants to be: the rect is drawn on satellite imagery, so it reads the same under both
+ * themes, and an SVG paint attribute is not a style a ui/ primitive can supply.
+ */
+const SHAPE_STROKE_COLOR = '#f00';
+const SHAPE_FILL_COLOR = '#fff';
+// A wash, not a fill: the shape has to be visible without hiding the imagery it marks.
+const SHAPE_FILL_OPACITY = '0.1';
 
 interface ImageDimensions {
     clientHeight?: number;
@@ -90,7 +65,7 @@ interface BboxResult {
 
 function calculateBbox(
     imageDimensions: ImageDimensions | undefined,
-    bbox: [number, number, number, number] | undefined,
+    bbox: number[] | undefined,
 ): BboxResult | undefined {
     if (!imageDimensions || !bbox) return undefined;
     const {
@@ -127,7 +102,7 @@ interface ImageWrapperProps {
     itemIndex: number;
     onImageLoadStart: (itemKey: number) => void;
     onImageLoadEnd: (itemKey: number) => void;
-    bbox: [number, number, number, number] | undefined;
+    bbox: number[] | undefined;
 }
 
 export default function ImageWrapper({
@@ -241,7 +216,19 @@ export default function ImageWrapper({
             focalY.value = 0;
         });
 
-    const animatedStyle = useAnimatedStyle(() => ({
+    /**
+     * The one style this file keeps, and the reason it is the sanctioned adapter: a shared
+     * value read on the UI thread can never be a variant prop.
+     *
+     * It carries its own box as well as the transform, deliberately. The two nodes it drives
+     * are third-party ones — an animated expo-image and an Animated.View — that no ui/
+     * primitive can size from outside: a Positioned around a node with no extent of its own
+     * lays out to nothing. Both nodes span their parent, so one style serves both, and the
+     * overlay is guaranteed to track the image rather than drift by a rounding of its own.
+     */
+    const pinchStyle = useAnimatedStyle(() => ({
+        width: FULL_EXTENT,
+        height: FULL_EXTENT,
         transform: [
             { translateX: -focalX.value },
             { translateY: -focalY.value },
@@ -261,70 +248,102 @@ export default function ImageWrapper({
     }, []);
 
     return (
-        <GestureDetector gesture={pinchGesture}>
-            <View onLayout={handleLayout} style={styles.container}>
-                {loading && (
-                    <ActivityIndicator
-                        size="large"
-                        style={styles.loader}
-                    />
-                )}
-                {!error ? (
-                    <AnimatedImage
-                        key={retryKey}
-                        source={source}
-                        style={[styles.image, animatedStyle]}
-                        contentFit="contain"
-                        cachePolicy="memory-disk"
-                        // No fade, matching the previous Image's fadeDuration={0}
-                        // — keeps the loading behaviour identical.
-                        transition={0}
-                        onLoadStart={handleLoadStart}
-                        onLoad={handleLoad}
-                        onLoadEnd={handleLoadEnd}
-                        onError={handleError}
-                    />
-                ) : (
-                    <View style={styles.retryContainer}>
-                        <Text style={styles.retryText}>Failed to load image.</Text>
-                        <TouchableOpacity onPress={handleRetry}>
-                            <Text style={styles.retryText}>Tap to retry</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-                {!error && bboxForBox && !hideShapeSource && (
-                    <Animated.View
-                        style={[StyleSheet.absoluteFill, animatedStyle, styles.svg]}
-                        pointerEvents="none"
-                    >
-                        <Svg
-                            style={[StyleSheet.absoluteFill, styles.svg]}
+        <Box
+            flex={2}
+            selfAlign="stretch"
+            onLayout={handleLayout}
+        >
+            <GestureDetector gesture={pinchGesture}>
+                {/*
+                  RNGH clones its child with `collapsable: false` so the detector can find a
+                  native view to attach to, and ui/Box would drop that prop. This node keeps
+                  itself in the hierarchy without it: `layer` puts a zIndex on a positioned
+                  box, and Fabric never flattens a view that forms a stacking context. It
+                  fills the Box above, so the touch area is the container's, unchanged.
+                */}
+                <Positioned
+                    anchor="fill"
+                    layer="base"
+                    align="center"
+                    justify="center"
+                >
+                    {loading && (
+                        <Positioned
+                            anchor="fill"
+                            layer="chrome"
+                            align="center"
+                            justify="center"
                             pointerEvents="none"
                         >
-                            <Rect
-                                x={bboxForBox.x}
-                                y={bboxForBox.y}
-                                width={bboxForBox.width}
-                                height={bboxForBox.height}
-                                stroke="#f00"
-                                strokeWidth={2}
-                                fill="#fff"
-                                fillOpacity="0.1"
+                            <Spinner
+                                colorVariant="onBrand"
+                                accessibilityLabel="Loading image"
                             />
-                        </Svg>
-                    </Animated.View>
-                )}
-                {!error && (
-                    <View style={styles.hideButton}>
-                        <HideTileSelectionButton
-                            isPressed={hideShapeSource}
-                            handleHideTileSelectionPressIn={handleHideTilePressIn}
-                            handleHideTileSelectionPressOut={handleHideTilePressOut}
-                            size="large"
+                        </Positioned>
+                    )}
+                    {!error ? (
+                        <AnimatedImage
+                            key={retryKey}
+                            source={source}
+                            style={pinchStyle}
+                            contentFit="contain"
+                            cachePolicy="memory-disk"
+                            // No fade, matching the previous Image's fadeDuration={0}
+                            // — keeps the loading behaviour identical.
+                            transition={0}
+                            onLoadStart={handleLoadStart}
+                            onLoad={handleLoad}
+                            onLoadEnd={handleLoadEnd}
+                            onError={handleError}
                         />
-                    </View>
-                )}
-            </View>
-        </GestureDetector>
+                    ) : (
+                        <EmptyState
+                            sizeVariant="inline"
+                            colorVariant="onBrand"
+                            title="Failed to load image."
+                            actionLabel="Tap to retry"
+                            actionAccessibilityLabel="Retry loading the image"
+                            onActionPress={handleRetry}
+                        />
+                    )}
+                    {!error && bboxForBox && !hideShapeSource && (
+                        <Positioned
+                            anchor="fill"
+                            layer="overlay"
+                            pointerEvents="none"
+                        >
+                            <Animated.View style={pinchStyle}>
+                                {/* No width/height: react-native-svg defaults an unsized Svg
+                                    to 100% of its parent on both axes. */}
+                                <Svg pointerEvents="none">
+                                    <Rect
+                                        x={bboxForBox.x}
+                                        y={bboxForBox.y}
+                                        width={bboxForBox.width}
+                                        height={bboxForBox.height}
+                                        stroke={SHAPE_STROKE_COLOR}
+                                        strokeWidth={BORDER_WIDTH_MD}
+                                        fill={SHAPE_FILL_COLOR}
+                                        fillOpacity={SHAPE_FILL_OPACITY}
+                                    />
+                                </Svg>
+                            </Animated.View>
+                        </Positioned>
+                    )}
+                    {!error && (
+                        <Positioned
+                            anchor="bottom"
+                            align="center"
+                        >
+                            <HideTileSelectionButton
+                                handleHideTileSelectionPressIn={handleHideTilePressIn}
+                                handleHideTileSelectionPressOut={handleHideTilePressOut}
+                                size="large"
+                            />
+                        </Positioned>
+                    )}
+                </Positioned>
+            </GestureDetector>
+        </Box>
     );
 }

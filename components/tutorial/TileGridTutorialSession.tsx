@@ -5,65 +5,57 @@ import {
     useState,
 } from 'react';
 import {
-    StyleSheet,
-    useWindowDimensions,
-    View,
-} from 'react-native';
-import {
     compareNumber,
     isNotDefined,
     listToGroupList,
-    listToMap,
     mapToList,
 } from '@togglecorp/fujs';
 
 import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import ImageTile from '@/components/ImageTile';
 import { TutorialSessionProps } from '@/components/tutorial/types';
+import Box from '@/components/ui/Box';
+import Positioned from '@/components/ui/Positioned';
+import Row from '@/components/ui/Row';
+import { TILE_ANSWER_OPTIONS } from '@/constants/answers';
+import useAnswerColors from '@/hooks/useAnswerColors';
+import useFittedTileWidth from '@/hooks/useFittedTileWidth';
+import useViewport from '@/hooks/useViewport';
 import {
     getTutorialTaskKey,
     TileTutorialTask,
 } from '@/utils/tutorial';
 import {
     PROJECT_TYPE_COMPLETENESS,
-    ResultOption,
     Results,
 } from '@/utils/types';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        minHeight: 0,
-    },
-    gridArea: {
-        flex: 1,
-        minHeight: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-    },
-    column: {},
-    row: {
-        flexDirection: 'row',
-    },
-    // Anchor the hide button to the bottom-right overlay of the grid area
-    // instead of letting it float at the container bottom (which left it
-    // misaligned below the vertically-centered grid).
-    hideButton: {
-        position: 'absolute',
-        bottom: 20,
-        right: 14,
-    },
-});
+/**
+ * The tap cycle: 0 No, 1 Yes, 2 Maybe, 3 Bad Imagery. BUILT-IN answers, the same list
+ * TileGridMappingSession maps with, so the tints are theme tokens resolved through
+ * useAnswerColors rather than a project's customOptions.
+ */
+const OPTIONS = [...TILE_ANSWER_OPTIONS];
 
-const OPTIONS: ResultOption[] = [
-    { value: 0, label: 'No', color: 'transparent' },
-    { value: 1, label: 'Yes', color: 'green' },
-    { value: 2, label: 'Maybe', color: 'yellow' },
-    { value: 3, label: 'Bad Imagery', color: 'red' },
-];
+/** A 4pt gutter on each side of the grid. */
+const TILE_RESERVE_INLINE = 8;
 
-const optionsByValue = listToMap(OPTIONS, ({ value }) => value);
+/** Floor a tile never shrinks past, however short the scenario page gets. */
+const MIN_TILE_WIDTH = 60;
+
+/** Stand-in inline extent before onLayout reports one: the window less a 12pt gutter a side. */
+const FALLBACK_INLINE_CHROME = 24;
+
+/** Stand-in block extent before onLayout reports one, as a share of the window. */
+const FALLBACK_BLOCK_FRACTION = 0.6;
+
+/**
+ * Where the hide-tiles button sits once it is anchored to the grid area rather than left to
+ * float under it. The pair is the inset the button's own container applies when it is in flow,
+ * so the two placements read the same.
+ */
+const HIDE_BUTTON_INSET_BLOCK = 20;
+const HIDE_BUTTON_INSET_INLINE = 14;
 
 function getNextValue(value: number | undefined) {
     if (isNotDefined(value)) {
@@ -86,11 +78,11 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
         disabled,
     } = props;
 
-    const { width: pageWidth, height: pageHeight } = useWindowDimensions();
+    const { width: pageWidth, height: pageHeight } = useViewport();
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
     // Measured size of the grid slot, so tiles fit the space actually available
     // (between the instruction banner and the Check Answer button) rather than a
-    // fixed fraction of the window — which overflowed and overlapped them.
+    // fixed fraction of the window, which overflowed and overlapped them.
     const [gridSize, setGridSize] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -130,13 +122,18 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
     const numCols = groupedColumns.length || 1;
     const numRows = groupedColumns[0]?.rows.length || 1;
 
-    const tileWidth = useMemo(() => {
-        const availWidth = gridSize.width || (pageWidth - 24);
-        const availHeight = gridSize.height || (pageHeight * 0.60);
-        const horizontalBudget = (availWidth - 8) / numCols;
-        const verticalBudget = availHeight / numRows;
-        return Math.max(60, Math.min(horizontalBudget, verticalBudget));
-    }, [gridSize, pageWidth, pageHeight, numCols, numRows]);
+    const tileWidth = useFittedTileWidth({
+        availableInline: gridSize.width,
+        availableBlock: gridSize.height,
+        fallbackInline: pageWidth - FALLBACK_INLINE_CHROME,
+        fallbackBlock: pageHeight * FALLBACK_BLOCK_FRACTION,
+        reserveInline: TILE_RESERVE_INLINE,
+        columns: numCols,
+        rows: numRows,
+        minSize: MIN_TILE_WIDTH,
+    });
+
+    const answerColors = useAnswerColors(OPTIONS);
 
     const handleTilePress = useCallback((taskId: string) => {
         if (disabled) {
@@ -160,19 +157,31 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
     }, []);
 
     return (
-        <View style={styles.container}>
-            <View
-                style={styles.gridArea}
+        <Box
+            flex={1}
+            minHeight={0}
+        >
+            <Box
+                flex={1}
+                minHeight={0}
+                align="center"
+                justify="center"
+                clip
                 onLayout={(event) => setGridSize(event.nativeEvent.layout)}
             >
-                <View style={styles.row}>
+                {/* The columns butt together, and `stretch` is the row's own default: the
+                    hand-written row set no alignItems, so a short column stayed full height. */}
+                <Row
+                    spacing="none"
+                    align="stretch"
+                >
                     {groupedColumns.map((column) => (
-                        <View key={column.taskX} style={styles.column}>
+                        <Box key={column.taskX}>
                             {column.rows.map((task) => {
                                 const taskKey = getTutorialTaskKey(task);
                                 const result = results[taskKey];
-                                const selectedOption = typeof result === 'number'
-                                    ? optionsByValue[result]
+                                const answer = typeof result === 'number'
+                                    ? answerColors[result]
                                     : undefined;
 
                                 if (!task.url) {
@@ -190,22 +199,31 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
                                                 : undefined
                                         }
                                         width={tileWidth}
-                                        tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
+                                        tintColor={
+                                            hideTilePressValue ? undefined : answer?.tintColor
+                                        }
                                         onPress={handleTilePress}
                                     />
                                 );
                             })}
-                        </View>
+                        </Box>
                     ))}
-                </View>
-            </View>
-            <HideTileSelectionButton
-                handleHideTileSelectionPressIn={handleHideTilePressIn}
-                handleHideTileSelectionPressOut={handleHideTilePressOut}
-                isPressed={hideTilePressValue}
-                containerStyle={styles.hideButton}
-            />
-        </View>
+                </Row>
+            </Box>
+            <Positioned
+                anchor="bottomEnd"
+                offsetBlock={HIDE_BUTTON_INSET_BLOCK}
+                offsetInline={HIDE_BUTTON_INSET_INLINE}
+            >
+                <HideTileSelectionButton
+                    handleHideTileSelectionPressIn={handleHideTilePressIn}
+                    handleHideTileSelectionPressOut={handleHideTilePressOut}
+                    // Positioned already places this in the slot's corner, so the button's own
+                    // container padding would shift it inwards again.
+                    withoutContainer
+                />
+            </Positioned>
+        </Box>
     );
 }
 
