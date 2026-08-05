@@ -1,13 +1,13 @@
-import { useColorScheme } from 'react-native';
+import { useContext } from 'react';
 
-import { getThemeColors } from '@/constants/theme';
+import { type AppTheme } from '@/constants/theme';
+import ThemeContext from '@/contexts/theme';
 
-function useTheme() {
-    const scheme = useColorScheme();
+function useTheme(): AppTheme {
+    // No provider guard on purpose: ThemeContext carries a full default theme.
+    const { theme } = useContext(ThemeContext);
 
-    // FIXME: For now everything is light themed, let's change this after we fully
-    // implement dark theme
-    return getThemeColors((scheme !== 'light') ? 'light' : scheme);
+    return theme;
 }
 
 export default useTheme;

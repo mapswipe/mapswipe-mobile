@@ -5,7 +5,10 @@
         "app/**/*.{ts,tsx}",
         "codegen.ts",
         "plugins/**",
-        "utils/firebase-generated-types.ts"
+        "utils/firebase-generated-types.ts",
+        "__tests__/**/*.test.{ts,tsx}",
+        "scripts/**/*.ts",
+        "components/ui/**/*.{ts,tsx}"
     ],
     "ignoreFiles": [
         "metro.config.js",
@@ -13,14 +16,34 @@
         "generated/**",
         "**/*.web.{ts,tsx}",
         "components/BaseMap.tsx",
-        "components/GeoJsonMapSource.tsx"
+        "components/GeoJsonMapSource.tsx",
+        "jest.config.cjs",
+        "jest/babel.config.cjs",
+        "constants/answers.ts",
+        "constants/border.ts",
+        "constants/elevation.ts",
+        "constants/layer.ts",
+        "constants/motion.ts",
+        "constants/opacity.ts",
+        "constants/radius.ts",
+        "constants/size.ts",
+        "utils/layout.ts",
+        "hooks/useA11yPreferences.ts",
+        "hooks/useFittedTileWidth.ts",
+        "hooks/useViewport.ts"
     ],
     "ignoreMembers": [
         "FbTask"
     ],
+    "ignoreUnresolved": [
+        "babel-jest",
+        "@expo/vector-icons"
+    ],
     "ignoreDependencies": [
         "expo-updates",
         "expo-splash-screen",
+        "jest-watch-typeahead",
+        "@firebase/auth",
         "@togglecorp/re-map",
         "@expo/metro-config",
         "metro-minify-terser",
