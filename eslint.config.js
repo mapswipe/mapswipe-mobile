@@ -2,6 +2,8 @@ import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import process from 'process';
 
+import STYLING_ALLOWLIST from './eslint/styling-allowlist.json' with { type: 'json' };
+
 const dirname = process.cwd();
 const compat = new FlatCompat({
     baseDirectory: dirname,
@@ -59,9 +61,11 @@ const appConfigs = compat.config({
             {
                 devDependencies: [
                     '**/*.test.{ts,tsx}',
+                    'jest/**',
                     'eslint.config.js',
                     'metro.config.js',
                     'babel.config.js',
+                    'jest.config.cjs',
                 ],
                 optionalDependencies: false,
             },
@@ -122,6 +126,8 @@ const appConfigs = compat.config({
         'hooks/**/*.tsx', 'hooks/**/*.jsx', 'hooks/**/*.ts', 'hooks/**/*.js',
         'utils/**/*.tsx', 'utils/**/*.jsx', 'utils/**/*.ts', 'utils/**/*.js',
         'constants/**/*.tsx', 'constants/**/*.jsx', 'constants/**/*.ts', 'constants/**/*.js',
+        '__tests__/**/*.tsx', '__tests__/**/*.ts',
+        'jest/**/*.tsx', 'jest/**/*.ts',
     ],
     ignores: [
         "node_modules/",
@@ -140,7 +146,7 @@ const otherConfig = {
 };
 
 const nodeConfig = {
-    files: ['app.config.js', 'metro.config.js', 'babel.config.js'],
+    files: ['app.config.js', 'metro.config.js', 'babel.config.js', 'jest.config.cjs'],
     ...js.configs.recommended,
     languageOptions: {
         globals: {
@@ -152,8 +158,168 @@ const nodeConfig = {
     },
 };
 
+// Appended as a plain flat-config object, not through compat.config({overrides}): the
+// .map() above rewrites `files` on every object FlatCompat emits.
+const testConfig = {
+    files: ['__tests__/**/*.{ts,tsx}', 'jest/**/*.{ts,tsx}'],
+    rules: {
+        // jest.mock factories are hoisted above imports, so they can only reach a module
+        // through require, and inline stub components are the point of a mock file.
+        '@typescript-eslint/no-require-imports': 'off',
+        'react/function-component-definition': 'off',
+    },
+    languageOptions: {
+        globals: {
+            afterAll: 'readonly',
+            afterEach: 'readonly',
+            beforeAll: 'readonly',
+            beforeEach: 'readonly',
+            describe: 'readonly',
+            expect: 'readonly',
+            it: 'readonly',
+            jest: 'readonly',
+            require: 'readonly',
+            test: 'readonly',
+        },
+    },
+};
+
+// Styling is a directory privilege, not a per-file judgement call: only components/ui/** may
+// build styles. Everything below is appended as plain flat-config objects rather than going
+// through compat.config({overrides}), because the .map() above rewrites `files` on every object
+// FlatCompat emits, which would silently widen these to the whole app.
+const UI = ['components/ui/**/*.{ts,tsx}'];
+
+// Flat config REPLACES an option array rather than merging it, so Airbnb's four entries have to
+// be re-listed wherever no-restricted-syntax is set, or they are silently dropped.
+const AIRBNB_RESTRICTED_SYNTAX = [
+    { selector: 'ForInStatement', message: 'for..in iterates the prototype chain. Use Object.{keys,values,entries}.' },
+    { selector: 'ForOfStatement', message: 'iterators/generators need regenerator-runtime. Prefer array iteration.' },
+    { selector: 'LabeledStatement', message: 'Labels are a form of GOTO and make code hard to follow.' },
+    { selector: 'WithStatement', message: '`with` is disallowed in strict mode.' },
+];
+
+const NO_RAW_COLOR = [
+    { selector: 'Literal[value=/^#[0-9a-fA-F]{3,8}$/]', message: 'Raw colour. Use a ColorVariant.' },
+    { selector: 'Literal[value=/^(rgb|rgba|hsl|hsla)[(]/]', message: 'Raw colour. Use a ColorVariant.' },
+];
+
+const SIZE_PROPS = [
+    'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
+    // 'start' and 'end' are deliberately absent: esquery matches on key NAME alone, so they
+    // also hit ordinary maps like { start: 'auto' } in an alignment table. The logical inset
+    // spellings below are what this codebase actually uses.
+    'top', 'bottom', 'left', 'right',
+    'insetBlockStart', 'insetBlockEnd', 'insetInlineStart', 'insetInlineEnd',
+    'margin', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight',
+    'marginVertical', 'marginHorizontal', 'marginStart', 'marginEnd',
+    'padding', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
+    'paddingVertical', 'paddingHorizontal', 'paddingStart', 'paddingEnd',
+    'borderRadius', 'borderWidth', 'fontSize', 'lineHeight', 'gap', 'rowGap', 'columnGap',
+].join('|');
+
+// The allowlist holds literal paths so the ratchet can verify each one exists, but `ignores`
+// takes minimatch globs. expo-router's dynamic segments are the trap: in a glob, `[id]` is a
+// character class matching one of i or d, so 'project/[id]/index.tsx' silently matches nothing
+// and the file stays unignored. Escape the metacharacters on the way in.
+const asIgnorePattern = (path) => path.replace(/[[\]{}()!+@]/g, (ch) => `\\${ch}`);
+
+const noStylingInViews = {
+    files: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}'],
+    // The allowlist grandfathers every file that styles something today. It only ever shrinks:
+    // scripts/check-styling-allowlist.ts fails CI if an entry is added, and rejects globs so a
+    // single 'components/**' cannot silently re-exempt the tree.
+    ignores: [...UI, 'app/playground/**', ...STYLING_ALLOWLIST.map(asIgnorePattern)],
+    rules: {
+        'react-native/no-inline-styles': 'error',
+        'react-native/no-color-literals': 'error',
+        'react-native/no-single-element-style-arrays': 'error',
+        'no-restricted-imports': 'off',
+        '@typescript-eslint/no-restricted-imports': ['error', {
+            paths: [
+                {
+                    name: 'react-native',
+                    importNames: [
+                        'StyleSheet', 'View', 'Text', 'Pressable', 'TouchableOpacity',
+                        'TouchableHighlight', 'TouchableWithoutFeedback', 'ScrollView',
+                        'SafeAreaView', 'ActivityIndicator', 'Image', 'ImageBackground',
+                        'Modal', 'Dimensions', 'PixelRatio', 'ViewStyle', 'TextStyle', 'StyleProp',
+                    ],
+                    message: 'Views must not touch RN styling primitives. Use @/components/ui/*.',
+                },
+                { name: 'react-native-safe-area-context', importNames: ['SafeAreaView'], message: 'Use <Screen />.' },
+                { name: '@/hooks/useTheme', message: 'Take a colorVariant prop.' },
+                { name: '@/hooks/useThemedStyles', message: 'Only components/ui/** may build styles.' },
+                { name: '@/hooks/useSpacingToken', message: 'Use the spacing prop.' },
+                { name: '@/constants/dimensions', message: 'Use spacing and size props.' },
+                { name: '@/utils/styles', message: 'Only components/ui/**.' },
+                { name: '@/utils/layout', message: 'Only components/ui/**.' },
+            ],
+        }],
+        'no-restricted-syntax': ['error',
+            ...AIRBNB_RESTRICTED_SYNTAX,
+            ...NO_RAW_COLOR,
+            {
+                selector: "CallExpression[callee.object.name='StyleSheet'][callee.property.name='create']",
+                message: 'No StyleSheet.create in views.',
+            },
+            // Anchored, so it catches style and contentContainerStyle but not styleVariant.
+            // `mapStyle` is excluded: it is MapLibre's style *document*, not an RN style, and
+            // every map on the web build would otherwise be a false positive.
+            {
+                selector: "JSXAttribute[name.name=/[Ss]tyle$/]:not([name.name='mapStyle'])",
+                message: 'No style prop in views. Add a variant.',
+            },
+            {
+                selector: 'JSXAttribute[name.name=/^(color|backgroundColor|borderColor|placeholderTextColor|stroke|fill)$/]',
+                message: 'Pass a colorVariant.',
+            },
+            { selector: "CallExpression[callee.object.name='Dimensions']", message: 'Use useViewport().' },
+            {
+                selector: 'Property[key.name=/^(tabBarStyle|headerStyle|cardStyle|contentStyle|sceneStyle)$/]',
+                message: 'Navigator styling belongs in ui/TabBar or ui/Screen.',
+            },
+            {
+                selector: 'TSAsExpression[typeAnnotation.type="TSAnyKeyword"]',
+                message: 'No `as any` in views: it defeats style?: never.',
+            },
+        ],
+    },
+};
+
+const tokensOnlyInUi = {
+    files: UI,
+    rules: {
+        'react-native/no-inline-styles': 'error',
+        'react-native/no-color-literals': 'error',
+        'react-native/no-unused-styles': 'error',
+        'no-restricted-syntax': ['error',
+            ...AIRBNB_RESTRICTED_SYNTAX,
+            ...NO_RAW_COLOR,
+            // [value!=0] is required: esquery does not coerce numeric literal values, so a
+            // /^[0-9]/ regex never matches one. Zero needs no token.
+            { selector: `Property[key.name=/^(${SIZE_PROPS})$/] > Literal[value!=0]`, message: 'Raw size. Use a token.' },
+            { selector: `Property[key.name=/^(${SIZE_PROPS})$/] > UnaryExpression > Literal`, message: 'Raw size. Use a token.' },
+        ],
+    },
+};
+
+// The token layer mints values; nothing else may. theme.ts and typography.ts are the only files
+// allowed a colour literal, and both are already the sole holders of one.
+const tokenSources = {
+    files: ['constants/**/*.ts', 'utils/**/*.ts'],
+    ignores: ['constants/theme.ts', 'constants/typography.ts'],
+    rules: {
+        'no-restricted-syntax': ['error', ...AIRBNB_RESTRICTED_SYNTAX, ...NO_RAW_COLOR],
+    },
+};
+
 export default [
     ...appConfigs,
     otherConfig,
     nodeConfig,
+    testConfig,
+    noStylingInViews,
+    tokensOnlyInUi,
+    tokenSources,
 ];

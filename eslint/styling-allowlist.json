@@ -1,0 +1,10 @@
+[
+    "components/GeoJsonMapSource.web.tsx",
+    "components/HideTileSelectionButton.tsx",
+    "components/ImageTile.tsx",
+    "components/LocateTile.tsx",
+    "components/MapTile.tsx",
+    "components/MapTile.web.tsx",
+    "components/ScaleBar.tsx",
+    "components/ValidateImageWrapper.tsx"
+]

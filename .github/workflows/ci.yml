@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - dev
+      - develop
       - main
 
 env:
@@ -29,6 +29,18 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      # actions/checkout leaves a depth-1 clone of the PR merge commit, so the base branch is not
+      # present and `git show <base>:<file>` cannot work until it is fetched.
+      - name: Fetch base branch
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --depth=1 origin "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+
+      # Runs before Lint: a glob or a stale entry in the allowlist leaves Lint passing, so this is
+      # the only signal for it, and it is far quicker than codegen + Lint.
+      - name: Check styling allowlist only shrinks
+        if: github.event_name == 'pull_request'
+        run: pnpm check:styling-allowlist
 
       - name: Lint
         run: pnpm lint
