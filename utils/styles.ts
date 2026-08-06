@@ -29,36 +29,6 @@ export const fullSpacings: SpacingMode[] = [
     ...paddingSpacings,
 ];
 
-// FIXME: get this from system
-const BASE_FONT_SIZE = 16;
-const OPTICAL_CORRECTION_FACTOR = 1.25;
-
-export function getAdditionalInlineCompensatedSpacingValue(
-    value: number,
-    mode: SpacingMode,
-    use: boolean,
-) {
-    if (!use) {
-        return value;
-    }
-
-    if (mode === 'paddingInline') {
-        return value * 1.1 + BASE_FONT_SIZE / 3;
-    }
-
-    return value;
-}
-
-export function getOpticallyCorrectedSpacingValue(value: number, mode: SpacingMode) {
-    // Horizontal padding seems a bit imbalanced
-    // due to the gap from the line height in vertical padding
-    if (mode === 'paddingBlock' || mode === 'rowGap') {
-        return value + (BASE_FONT_SIZE / OPTICAL_CORRECTION_FACTOR - BASE_FONT_SIZE);
-    }
-
-    return value;
-}
-
 const spacingValues = [
     SPACING_NONE,
     SPACING_4XS,

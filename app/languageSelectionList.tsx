@@ -1,40 +1,30 @@
-import React from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
 import {
     useLocalSearchParams,
     useRouter,
 } from 'expo-router';
 
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import Icon from '@/components/Icon';
-import Page from '@/components/Page';
+import ListRow from '@/components/ui/ListRow';
+import ListView from '@/components/ui/ListView';
+import Screen from '@/components/ui/Screen';
 import { supportedLanguages } from '@/constants/common';
-import { AppTheme } from '@/constants/theme';
-import useTheme from '@/hooks/useTheme';
-import useThemedStyles from '@/hooks/useThemedStyles';
 
-const createStyles = (
-    theme: AppTheme,
-    isDarkBackground: boolean,
-) => StyleSheet.create({
-    language: {
-        backgroundColor: isDarkBackground ? theme.backgroundBrand : theme.card,
-    },
-});
+// constants/common keeps its Language type private, so read the item type off the list.
+type SupportedLanguage = (typeof supportedLanguages)[number];
+
+function keySelector(item: SupportedLanguage): string {
+    return item.code;
+}
 
 function LanguageSelectionList() {
     const { isDarkBackground } = useLocalSearchParams<{ isDarkBackground: string }>();
     const isDarkBackgroundBool = isDarkBackground === 'true';
     const router = useRouter();
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation('mappingSession');
     const selected = i18n.language;
-    const theme = useTheme();
 
-    const styles = useThemedStyles(createStyles, isDarkBackgroundBool);
-
-    const selectLanguage = async (code?: string) => {
+    const selectLanguage = useCallback(async (code?: string) => {
         if (code) {
             await i18n.changeLanguage(code);
             if (router.canGoBack()) {
@@ -43,42 +33,57 @@ function LanguageSelectionList() {
                 router.replace('/');
             }
         }
-    };
+    }, [i18n, router]);
+
+    const renderItem = useCallback((item: SupportedLanguage) => {
+        const isActive = selected === item.localeCode;
+        const affordance = isActive ? 'selected' : undefined;
+
+        // Two calls, not a ternary: styleVariant is a discriminant, so a union of both
+        // variants is not assignable to either.
+        if (isDarkBackgroundBool) {
+            return (
+                <ListRow
+                    styleVariant="onBrand"
+                    name={item.localeCode}
+                    title={item.name}
+                    accessibilityLabel={item.name}
+                    affordance={affordance}
+                    onPress={selectLanguage}
+                />
+            );
+        }
+
+        return (
+            <ListRow
+                name={item.localeCode}
+                title={item.name}
+                accessibilityLabel={item.name}
+                affordance={affordance}
+                onPress={selectLanguage}
+            />
+        );
+    }, [selected, isDarkBackgroundBool, selectLanguage]);
 
     return (
-        <Page
+        <Screen
             title="Language"
-            variant={isDarkBackgroundBool ? 'brand' : 'normal'}
-            showBackButton
+            colorVariant={isDarkBackgroundBool ? 'brand' : 'default'}
+            withHeader
+            backAccessibilityLabel={t('goBack')}
+            safeArea="bottom"
+            layout="fill"
         >
-            <BlockListView
-                style={styles.language}
+            <ListView
+                data={supportedLanguages}
+                keySelector={keySelector}
+                renderItem={renderItem}
                 spacing="none"
-            >
-                {supportedLanguages.map((item) => {
-                    const isActive = selected === item.localeCode;
-                    return (
-                        <Button
-                            key={item.code}
-                            name={item.code}
-                            title={item.name}
-                            action={isActive && (
-                                <Icon
-                                    name="checkmark-outline"
-                                    size={16}
-                                    color={isDarkBackgroundBool
-                                        ? theme.textOnPrimary : theme.textPrimary}
-                                />
-                            )}
-                            colorVariant={isDarkBackgroundBool ? 'white' : 'primaryBlue'}
-                            styleVariant="block"
-                            onPress={() => selectLanguage(item.localeCode)}
-                            style={styles.language}
-                        />
-                    );
-                })}
-            </BlockListView>
-        </Page>
+                grow="slot"
+                // renderItem closes over the active locale, which the list cannot see.
+                extraData={selected}
+            />
+        </Screen>
     );
 }
 

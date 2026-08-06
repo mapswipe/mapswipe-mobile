@@ -1,8 +1,5 @@
-// FIXME: Use everything
-/* eslint-disable react/no-unused-prop-types */
-import { View } from 'react-native';
-
-import Text from '@/components/Text';
+import Box from '@/components/ui/Box';
+import Text from '@/components/ui/Text';
 
 interface Props {
     geoJson: (
@@ -13,19 +10,21 @@ interface Props {
     );
     sourceKey: string;
     layerKey: string;
-    layerOptions?: unknown;
+    layerOptions: unknown;
     overrideZoomLevel?: number;
     overrideBounds?: GeoJSON.Polygon | null;
     withPadding?: boolean;
 }
 
-function GeoJsonMapSource(props: Props) {
+// Native stub: GeoJsonMapSource.web.tsx is the real implementation.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function GeoJsonMapSource(_props: Props) {
     return (
-        <View>
+        <Box>
             <Text>
                 Only for web
             </Text>
-        </View>
+        </Box>
     );
 }
 

@@ -3,50 +3,28 @@ import {
     useMemo,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    StyleSheet,
-    View,
-} from 'react-native';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import splashScreen from '@/assets/images/splash-icon.png';
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import Icon from '@/components/Icon';
-import Page from '@/components/Page';
+import Box from '@/components/ui/Box';
+import Button from '@/components/ui/Button';
+import ListRow from '@/components/ui/ListRow';
+import Media from '@/components/ui/Media';
+import Screen from '@/components/ui/Screen';
 import { supportedLanguages } from '@/constants/common';
-import {
-    SCREEN_HEIGHT,
-    SCREEN_WIDTH,
-} from '@/constants/dimensions';
-import useThemedStyles from '@/hooks/useThemedStyles';
+import { SCREEN_FRACTION } from '@/constants/size';
+import useViewport from '@/hooks/useViewport';
 
-const createStyles = () => StyleSheet.create({
-    mainContent: {
-        width: SCREEN_WIDTH,
-        height: '100%',
-        justifyContent: 'space-between',
-    },
-    icon: {
-        resizeMode: 'contain',
-        height: SCREEN_HEIGHT * 0.3,
-        width: SCREEN_WIDTH * 0.8,
+// Untranslated: no locale bundle carries an `appName` key.
+const APP_NAME = 'MapSwipe';
 
-    },
-    iconContainer: {
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-});
+const CONTINUE_LABEL = 'Continue';
 
 function LanguageSplashScreen() {
     const router = useRouter();
     const { i18n } = useTranslation();
+    const viewport = useViewport();
 
     const currentLanguage = useMemo(
         () => (supportedLanguages ?? []).find(
@@ -54,8 +32,6 @@ function LanguageSplashScreen() {
         )?.name ?? i18n.language,
         [i18n.language],
     );
-
-    const styles = useThemedStyles(createStyles);
 
     const handleContinue = useCallback(async () => {
         await AsyncStorage.setItem('@hasSelectedLanguage', 'true');
@@ -70,42 +46,47 @@ function LanguageSplashScreen() {
     }, [router]);
 
     return (
-        <Page
+        <Screen
             title="language"
-            scrollable={false}
-            variant="brand"
-        >
-            <BlockListView
-                style={styles.mainContent}
-                withPadding
-            >
-                <View
-                    style={styles.iconContainer}
-                >
-                    <Image
-                        style={styles.icon}
-                        source={splashScreen}
-                    />
-                </View>
-                <BlockListView>
-                    <Button
-                        name={undefined}
+            colorVariant="brand"
+            layout="fill"
+            footer={(
+                <>
+                    <ListRow
                         title={currentLanguage}
+                        accessibilityLabel={currentLanguage}
                         iconName="globe"
-                        styleVariant="block"
-                        action={<Icon name="caret-right" size={18} />}
+                        affordance="chevron"
                         onPress={handleSelection}
                     />
                     <Button
-                        name="continue"
-                        title="Continue"
-                        colorVariant="primaryRed"
-                        styleVariant="filled"
+                        title={CONTINUE_LABEL}
+                        accessibilityLabel={CONTINUE_LABEL}
+                        colorVariant="negative"
                         onPress={handleContinue}
                     />
-                </BlockListView>
-            </BlockListView>
-        </Page>
+                </>
+            )}
+        >
+            <Box
+                flex={1}
+                align="center"
+                justify="center"
+            >
+                {/* Sized here rather than by Media, whose spanning sizes are a fixed height. */}
+                <Box
+                    width={viewport.width * SCREEN_FRACTION.contentWidth}
+                    height={viewport.height * SCREEN_FRACTION.heroHeight}
+                >
+                    <Media
+                        source={splashScreen}
+                        sizeVariant="fill"
+                        fit="contain"
+                        accessibilityLabel={APP_NAME}
+                    />
+                </Box>
+            </Box>
+        </Screen>
     );
 }
 

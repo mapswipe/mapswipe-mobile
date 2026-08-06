@@ -1,18 +1,18 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import BlockListView from '../BlockListView';
-import Text from '../Text';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 
 function TutorialWelcomeInfo() {
     const { t } = useTranslation('Tutorial');
+
     return (
-        <BlockListView spacing="2xs">
+        <Stack spacing="2xs">
             <Text variant="title">{t('tutorial1')}</Text>
             <Text>{t('tutorial2')}</Text>
             <Text>{t('tutorial3')}</Text>
             <Text>{t('tutorial4')}</Text>
-        </BlockListView>
+        </Stack>
     );
 }
 

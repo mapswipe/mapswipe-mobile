@@ -6,92 +6,42 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    StyleSheet,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
-} from 'react-native';
-import {
     isNotDefined,
     listToGroupList,
     listToMap,
     mapToList,
 } from '@togglecorp/fujs';
-import {
-    CheckIcon,
-    SelectionIcon,
-} from 'phosphor-react-native';
 
-import Button from '@/components/Button';
-import InlineListView from '@/components/InlineListView';
-import LocateTile from '@/components/LocateTile';
-import Text from '@/components/Text';
+import LocateTile from '@/components/domain/LocateTile';
 import { TutorialSessionProps } from '@/components/tutorial/types';
-import useTheme from '@/hooks/useTheme';
+import Badge from '@/components/ui/Badge';
+import Box from '@/components/ui/Box';
+import Button from '@/components/ui/Button';
+import Icon from '@/components/ui/Icon';
+import Row from '@/components/ui/Row';
+import Stack from '@/components/ui/Stack';
+import Surface from '@/components/ui/Surface';
+import { LOCATE_DEFAULT_ANSWER_OPTIONS } from '@/constants/answers';
+import useAnswerColors from '@/hooks/useAnswerColors';
+import useFittedTileWidth from '@/hooks/useFittedTileWidth';
+import useViewport from '@/hooks/useViewport';
 import { TileTutorialTask } from '@/utils/tutorial';
 import {
     ResultOption,
     Results,
 } from '@/utils/types';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        minHeight: 0,
-        gap: 12,
-    },
-    controls: {
-        flexGrow: 0,
-        flexShrink: 0,
-        alignSelf: 'flex-end',
-    },
-    // The tile fills this slot; minHeight:0 + overflow:hidden keep it from
-    // overflowing the controls/Check Answer button when the window is short.
-    tileSlot: {
-        flex: 1,
-        minHeight: 0,
-        overflow: 'hidden',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    // Centered options bar shown in selection mode, mirroring the mapping
-    // session: pick an option to apply it to every selected cell.
-    optionsBarContainer: {
-        flexGrow: 0,
-        flexShrink: 0,
-        alignItems: 'center',
-    },
-    optionsBar: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 8,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 16,
-        borderWidth: 1,
-        maxWidth: '92%',
-    },
-    optionChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderRadius: 999,
-    },
-    optionDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-    },
-});
+// ResultOption.color is a required string, so "tints nothing" needs a value.
+const NO_TINT = 'transparent';
 
-const DEFAULT_OPTIONS: ResultOption[] = [
-    { value: 0, label: 'No', color: 'transparent' },
-    { value: 1, label: 'Yes', color: 'green' },
-];
+const MIN_TILE_WIDTH = 120;
+
+// Fallback before onLayout: a 12pt gutter each side.
+const FALLBACK_INLINE_CHROME = 24;
+
+const FALLBACK_BLOCK_FRACTION = 0.6;
+
+const OPTIONS_BAR_MAX_WIDTH_FRACTION = 0.92;
 
 type LocateTutorialCellTask = TileTutorialTask & {
     taskPartitionIndex: number;
@@ -109,13 +59,14 @@ function LocateTutorialSession(props: TutorialSessionProps) {
         projectCustomOptions,
     } = props;
 
-    const { width: pageWidth, height: pageHeight } = useWindowDimensions();
-    const theme = useTheme();
+    const { width: pageWidth, height: pageHeight } = useViewport();
     const { t } = useTranslation('mappingSession');
 
     const [mode, setMode] = useState<'mapping' | 'selection'>('mapping');
     const [selectedCellsByTile, setSelectedCellsByTile] = useState<Record<string, number[]>>({});
     const [tileSlotSize, setTileSlotSize] = useState({ width: 0, height: 0 });
+
+    const defaultAnswerColors = useAnswerColors(LOCATE_DEFAULT_ANSWER_OPTIONS);
 
     const options = useMemo<ResultOption[]>(() => {
         if (projectCustomOptions && projectCustomOptions.length > 0) {
@@ -127,8 +78,13 @@ function LocateTutorialSession(props: TutorialSessionProps) {
                     color: option.iconColor,
                 }));
         }
-        return DEFAULT_OPTIONS;
-    }, [projectCustomOptions]);
+        return LOCATE_DEFAULT_ANSWER_OPTIONS.map((option) => ({
+            value: option.value,
+            // ANSWER_OPTIONS carries a labelKey too, but public/locales has no entry for it yet.
+            label: option.defaultLabel,
+            color: defaultAnswerColors[option.value]?.tintColor ?? NO_TINT,
+        }));
+    }, [projectCustomOptions, defaultAnswerColors]);
 
     const optionsByValue = useMemo(() => (
         listToMap(options, ({ value }) => value)
@@ -157,9 +113,7 @@ function LocateTutorialSession(props: TutorialSessionProps) {
 
     const cellsPerTile = gridSize * gridSize;
 
-    // Group per-cell tasks by tile-level id (taskId_real). Multiple per-cell
-    // tasks share one tile; each carries the cell's referenceAnswer at its
-    // taskPartitionIndex.
+    // Many per-cell tasks share one tile id, each holding its cell's answer at taskPartitionIndex.
     const tileGroups = useMemo(() => {
         const cellTasks = tasks.filter((task): task is LocateTutorialCellTask => (
             'taskId_real' in task && typeof task.taskId_real === 'string'
@@ -174,7 +128,6 @@ function LocateTutorialSession(props: TutorialSessionProps) {
         }));
     }, [tasks]);
 
-    // Seed: one array per tile, length = cellsPerTile, filled with default.
     useEffect(() => {
         if (tileGroups.length === 0) {
             return;
@@ -234,9 +187,6 @@ function LocateTutorialSession(props: TutorialSessionProps) {
         });
     }, []);
 
-    // When the scenario is locked (correct / answers-shown), force-derive the
-    // effective mode to 'mapping' so the overlay and controls disappear —
-    // without writing state from an effect.
     const effectiveSelectionMode = mode === 'selection' && !disabled;
 
     const handleEnterSelectionMode = useCallback(() => {
@@ -248,8 +198,6 @@ function LocateTutorialSession(props: TutorialSessionProps) {
         setSelectedCellsByTile({});
     }, []);
 
-    // Applies the chosen option's value to every selected cell (across tiles),
-    // then clears the selection so the next batch can be selected fresh.
     const handleApplyOptionToSelected = useCallback((value: number) => {
         const tilesWithSelection = Object.entries(selectedCellsByTile)
             .filter(([, cells]) => cells.length > 0);
@@ -280,43 +228,68 @@ function LocateTutorialSession(props: TutorialSessionProps) {
         [selectedCellsByTile],
     );
 
-    const tileWidth = useMemo(() => {
-        const availWidth = tileSlotSize.width || (pageWidth - 24);
-        const availHeight = tileSlotSize.height || (pageHeight * 0.6);
-        return Math.max(120, Math.min(availWidth, availHeight));
-    }, [tileSlotSize, pageWidth, pageHeight]);
+    const tileWidth = useFittedTileWidth({
+        availableInline: tileSlotSize.width,
+        availableBlock: tileSlotSize.height,
+        fallbackInline: pageWidth - FALLBACK_INLINE_CHROME,
+        fallbackBlock: pageHeight * FALLBACK_BLOCK_FRACTION,
+        minSize: MIN_TILE_WIDTH,
+    });
+
+    const optionsBarMaxWidth = tileSlotSize.width > 0
+        ? tileSlotSize.width * OPTIONS_BAR_MAX_WIDTH_FRACTION
+        : undefined;
 
     return (
-        <View style={styles.container}>
+        <Stack
+            spacing="2xs"
+            grow="slot"
+        >
             {!disabled && (
-                <InlineListView style={styles.controls} spacing="sm">
-                    {mode === 'mapping' && (
-                        <Button
-                            name="enter-selection"
-                            accessibilityLabel={t('enterSelectionMode')}
-                            styleVariant="action"
-                            fullWidth={false}
-                            onPress={handleEnterSelectionMode}
-                        >
-                            <SelectionIcon color={theme.textOnBrand} />
-                        </Button>
-                    )}
-                    {mode === 'selection' && (
-                        <Button
-                            name="exit-selection"
-                            accessibilityLabel={t('exitSelectionMode')}
-                            colorVariant="primaryRed"
-                            styleVariant="action"
-                            fullWidth={false}
-                            onPress={handleExitSelectionMode}
-                        >
-                            <CheckIcon color={theme.textOnBrand} />
-                        </Button>
-                    )}
-                </InlineListView>
+                <Box selfAlign="end">
+                    <Row spacing="sm">
+                        {mode === 'mapping' && (
+                            <Button
+                                name="enter-selection"
+                                accessibilityLabel={t('enterSelectionMode')}
+                                styleVariant="transparent"
+                                colorVariant="onBrand"
+                                width="hug"
+                                onPress={handleEnterSelectionMode}
+                            >
+                                <Icon
+                                    name="selection"
+                                    sizeVariant="2xl"
+                                    colorVariant="onBrand"
+                                />
+                            </Button>
+                        )}
+                        {mode === 'selection' && (
+                            <Button
+                                name="exit-selection"
+                                accessibilityLabel={t('exitSelectionMode')}
+                                colorVariant="negative"
+                                styleVariant="transparent"
+                                width="hug"
+                                onPress={handleExitSelectionMode}
+                            >
+                                <Icon
+                                    name="check"
+                                    sizeVariant="2xl"
+                                    colorVariant="onBrand"
+                                />
+                            </Button>
+                        )}
+                    </Row>
+                </Box>
             )}
-            <View
-                style={styles.tileSlot}
+            {/* minHeight 0 plus clip stop the tile pushing the controls off a short window. */}
+            <Box
+                flex={1}
+                minHeight={0}
+                clip
+                align="center"
+                justify="center"
                 onLayout={(event) => setTileSlotSize(event.nativeEvent.layout)}
             >
                 {tileGroups.map((group) => {
@@ -359,53 +332,57 @@ function LocateTutorialSession(props: TutorialSessionProps) {
                         />
                     );
                 })}
-            </View>
+            </Box>
             {effectiveSelectionMode && (
-                <View style={styles.optionsBarContainer} pointerEvents="box-none">
-                    <View
-                        style={StyleSheet.flatten([
-                            styles.optionsBar,
-                            {
-                                backgroundColor: theme.backgroundBrand,
-                                borderColor: theme.divider,
-                            },
-                        ])}
-                    >
-                        {options.map((option) => {
-                            const dotColor = option.color === 'transparent'
-                                ? theme.textMuted
-                                : option.color;
-                            return (
-                                <TouchableOpacity
-                                    key={option.value}
-                                    style={StyleSheet.flatten([
-                                        styles.optionChip,
-                                        {
-                                            backgroundColor: theme.inputBrandBackground,
-                                            opacity: selectedCount === 0 ? 0.5 : 1,
-                                        },
-                                    ])}
-                                    onPress={() => handleApplyOptionToSelected(option.value)}
-                                    disabled={selectedCount === 0}
-                                    accessibilityRole="button"
-                                    accessibilityLabel={option.label}
-                                >
-                                    <View
-                                        style={StyleSheet.flatten([
-                                            styles.optionDot,
-                                            { backgroundColor: dotColor },
-                                        ])}
-                                    />
-                                    <Text variant="label" colorVariant="brand">
-                                        {option.label}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </View>
-                </View>
+                <Box
+                    align="center"
+                    pointerEvents="box-none"
+                >
+                    <Box maxWidth={optionsBarMaxWidth}>
+                        <Surface
+                            styleVariant="outlined"
+                            colorVariant="brand"
+                            borderColorVariant="secondary"
+                            radius="lg"
+                            paddingBlock="3xs"
+                            paddingInline="2xs"
+                        >
+                            <Row
+                                spacing="3xs"
+                                justify="center"
+                                wrap
+                            >
+                                {options.map((option) => (
+                                    <Badge
+                                        key={option.value}
+                                        shape="pill"
+                                        sizeVariant="md"
+                                        colorVariant="onBrand"
+                                        label={option.label}
+                                        accessibilityLabel={option.label}
+                                        disabled={selectedCount === 0}
+                                        onPress={() => handleApplyOptionToSelected(option.value)}
+                                    >
+                                        {option.color === NO_TINT ? (
+                                            <Badge
+                                                sizeVariant="xs"
+                                                styleVariant="swatch"
+                                                colorVariant="muted"
+                                            />
+                                        ) : (
+                                            <Badge
+                                                sizeVariant="xs"
+                                                dotColor={option.color}
+                                            />
+                                        )}
+                                    </Badge>
+                                ))}
+                            </Row>
+                        </Surface>
+                    </Box>
+                </Box>
             )}
-        </View>
+        </Stack>
     );
 }
 

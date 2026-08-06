@@ -1,45 +1,35 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
 
-import BlockListView from '@/components/BlockListView';
-import Icon, { type IconName } from '@/components/Icon';
-import Text, { ColorVariant } from '@/components/Text';
-import useTheme from '@/hooks/useTheme';
+import Badge from '@/components/ui/Badge';
+import { type IconName } from '@/components/ui/Icon';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 import { FbObjCustomOption } from '@/utils/types';
 
-import InstructionRow from './InstructionRow';
-
-const ICON_PILL_SIZE = 50;
-
-const styles = StyleSheet.create({
-    pill: {
-        width: ICON_PILL_SIZE,
-        height: ICON_PILL_SIZE,
-        borderRadius: ICON_PILL_SIZE / 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
+import InstructionRow, {
+    INSTRUCTION_CONTENT_COLOR,
+    type InstructionColorVariant,
+} from './InstructionRow';
 
 interface Props {
     customOptions?: FbObjCustomOption[];
-    colorVariants?: ColorVariant
+    colorVariants?: InstructionColorVariant
 }
 
 function ValidateInstructions(props: Props) {
     const { customOptions, colorVariants = 'brand' } = props;
     const { t } = useTranslation('instructionsScreen');
-    const theme = useTheme();
+    const contentColorVariant = INSTRUCTION_CONTENT_COLOR[colorVariants];
 
     const options = customOptions ?? [];
 
     return (
-        <BlockListView spacing="sm">
-            <Text colorVariant={colorVariants}>
+        <Stack spacing="sm">
+            <Text colorVariant={contentColorVariant}>
                 {t('validateUseButtons')}
             </Text>
             {options.length === 0 ? (
-                <Text colorVariant={colorVariants}>
+                <Text colorVariant={contentColorVariant}>
                     {t('validateNoOptions')}
                 </Text>
             ) : options.map((option) => (
@@ -47,21 +37,18 @@ function ValidateInstructions(props: Props) {
                     colorVariant={colorVariants}
                     key={option.value}
                     icon={(
-                        <BlockListView
-                            style={[styles.pill, { backgroundColor: option.iconColor }]}
-                        >
-                            <Icon
-                                name={option.icon as IconName}
-                                color={theme.card}
-                                size={28}
-                            />
-                        </BlockListView>
+                        <Badge
+                            sizeVariant="2xl"
+                            dotColor={option.iconColor}
+                            // FIXME: No casting. Unvalidated glyph name off Firebase.
+                            iconName={option.icon as IconName}
+                        />
                     )}
                     title={option.title}
                     description={option.description}
                 />
             ))}
-        </BlockListView>
+        </Stack>
     );
 }
 

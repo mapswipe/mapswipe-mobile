@@ -7,12 +7,12 @@ import { useRouter } from 'expo-router';
 import { updateProfile } from 'firebase/auth';
 import { update } from 'firebase/database';
 
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import Page from '@/components/Page';
-import Text from '@/components/Text';
-import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
+import Button from '@/components/ui/Button';
+import { type ButtonStateType } from '@/components/ui/ButtonLayout';
+import Screen from '@/components/ui/Screen';
+import Text from '@/components/ui/Text';
+import TextInput from '@/components/ui/TextInput';
 import useAsyncHandler from '@/hooks/useAsyncHandler';
 import useAuth from '@/hooks/useAuth';
 import {
@@ -28,12 +28,31 @@ import {
 
 const usernameSameAsBefore = 'New username is same as old!';
 
+/**
+ * 'pending' rather than 'disabled': only the pending state makes the button announce itself as
+ * busy.
+ */
+function resolveSubmitState(pending: boolean, tooShort: boolean): ButtonStateType {
+    if (pending) {
+        return 'pending';
+    }
+
+    if (tooShort) {
+        return 'disabled';
+    }
+
+    return 'default';
+}
+
 export default function ChangePassword() {
     const { user, setUser } = useAuth();
     const [newUserName, setNewUserName] = useState<string>('');
     const [usernameError, setUsernameError] = useState<string>();
     const router = useRouter();
     const { t } = useTranslation(['changeUserName', 'signup']);
+    // The back button's label belongs to the navigation bar, not to this screen's copy, and no
+    // shared namespace holds one, so it is borrowed from where the string already exists.
+    const { t: tChrome } = useTranslation('mappingSession');
     // FIXME: Update the use of this function
     const {
         handleAsync,
@@ -114,51 +133,59 @@ export default function ChangePassword() {
 
     if (user?.uid?.startsWith('osm:')) {
         return (
-            <Page
+            <Screen
                 title={t('changeUserName:changeUserName')}
-                showBackButton
+                withHeader
+                backAccessibilityLabel={tChrome('goBack')}
+                safeArea="bottom"
+                padding="md"
+                spacing="md"
             >
-                <BlockListView withPadding>
-                    <Text>{t('changeUserName:osmUsernameChangeNotAllowed')}</Text>
-                </BlockListView>
-            </Page>
+                <Text>{t('changeUserName:osmUsernameChangeNotAllowed')}</Text>
+            </Screen>
         );
     }
 
+    // One string for the label and the announced name, as the old button derived the second
+    // from the first.
+    const submitLabel = loading
+        ? t('changeUserName:updatingUsername')
+        : t('changeUserName:confirmUserNameChange');
+
     return (
-        <Page
+        <Screen
             title={t('changeUserName:changeUserName')}
-            showBackButton
+            withHeader
+            backAccessibilityLabel={tChrome('goBack')}
+            safeArea="bottom"
+            padding="md"
+            spacing="md"
         >
-            <BlockListView
-                withPadding
-            >
-                <TextInput
-                    variant="normal"
-                    labelText={t('changeUserName:currentUserName')}
-                    value={user?.displayName ?? ''}
-                    editable={false}
-                />
-                <TextInput
-                    variant="normal"
-                    labelText={t('changeUserName:newUserName')}
-                    onChangeText={handleUsernameChange}
-                    maxLength={MAX_USERNAME_LENGTH}
-                    errorText={usernameError}
-                    editable={!loading}
-                />
-                <Button
-                    name="change-username"
-                    title={loading
-                        ? t('changeUserName:updatingUsername')
-                        : t('changeUserName:confirmUserNameChange')}
-                    disabled={
-                        loading
-                        || (newUserName?.length ?? 0) < MIN_USERNAME_LENGTH
-                    }
-                    onPress={handleUpdateProfile}
-                />
-            </BlockListView>
-        </Page>
+            <TextInput
+                colorVariant="sunken"
+                labelText={t('changeUserName:currentUserName')}
+                value={user?.displayName ?? ''}
+                stateVariant="readOnly"
+            />
+            <TextInput
+                colorVariant="sunken"
+                contentVariant="username"
+                labelText={t('changeUserName:newUserName')}
+                onChangeText={handleUsernameChange}
+                maxLength={MAX_USERNAME_LENGTH}
+                errorText={usernameError}
+                stateVariant={loading ? 'disabled' : 'editable'}
+            />
+            <Button
+                name="change-username"
+                title={submitLabel}
+                accessibilityLabel={submitLabel}
+                state={resolveSubmitState(
+                    loading,
+                    (newUserName?.length ?? 0) < MIN_USERNAME_LENGTH,
+                )}
+                onPress={handleUpdateProfile}
+            />
+        </Screen>
     );
 }

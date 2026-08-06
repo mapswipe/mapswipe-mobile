@@ -1,17 +1,13 @@
-import { useCallback } from 'react';
+import {
+    type ReactNode,
+    useCallback,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    StyleSheet,
-    View,
-} from 'react-native';
 
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
 import { showAlert } from '@/components/Toast';
-import {
-    SPACING_2XS,
-    SPACING_XS,
-} from '@/constants/dimensions';
+import Box from '@/components/ui/Box';
+import Button from '@/components/ui/Button';
+import Stack from '@/components/ui/Stack';
 import {
     AnyTutorialTask,
     getReferenceResults,
@@ -39,22 +35,6 @@ import { ScenarioState } from './types';
 import UnsupportedTutorialSession from './UnsupportedTutorialSession';
 import ValidateImageTutorialSession from './ValidateImageTutorialSession';
 import ValidateTutorialSession from './ValidateTutorialSession';
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        minHeight: 0,
-        padding: SPACING_XS,
-        gap: SPACING_2XS,
-    },
-    // minHeight:0 lets the slot (and the map inside it) shrink to the space
-    // available, so the session's own buttons and the Check Answer button below
-    // stay within the viewport instead of being pushed off the bottom.
-    sessionSlot: {
-        flex: 1,
-        minHeight: 0,
-    },
-});
 
 interface Props {
     tutorial: FbTutorial;
@@ -121,7 +101,7 @@ function TutorialScenarioPage(props: Props) {
         || state === 'skip-unlocked'
         || state === 'answers-shown';
 
-    let session: React.ReactNode;
+    let session: ReactNode;
     switch (tutorial.projectType) {
         case PROJECT_TYPE_FIND:
         case PROJECT_TYPE_COMPLETENESS:
@@ -188,34 +168,42 @@ function TutorialScenarioPage(props: Props) {
     }
 
     const showShowAnswersButton = attempts >= TUTORIAL_MAX_ATTEMPTS && state !== 'correct';
+    const showAnswersTitle = t('showAnswers');
+    const submitTitle = t('checkAnswer', { attempts, max: TUTORIAL_MAX_ATTEMPTS });
+
     const actionButton = showShowAnswersButton ? (
         <Button
             name="show-answers"
-            title={t('showAnswers')}
-            colorVariant="info"
-            styleVariant="filled"
-            disabled={state === 'answers-shown'}
+            title={showAnswersTitle}
+            accessibilityLabel={showAnswersTitle}
+            colorVariant="informative"
+            state={state === 'answers-shown' ? 'disabled' : 'default'}
             onPress={handleShowAnswers}
         />
     ) : (
         <Button
             name="submit"
-            title={t('checkAnswer', { attempts, max: TUTORIAL_MAX_ATTEMPTS })}
-            colorVariant="primaryGreen"
-            styleVariant="filled"
-            disabled={state === 'correct'}
+            title={submitTitle}
+            accessibilityLabel={submitTitle}
+            colorVariant="positive"
+            state={state === 'correct' ? 'disabled' : 'default'}
             onPress={handleSubmit}
         />
     );
 
     return (
-        <BlockListView style={styles.container} spacing="sm">
+        <Stack
+            spacing="sm"
+            padding="xs"
+            grow="slot"
+        >
             <ScenarioFeedback screen={screen} state={state} />
-            <View style={styles.sessionSlot}>
+            {/* minHeight 0 lets the session shrink so the buttons below stay on screen. */}
+            <Box flex={1} minHeight={0}>
                 {session}
-            </View>
+            </Box>
             {actionButton}
-        </BlockListView>
+        </Stack>
     );
 }
 

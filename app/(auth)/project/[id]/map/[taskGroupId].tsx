@@ -5,11 +5,8 @@ import {
     useRef,
     useState,
 } from 'react';
-import {
-    Platform,
-    StyleSheet,
-    View,
-} from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Platform } from 'react-native';
 import {
     useLocalSearchParams,
     useRouter,
@@ -20,28 +17,28 @@ import {
 } from '@togglecorp/fujs';
 import { set as setToDatabase } from 'firebase/database';
 
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
 import CompareMappingSession from '@/components/CompareMappingSession';
-import IconButton from '@/components/IconButton';
 import LocateFeaturesMappingSession from '@/components/LocateFeaturesMappingSession';
-import Modal from '@/components/Modal';
-import Page from '@/components/Page';
 import SessionOutro, { type ResultSyncStatus } from '@/components/SessionOutro';
 import StreetMappingSession from '@/components/StreetMappingSession';
-import Text from '@/components/Text';
 import TileGridMappingSession from '@/components/TileGridMappingSession';
 import CompareInstructions from '@/components/tutorial/CompareInstructions';
 import LocateInstructions from '@/components/tutorial/LocateInstructions';
 import TileGridInstructions from '@/components/tutorial/TileGridInstructions';
 import ValidateInstructions from '@/components/tutorial/ValidateInstructions';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import Divider from '@/components/ui/Divider';
+import IconButton from '@/components/ui/IconButton';
+import Modal from '@/components/ui/Modal';
+import Screen from '@/components/ui/Screen';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 import ValidateImageMappingSession from '@/components/ValidateImageMappingSession';
 import ValidateMappingSession from '@/components/ValidateMappingSession';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useHardwareBackHandler from '@/hooks/useHardwareBackHandler';
 import usePreventScreenRemove from '@/hooks/usePreventScreenRemove';
-import useTheme from '@/hooks/useTheme';
 import { firebaseRef } from '@/utils/firebase';
 import {
     getAnswerCounts,
@@ -59,15 +56,7 @@ import {
     Results,
 } from '@/utils/types';
 
-const styles = StyleSheet.create({
-    headerButtonPadding: {
-        padding: 8,
-    },
-    divider: {
-        height: StyleSheet.hairlineWidth,
-        alignSelf: 'stretch',
-    },
-});
+const INFO_LABEL = 'Project information';
 
 function MapTaskGroup() {
     const {
@@ -75,7 +64,7 @@ function MapTaskGroup() {
         taskGroupId,
     } = useLocalSearchParams<{id: string; taskGroupId: string;}>();
     const router = useRouter();
-    const theme = useTheme();
+    const { t } = useTranslation('mappingSession');
     const startTimestampRef = useRef<string | undefined>(undefined);
     const endTimestampRef = useRef<string | undefined>(undefined);
     const [modal, setModal] = useState<boolean>(false);
@@ -98,7 +87,6 @@ function MapTaskGroup() {
 
     const userId = user?.uid;
 
-    // Per-answer counts and the number of tiles reviewed, for the session summary.
     const answerCounts = useMemo(
         () => (isDefined(projectDetails)
             ? getAnswerCounts(results, getResultOptions(projectDetails))
@@ -107,8 +95,6 @@ function MapTaskGroup() {
     );
     const reviewedCount = useMemo(() => Object.keys(results).length, [results]);
 
-    // Stamps the end time once (the moment mapping finished) and derives the
-    // session duration shown on the outro. Idempotent across re-entries.
     const markSessionEnd = useCallback(() => {
         if (isDefined(endTimestampRef.current)) {
             return;
@@ -132,9 +118,7 @@ function MapTaskGroup() {
         }
 
         setResultSyncStatus('in-progress');
-        // Scroll-completion sessions render the outro as a swipeable page and
-        // never call handleSessionComplete, so stamp the end time at submit if
-        // it has not been set yet.
+        // Scroll-completion sessions never call handleSessionComplete, so stamp the end time here.
         if (isNotDefined(endTimestampRef.current)) {
             endTimestampRef.current = new Date().toISOString();
         }
@@ -206,17 +190,25 @@ function MapTaskGroup() {
         startTimestampRef.current = new Date().toISOString();
     }, []);
 
-    const infoButton = useCallback(() => (
-        <IconButton
-            name={!modal}
-            iconName="information-outline"
-            onPress={setModal}
-            stylesContainer={styles.headerButtonPadding}
-        />
-    ), [modal]);
+    const handleInfoPress = useCallback(() => {
+        setModal((prevVisible) => !prevVisible);
+    }, []);
 
-    // Show the divider under the project summary only when a project-type
-    // how-to follows it. STREET has none, so it shows just the summary.
+    const handleInfoClose = useCallback(() => {
+        setModal(false);
+    }, []);
+
+    const headerActions = useCallback(() => (
+        <IconButton
+            name="info"
+            iconName="information-outline"
+            accessibilityLabel={INFO_LABEL}
+            colorVariant="onBrand"
+            onPress={handleInfoPress}
+        />
+    ), [handleInfoPress]);
+
+    // STREET has no how-to section, so there is nothing to divide from the summary.
     const showInstructionsDivider = isDefined(projectDetails)
         && projectDetails.projectType !== PROJECT_TYPE_STREET;
 
@@ -228,11 +220,7 @@ function MapTaskGroup() {
         setContinueModal(false);
     }, []);
 
-    // Confirm before leaving the mapping session so progress isn't lost.
-    // Each back path opens the same "Stop Mapping?" modal:
-    // - header back button -> Page's onBackPress (all platforms)
-    // - iOS swipe-back gesture -> usePreventScreenRemove (intercepts the gesture)
-    // - Android hardware back -> useHardwareBackHandler
+    // All three back paths (header, iOS swipe, Android hardware) open the same confirm dialog.
     const { leave } = usePreventScreenRemove({
         enabled: Platform.OS === 'ios',
         onAttemptLeave: openContinueModal,
@@ -258,13 +246,16 @@ function MapTaskGroup() {
     );
 
     return (
-        <Page
+        <Screen
             title={projectDetails?.projectInstruction ?? 'Map Project'}
-            variant="brand"
-            scrollable={false}
-            showBackButton
+            colorVariant="brand"
+            layout="fill"
+            withHeader
+            backAccessibilityLabel={t('goBack')}
+            // The navigator header already covers the status bar, so only the bottom is ours.
+            safeArea="bottom"
             headerTitleAlign="center"
-            headerRight={infoButton}
+            headerActions={headerActions}
             onBackPress={openContinueModal}
         >
             {completed ? (
@@ -347,27 +338,27 @@ function MapTaskGroup() {
                 </>
             )}
             <Modal
-                open={!modal}
                 visible={modal}
-                onClose={setModal}
-                closeButtonName="I understand"
+                onClose={handleInfoClose}
+                closeLabel="I understand"
             >
-                <BlockListView spacing="sm">
+                <Stack spacing="sm">
                     {isDefined(projectDetails) && (
-                        <BlockListView spacing="3xs">
-                            <Text variant="title" colorVariant="normal">
+                        <Stack spacing="3xs">
+                            <Text variant="title">
                                 {projectDetails.name}
                             </Text>
                             {isDefined(projectDetails.projectInstruction) && (
-                                <Text variant="description" colorVariant="normal">
+                                <Text
+                                    variant="description"
+                                    colorVariant="secondary"
+                                >
                                     {projectDetails.projectInstruction}
                                 </Text>
                             )}
-                        </BlockListView>
+                        </Stack>
                     )}
-                    {showInstructionsDivider && (
-                        <View style={[styles.divider, { backgroundColor: theme.divider }]} />
-                    )}
+                    {showInstructionsDivider && <Divider />}
                     {(projectDetails?.projectType === PROJECT_TYPE_FIND
                      || projectDetails?.projectType === PROJECT_TYPE_COMPLETENESS)
                       && (
@@ -396,37 +387,19 @@ function MapTaskGroup() {
                               colorVariants="normal"
                           />
                       )}
-                </BlockListView>
+                </Stack>
             </Modal>
-            <Modal
+            <ConfirmDialog
                 visible={continueModal}
-                open={!continueModal}
-            >
-                <BlockListView spacing="xs">
-                    <BlockListView spacing="3xs">
-                        <Text variant="title">
-                            Stop Mapping?
-                        </Text>
-                        <Text variant="label">
-                            {'You\'re about to leave the mapping screen.Are you sure you want to return to the menu?'}
-                        </Text>
-                    </BlockListView>
-                    <Button
-                        name="continue-mapping"
-                        spacing="xs"
-                        title="Continue mapping"
-                        onPress={closeContinueModal}
-                    />
-                    <Button
-                        name="back-to-menu"
-                        colorVariant="primaryRed"
-                        spacing="xs"
-                        title="Back to Project"
-                        onPress={handleLeaveMapping}
-                    />
-                </BlockListView>
-            </Modal>
-        </Page>
+                styleVariant="destructive"
+                title="Stop Mapping?"
+                message={'You\'re about to leave the mapping screen.Are you sure you want to return to the menu?'}
+                cancelLabel="Continue mapping"
+                confirmLabel="Back to Project"
+                onCancel={closeContinueModal}
+                onConfirm={handleLeaveMapping}
+            />
+        </Screen>
     );
 }
 

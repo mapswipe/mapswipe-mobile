@@ -29,6 +29,10 @@
         "utils/**/*.tsx",
         "constants/**/*.ts",
         "constants/**/*.tsx",
+        "__tests__/**/*.ts",
+        "__tests__/**/*.tsx",
+        "jest/**/*.ts",
+        "jest/**/*.tsx",
         ".expo/types/**/*.ts",
         "expo-env.d.ts"
     ],

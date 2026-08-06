@@ -17,19 +17,7 @@ export interface UserGroupWithGroupId extends FbUserGroup {
     groupId: string;
 }
 
-/**
- * Fetches all groups a user belongs to, with their full group data.
- *
- * Works in two steps:
- * 1. Retrieves the list of group keys from the user's profile (`v2/users/{userId}/userGroups`)
- * 2. Subscribes to each group's full data in real-time (`v2/userGroups/{key}`)
- * 3. Merges the group data into a single state array that updates in real-time.
- *
- * The group keys and group data are stored separately in Firebase, so two
- * fetches are required one to get which groups the user belongs to,
- * and another to get the actual data for each group.
- */
-
+// Firebase stores the group keys apart from the group data, so this needs two reads.
 function useUserGroups(userId: string | undefined) {
     const userGroupsQuery = useMemo(
         () => (userId ? firebaseRef(`v2/users/${userId}/userGroups/`) : undefined),
@@ -57,7 +45,6 @@ function useUserGroups(userId: string | undefined) {
             return;
         }
 
-        // Subscribe to real-time updates for each group and merge into state
         const unsubscribes = groupKeys.map((key) => {
             const groupRef = firebaseRef(`v2/userGroups/${key}`);
 
@@ -78,7 +65,6 @@ function useUserGroups(userId: string | undefined) {
                 setLoadingGroupData(false);
             });
         });
-        // Cleanup: unsubscribe all listeners on unmount or when groupKeys changes
         // eslint-disable-next-line consistent-return
         return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
     }, [groupKeys]);

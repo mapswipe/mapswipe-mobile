@@ -1,6 +1,8 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 import {
     FbTutorial,
     PROJECT_TYPE_COMPARE,
@@ -11,8 +13,6 @@ import {
     PROJECT_TYPE_VALIDATE_IMAGE,
 } from '@/utils/types';
 
-import BlockListView from '../BlockListView';
-import Text from '../Text';
 import TileGridOutro from './TileGrideOutro';
 import ValidateOutro from './ValidateOutro';
 
@@ -24,7 +24,7 @@ function TutorialOutroPage(props: Props) {
     const { tutorial } = props;
     const { t } = useTranslation('TutorialIntroScreen');
 
-    let typeOutro: React.ReactNode = null;
+    let typeOutro: ReactNode = null;
     if (
         tutorial.projectType === PROJECT_TYPE_FIND
         || tutorial.projectType === PROJECT_TYPE_COMPLETENESS
@@ -40,13 +40,18 @@ function TutorialOutroPage(props: Props) {
             <ValidateOutro />
         );
     }
+
     return (
-        <BlockListView withPadding withCenteredContent>
+        <Stack
+            spacing="md"
+            padding="md"
+            align="center"
+        >
             {typeOutro}
-            <Text colorVariant="brand" variant="title">
+            <Text colorVariant="onBrand" variant="title">
                 {t('SwipeToContinue')}
             </Text>
-        </BlockListView>
+        </Stack>
     );
 }
 

@@ -3,32 +3,21 @@
 //     logEvent,
 // } from '@react-native-firebase/analytics';
 // import { getApp } from '@react-native-firebase/app';
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { WebView } from 'react-native-webview';
 import { useGlobalSearchParams } from 'expo-router';
 
-import Page from '@/components/Page';
-import useThemedStyles from '@/hooks/useThemedStyles';
+import Screen from '@/components/ui/Screen';
 
 type SearchParams = {
     uri?: string;
 };
 
-const createStyles = () => StyleSheet.create({
-    webView: {
-        flex: 1,
-    },
-    swipeNavTop: {
-        flexWrap: 'nowrap',
-    },
-});
-
 export default function WebviewWindow() {
     const { uri } = useGlobalSearchParams<SearchParams>();
+    const { t } = useTranslation('mappingSession');
 
     const webUri = uri ?? 'https://www.mapswipe.org/';
-    const styles = useThemedStyles(createStyles);
 
     // useEffect(() => {
     //     const analytics = getAnalytics(getApp());
@@ -36,16 +25,17 @@ export default function WebviewWindow() {
     // }, [webUri]);
 
     return (
-        <Page
+        <Screen
             title={webUri}
-            style={styles.webView}
-            scrollable={false}
-            showBackButton
+            withHeader
+            backAccessibilityLabel={t('goBack')}
+            safeArea="bottom"
+            layout="fill"
         >
             <WebView
                 javaScriptEnabled
                 source={{ uri: webUri }}
             />
-        </Page>
+        </Screen>
     );
 }

@@ -40,23 +40,15 @@ const geoJsonSourceOptions: Omit<maplibregl.GeoJSONSourceSpecification, 'data'> 
     type: 'geojson',
 };
 
-const geoJsonLayerOptions: ComponentProps<typeof MapLayerLazy>['layerOptions'] = {
-    type: 'line',
-    paint: {
-        'line-color': '#ffffff',
-        'line-width': 2,
-        'line-opacity': 1,
-    },
-    layout: {
-        visibility: 'visible',
-    },
-};
+type GeoJsonLayerOptions = ComponentProps<typeof MapLayerLazy>['layerOptions'];
 
 interface Props {
     geoJson: FeatureGeoJson | undefined;
     sourceKey: string;
     layerKey: string;
-    layerOptions?: typeof geoJsonLayerOptions;
+    // 'use dom' renders in its own root inside a WebView with no theme context, so colours
+    // must arrive from the native caller.
+    layerOptions: GeoJsonLayerOptions;
 
     overrideZoomLevel?: number;
     overrideBounds?: GeoJSON.Polygon | null;
@@ -70,7 +62,7 @@ function GeoJsonMapSource(props: Props) {
         sourceKey,
         layerKey,
         withPadding,
-        layerOptions = geoJsonLayerOptions,
+        layerOptions,
         overrideBounds,
     } = props;
 

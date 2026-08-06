@@ -5,9 +5,7 @@ export default function ProjectMapLayout() {
         <Stack
             screenOptions={{
                 headerShown: true,
-                // Swipe-back is left enabled so the mapping screen's
-                // usePreventScreenRemove hook can intercept the iOS gesture and
-                // route it through the "Stop Mapping?" confirm modal.
+                // Swipe-back stays on: usePreventScreenRemove intercepts it in the session.
             }}
         />
     );

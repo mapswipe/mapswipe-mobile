@@ -1,33 +1,13 @@
-import {
-    ScrollView,
-    StyleSheet,
-} from 'react-native';
-import { Image } from 'expo-image';
+import { useCallback } from 'react';
 import { isDefined } from '@togglecorp/fujs';
 
-import BlockListView from '@/components/BlockListView';
-import Text from '@/components/Text';
-import {
-    IMAGE_SIZE_MD,
-    SPACING_2XS,
-    SPACING_SM,
-} from '@/constants/dimensions';
+import ListView from '@/components/ui/ListView';
+import Media from '@/components/ui/Media';
+import Text from '@/components/ui/Text';
 import { FbInformationPage } from '@/utils/types';
 
-const styles = StyleSheet.create({
-    scroll: {
-        flex: 1,
-    },
-    content: {
-        padding: SPACING_SM,
-        gap: SPACING_2XS,
-    },
-    image: {
-        width: '100%',
-        height: IMAGE_SIZE_MD,
-        borderRadius: 8,
-    },
-});
+// utils/types re-exports the page but not its block, so the row type is read off the page.
+type InformationBlock = NonNullable<FbInformationPage['blocks']>[number];
 
 interface Props {
     page: FbInformationPage;
@@ -36,33 +16,46 @@ interface Props {
 function TutorialInformationPage(props: Props) {
     const { page } = props;
 
+    const selectBlockKey = useCallback(
+        (block: InformationBlock) => String(block.blockNumber),
+        [],
+    );
+
+    const renderBlock = useCallback((block: InformationBlock) => {
+        if (isDefined(block.textDescription)) {
+            return (
+                <Text colorVariant="onBrand">
+                    {block.textDescription}
+                </Text>
+            );
+        }
+        if (isDefined(block.image)) {
+            return (
+                <Media
+                    source={block.image}
+                    sizeVariant="illustration"
+                    styleVariant="rounded"
+                    withoutAccessibilityLabel
+                />
+            );
+        }
+        return null;
+    }, []);
+
     return (
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-            <Text variant="title" colorVariant="brand">
-                {page.title}
-            </Text>
-            <BlockListView spacing="sm">
-                {page.blocks?.map((block) => {
-                    if (isDefined(block.textDescription)) {
-                        return (
-                            <Text key={block.blockNumber} colorVariant="brand">
-                                {block.textDescription}
-                            </Text>
-                        );
-                    }
-                    if (isDefined(block.image)) {
-                        return (
-                            <Image
-                                key={block.blockNumber}
-                                style={styles.image}
-                                source={block.image}
-                            />
-                        );
-                    }
-                    return null;
-                })}
-            </BlockListView>
-        </ScrollView>
+        <ListView
+            data={page.blocks}
+            keySelector={selectBlockKey}
+            renderItem={renderBlock}
+            spacing="sm"
+            padding="sm"
+            grow="slot"
+            header={(
+                <Text variant="title" colorVariant="onBrand">
+                    {page.title}
+                </Text>
+            )}
+        />
     );
 }
 

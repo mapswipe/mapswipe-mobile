@@ -1,6 +1,5 @@
-import { View } from 'react-native';
-
-import Text from '@/components/Text';
+import Box from '@/components/ui/Box';
+import Text from '@/components/ui/Text';
 import { FbObjRasterTileServer } from '@/utils/types';
 
 interface Props {
@@ -9,19 +8,15 @@ interface Props {
     tileSize?: number;
 }
 
-function BaseMap(props: Props) {
-    const {
-        baseTileServer,
-        children,
-        tileSize = 512,
-    } = props;
-
+// Native stub: BaseMap.web.tsx is the real implementation.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function BaseMap(_props: Props) {
     return (
-        <View>
+        <Box>
             <Text>
                 Only for web
             </Text>
-        </View>
+        </Box>
     );
 }
 

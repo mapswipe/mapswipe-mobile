@@ -3,34 +3,18 @@ import {
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { sendPasswordResetEmail } from 'firebase/auth';
 
-import logo from '@/assets/images/icon.png';
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import Page from '@/components/Page';
-import TextInput from '@/components/TextInput';
 import { showAlert } from '@/components/Toast';
+import Button from '@/components/ui/Button';
+import AuthScreen from '@/components/ui/Screen/AuthScreen';
+import TextInput from '@/components/ui/TextInput';
 import useAsyncHandler from '@/hooks/useAsyncHandler';
-import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseAuth } from '@/utils/firebase';
 
-const createStyles = () => StyleSheet.create({
-    mainContent: {
-        flexDirection: 'column',
-        gap: 48,
-    },
-    icon: {
-        width: 128,
-        height: 128,
-    },
-    page: {
-        paddingTop: 96,
-    },
-});
+// Untranslated: no locale bundle carries an `appName` key.
+const APP_NAME = 'MapSwipe';
 
 function ForgoPassword() {
     const [email, setEmail] = useState<string>();
@@ -70,56 +54,38 @@ function ForgoPassword() {
         });
     }, [handleAsync, email, t]);
 
-    const styles = useThemedStyles(createStyles);
-
     return (
-        <Page
+        <AuthScreen
+            // Wrong name, but the header is hidden here so it is never drawn.
             title="Login"
-            variant="brand"
-            style={styles.page}
+            logoAccessibilityLabel={APP_NAME}
+            footer={(
+                <Button
+                    onPress={router.back}
+                    title={t('backToLogin')}
+                    accessibilityLabel={t('backToLogin')}
+                    colorVariant="onBrand"
+                    styleVariant="transparent"
+                />
+            )}
         >
-            <BlockListView
-                spacing="sm"
-                withPadding
-            >
-                <BlockListView withCenteredContent>
-                    <Image
-                        style={styles.icon}
-                        source={logo}
-                    />
-                </BlockListView>
-                <BlockListView>
-                    <TextInput
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        autoComplete="email"
-                        keyboardType="email-address"
-                        placeholder={t('enterYourEmail')}
-                        hintText={t('sendResetEmailWarning')}
-                        value={email}
-                        onChangeText={setEmail}
-                        readOnly={loading}
-                    />
-                </BlockListView>
-                <BlockListView>
-                    <Button
-                        name={undefined}
-                        onPress={handleResetPress}
-                        title={t('sendResetEmail')}
-                        disabled={loading}
-                        colorVariant="primaryRed"
-                        styleVariant="filled"
-                    />
-                    <BlockListView>
-                        <Button
-                            name={undefined}
-                            onPress={router.back}
-                            title={t('backToLogin')}
-                        />
-                    </BlockListView>
-                </BlockListView>
-            </BlockListView>
-        </Page>
+            <TextInput
+                contentVariant="email"
+                accessibilityLabel={t('enterYourEmail')}
+                placeholder={t('enterYourEmail')}
+                hintText={t('sendResetEmailWarning')}
+                value={email}
+                onChangeText={setEmail}
+                stateVariant={loading ? 'disabled' : 'editable'}
+            />
+            <Button
+                onPress={handleResetPress}
+                title={t('sendResetEmail')}
+                accessibilityLabel={t('sendResetEmail')}
+                colorVariant="negative"
+                state={loading ? 'pending' : 'default'}
+            />
+        </AuthScreen>
     );
 }
 

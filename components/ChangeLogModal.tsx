@@ -4,34 +4,21 @@ import {
     useMemo,
     useState,
 } from 'react';
-import {
-    ScrollView,
-    StyleSheet,
-    View,
-} from 'react-native';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import BlockListView from '@/components/BlockListView';
-import Modal from '@/components/Modal';
-import Text from '@/components/Text';
-import { SCREEN_HEIGHT } from '@/constants/dimensions';
+import BulletList from '@/components/ui/BulletList';
+import Modal from '@/components/ui/Modal';
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 
 import changeLogs from '@/changeLog.json';
 
 const LAST_VIEWED_CHANGELOG_VERSION_KEY = '@lastViewedChangelogVersion';
 
-const allChangeLogs: Record<string, { changes: string[] } | undefined> = changeLogs;
+const CLOSE_LABEL = 'Close';
 
-const styles = StyleSheet.create({
-    changeList: {
-        maxHeight: SCREEN_HEIGHT * 0.4,
-    },
-    changeRow: {
-        flexDirection: 'row',
-        gap: 4,
-    },
-});
+const allChangeLogs: Record<string, { changes: string[] } | undefined> = changeLogs;
 
 function ChangeLogModal() {
     const [visible, setVisible] = useState(false);
@@ -79,33 +66,19 @@ function ChangeLogModal() {
 
     return (
         <Modal
-            open="change-log"
             visible={visible}
             onClose={handleClose}
-            closeButtonName="Close"
+            closeLabel={CLOSE_LABEL}
         >
-            <BlockListView spacing="sm">
+            <Stack spacing="sm">
                 <Text variant="title">
                     MapSwipe has been updated!
                 </Text>
                 <Text>
                     {`Here's a summary of what's changed in v${currentVersion}`}
                 </Text>
-                <ScrollView
-                    style={styles.changeList}
-                    nestedScrollEnabled
-                >
-                    <BlockListView spacing="xs">
-                        {currentVersionChanges.map((change, index) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <View key={index} style={styles.changeRow}>
-                                <Text>-</Text>
-                                <Text>{change}</Text>
-                            </View>
-                        ))}
-                    </BlockListView>
-                </ScrollView>
-            </BlockListView>
+                <BulletList items={currentVersionChanges} />
+            </Stack>
         </Modal>
     );
 }

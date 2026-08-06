@@ -8,55 +8,26 @@ import {
     useState,
 } from 'react';
 import {
-    FlatList,
-    StyleSheet,
-    View,
-} from 'react-native';
-import {
     isDefined,
     isNotDefined,
 } from '@togglecorp/fujs';
 import { decode } from 'base-64';
 import { inflate } from 'pako';
 
-import BlockListView from '@/components/BlockListView';
-import { type IconName } from '@/components/Icon';
-import IconButton from '@/components/IconButton';
-import InlineListView from '@/components/InlineListView';
-import ProgressBar from '@/components/ProgressBar';
-import ImageWrapper from '@/components/ValidateImageWrapper';
-import { SCREEN_WIDTH } from '@/constants/dimensions';
+import { type IconName } from '@/components/ui/Icon';
+import IconButton from '@/components/ui/IconButton';
+import Pager from '@/components/ui/Pager';
+import ProgressBar from '@/components/ui/ProgressBar';
+import Row from '@/components/ui/Row';
+import Stack from '@/components/ui/Stack';
+import ImageWrapper from '@/components/ui/tile/ValidateImageWrapper';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
-import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
 import {
     Results,
     ValidateImageProject,
     ValidateImageTask,
 } from '@/utils/types';
-
-type RefType = FlatList<ValidateImageTask> | null;
-const viewabilityConfig = {
-    viewAreaCoveragePercentThreshold: 50,
-};
-
-const createStyles = () => (
-    StyleSheet.create({
-        view: {
-            flex: 1,
-            flexDirection: 'column',
-        },
-        tasks: {
-            flex: 2,
-            width: SCREEN_WIDTH,
-        },
-        buttons: {
-            flexGrow: 0,
-            flexShrink: 0,
-            padding: 20,
-        },
-    })
-);
 
 interface Props {
     taskGroupId: string;
@@ -74,16 +45,10 @@ function ValidateImageMappingSession(props: Props) {
         results,
         onSessionComplete,
     } = props;
-    const styles = useThemedStyles(createStyles);
 
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const completedRef = useRef(false);
     const [imagesLoading, setImagesLoading] = useState<Record<number, boolean>>({});
-    // Measured height of the paging list so each item fills it — otherwise a
-    // horizontal FlatList item sizes to its content (the image's aspect height,
-    // or just the error text), leaving the image small and the error squished
-    // at the top.
-    const [viewportHeight, setViewportHeight] = useState<number | undefined>(undefined);
 
     const taskQuery = useMemo(() => (
         firebaseRef(`v2/tasks/${projectDetails.projectId}/${taskGroupId}`)
@@ -95,10 +60,10 @@ function ValidateImageMappingSession(props: Props) {
 
     const taskList = useMemo(() => {
         if (isNotDefined(compressedTasks)) {
-            return [];
+            return [] as ValidateImageTask[];
         }
         if (Array.isArray(compressedTasks)) {
-            return compressedTasks;
+            return compressedTasks as ValidateImageTask[];
         }
         if (typeof compressedTasks !== 'string') {
             return [];
@@ -110,15 +75,16 @@ function ValidateImageMappingSession(props: Props) {
         const decompressedTasks = inflate(binaryCompressedTasks, { to: 'string' });
 
         // FIXME: add schema validation
-        return JSON.parse(decompressedTasks) as unknown[];
+        return JSON.parse(decompressedTasks) as ValidateImageTask[];
     }, [compressedTasks]);
 
     const currentTask = taskList[currentTaskIndex] as ValidateImageTask | undefined;
     const maxTasks = taskList.length;
 
+    // Per-project options, not the built-in answer palette: `iconColor` is whatever the
+    // project author typed into Firebase, so it reaches the button as a raw colour and never
+    // through constants/answers.
     const options = projectDetails.customOptions;
-
-    const flatListRef = useRef<RefType>(null);
 
     const handleAnswerSelect = useCallback((newValue: number) => {
         if (isDefined(currentTask)) {
@@ -130,12 +96,7 @@ function ValidateImageMappingSession(props: Props) {
 
         const nextIndex = currentTaskIndex + 1;
         if (nextIndex < maxTasks) {
-            setTimeout(() => {
-                flatListRef.current?.scrollToIndex({
-                    index: nextIndex,
-                    animated: true,
-                });
-            }, 0);
+            setCurrentTaskIndex(nextIndex);
         } else if (!completedRef.current) {
             completedRef.current = true;
             onSessionComplete();
@@ -145,6 +106,10 @@ function ValidateImageMappingSession(props: Props) {
     const selectedValue = isDefined(currentTask)
         ? results[currentTask.taskId]
         : undefined;
+
+    const handleIndexChange = useCallback((index: number) => {
+        setCurrentTaskIndex(index);
+    }, []);
 
     let totalSwipedTasks = 0;
     if (results) {
@@ -171,17 +136,6 @@ function ValidateImageMappingSession(props: Props) {
         }
     }, [currentTaskIndex, maxTasks, totalSwipedTasks, onSessionComplete]);
 
-    const onViewableItemsChanged = useCallback(({
-        viewableItems,
-    }: { viewableItems: { index: number | null | undefined }[] }) => {
-        if (viewableItems.length > 0) {
-            const { index } = viewableItems[0];
-            if (index !== undefined && index !== null) {
-                setCurrentTaskIndex(index);
-            }
-        }
-    }, []);
-
     const handleImageLoadStart = useCallback((itemIndex: number) => {
         setImagesLoading((oldVal) => ({
             ...oldVal,
@@ -198,62 +152,67 @@ function ValidateImageMappingSession(props: Props) {
 
     const disableOptions = !!imagesLoading[currentTaskIndex];
 
+    const selectTaskKey = useCallback(
+        (_: ValidateImageTask, index: number) => index.toString(),
+        [],
+    );
+
+    const renderTask = useCallback((task: ValidateImageTask, index: number) => (
+        <ImageWrapper
+            item={task}
+            itemIndex={index}
+            onImageLoadStart={handleImageLoadStart}
+            onImageLoadEnd={handleImageLoadEnd}
+            bbox={task.bbox}
+        />
+    ), [handleImageLoadStart, handleImageLoadEnd]);
+
     return (
-        <BlockListView style={styles.view}>
-            <FlatList
-                style={styles.tasks}
-                ref={flatListRef}
+        <Stack
+            spacing="md"
+            grow="fill"
+        >
+            {/* The pager measures its own slot and hands each page those numbers, which is
+                what retires both the SCREEN_WIDTH this list paged by and the onLayout height
+                it wrote into every item. */}
+            <Pager
+                sizeVariant="page"
                 data={limitedTasks}
-                keyExtractor={(_, index) => index.toString()}
-                onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
-                renderItem={({ item, index }) => (
-                    <View style={{ width: SCREEN_WIDTH, height: viewportHeight }}>
-                        <ImageWrapper
-                            item={item}
-                            itemIndex={index}
-                            onImageLoadStart={handleImageLoadStart}
-                            onImageLoadEnd={handleImageLoadEnd}
-                            bbox={item.bbox}
-                        />
-                    </View>
-                )}
-                onViewableItemsChanged={onViewableItemsChanged}
-                viewabilityConfig={viewabilityConfig}
-                horizontal
-                getItemLayout={(_, index) => ({
-                    length: SCREEN_WIDTH,
-                    offset: SCREEN_WIDTH * index,
-                    index,
-                })}
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
+                keyExtractor={selectTaskKey}
+                renderPage={renderTask}
+                index={currentTaskIndex}
+                onIndexChange={handleIndexChange}
             />
-            <InlineListView
-                withCenteredContent
-                style={styles.buttons}
+            <Row
+                spacing="md"
+                padding="sm"
+                justify="center"
+                align="stretch"
+                wrap
             >
                 {options?.map((option) => (
                     <IconButton
                         name={option.value}
                         key={option.value}
-                        title={option.title}
+                        label={option.title}
+                        accessibilityLabel={option.title}
                         onPress={handleAnswerSelect}
-                        width={50}
+                        sizeVariant="lg"
                         // FIXME: No casting
                         iconName={option.icon as IconName}
-                        tintColor={option.iconColor}
-                        active={selectedValue === option.value}
+                        backendSurfaceColor={option.iconColor}
+                        selected={selectedValue === option.value}
                         disabled={disableOptions}
-                        textColorVariant="brand"
+                        labelColorVariant="onBrand"
                     />
                 ))}
-            </InlineListView>
+            </Row>
             <ProgressBar
-                currentValue={totalSwipedTasks}
-                totalValue={maxTasks}
-                colorVariant="brand"
+                progress={totalSwipedTasks / maxTasks}
+                colorVariant="onBrand"
+                accessibilityLabel="Session progress"
             />
-        </BlockListView>
+        </Stack>
     );
 }
 

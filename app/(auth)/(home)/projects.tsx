@@ -1,12 +1,5 @@
 import { useMemo } from 'react';
 import {
-    FlatList,
-    StyleSheet,
-    View,
-} from 'react-native';
-import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
-import {
     isDefined,
     isNotDefined,
 } from '@togglecorp/fujs';
@@ -18,384 +11,44 @@ import {
 } from 'firebase/database';
 
 import AnnouncementBanner from '@/components/AnnouncementBanner';
-import BlockListView from '@/components/BlockListView';
-import Icon from '@/components/Icon';
-import InlineListView from '@/components/InlineListView';
-import Link from '@/components/Link';
-import Page from '@/components/Page';
-import ProjectTypeIcon from '@/components/ProjectTypeIcon';
-import Text from '@/components/Text';
+import ProjectCard from '@/components/domain/ProjectCard';
+import Box from '@/components/ui/Box';
+import ListView from '@/components/ui/ListView';
+import Screen from '@/components/ui/Screen';
+import Stack from '@/components/ui/Stack';
 import { SUPPORTED_PROJECT_TYPES } from '@/constants/common';
-import { SCREEN_WIDTH } from '@/constants/dimensions';
-import { type AppTheme } from '@/constants/theme';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
-import useTheme from '@/hooks/useTheme';
-import useThemedStyles from '@/hooks/useThemedStyles';
-import { getProjectProgressForDisplay } from '@/utils/common';
 import { firebaseRef } from '@/utils/firebase';
 import {
     FbProject,
-    PROJECT_TYPE_COMPARE,
     PROJECT_TYPE_COMPLETENESS,
-    PROJECT_TYPE_FIND,
-    PROJECT_TYPE_LOCATE_FEATURES,
-    PROJECT_TYPE_STREET,
-    PROJECT_TYPE_VALIDATE,
-    PROJECT_TYPE_VALIDATE_IMAGE,
 } from '@/utils/types';
 
-const CARD_GAP = 10;
-const CARD_PADDING = 10;
-const CARD_WIDTH = (SCREEN_WIDTH - CARD_PADDING * 2 - CARD_GAP) / 2;
+const COLUMN_COUNT = 2;
 
-const GRADIENT_PALETTE: [string, string][] = [
-    ['#9aa0ac', '#6f7686'],
-    ['#8a9a8e', '#5f7267'],
-    ['#a89f91', '#7d7566'],
-    ['#8e99a4', '#5d6b7a'],
-    ['#a0949a', '#756370'],
-    ['#94a3b0', '#697a89'],
-];
+const EMPTY_MESSAGE = 'No projects are available right now. Please check back later.';
 
-function hashId(id: string): number {
-    let hash = 0;
-    for (let i = 0; i < id.length; i += 1) {
-        // eslint-disable-next-line no-bitwise
-        hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
-    }
-    return Math.abs(hash);
+// FlatList does not pad the last row of a numColumns grid, so a filler cell holds the column open.
+const FILLER = 'filler';
+
+type GridItem = FbProject | typeof FILLER;
+
+function selectGridKey(item: GridItem): string {
+    return item === FILLER ? FILLER : item.projectId;
 }
 
-function gradientForId(id: string): [string, string] {
-    return GRADIENT_PALETTE[hashId(id) % GRADIENT_PALETTE.length];
-}
-
-const createStyles = (theme: AppTheme) => (StyleSheet.create({
-    columnWrapper: {
-        gap: CARD_GAP,
-    },
-    projects: {
-        marginVertical: CARD_PADDING,
-        borderRadius: 6,
-        backgroundColor: theme.background,
-    },
-    projectsContent: {
-        paddingHorizontal: CARD_PADDING,
-        gap: CARD_GAP,
-    },
-    projectItemContainer: {
-        flex: 1,
-        maxWidth: CARD_WIDTH,
-    },
-}));
-
-const createProjectStyles = (
-    theme: AppTheme,
-    { width, aspectRatio }: { width: number; aspectRatio: number },
-) => StyleSheet.create({
-    card: {
-        width,
-        aspectRatio,
-        borderRadius: 6,
-        overflow: 'hidden',
-        backgroundColor: theme.backgroundMuted,
-        boxShadow: [{
-            offsetX: 0,
-            offsetY: 2,
-            blurRadius: 8,
-            spreadDistance: 0,
-            color: 'rgba(0, 0, 0, 0.12)',
-        }],
-    },
-    background: {
-        flex: 1,
-        justifyContent: 'space-between',
-    },
-    backgroundImage: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-    },
-    scrim: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '64%',
-    },
-    topRow: {
-        padding: 9,
-        paddingBottom: 0,
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        gap: 4,
-    },
-    pill: {
-        flexShrink: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        backgroundColor: 'rgba(255, 255, 255, 0.84)',
-        borderRadius: 99,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-    },
-    pillRight: {
-        flexShrink: 0,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        backgroundColor: 'rgba(60, 60, 67, 0.75)',
-        borderRadius: 99,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-    },
-    pillText: {
-        flexShrink: 1,
-        fontSize: 11,
-        color: '#333',
-        fontWeight: '500',
-    },
-    pillNumberText: {
-        fontSize: 11,
-        color: '#fff',
-        fontWeight: '500',
-    },
-    bottomContent: {
-        padding: 12,
-        gap: 6,
-    },
-    title: {
-        color: '#fff',
-        fontWeight: '700',
-        fontSize: 14.5,
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
-    },
-    progressTrack: {
-        height: 4,
-        borderRadius: 99,
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    },
-    progressFill: {
-        height: 4,
-        borderRadius: 99,
-        backgroundColor: theme.accentRed,
-    },
-    metaRow: {
-        alignItems: 'center',
-        flexGrow: 0,
-    },
-    metaText: {
-        flex: 1,
-        color: 'rgba(255, 255, 255, 0.92)',
-        fontSize: 11.5,
-    },
-    statRow: {
-        alignItems: 'center',
-        flexGrow: 0,
-    },
-    statHeart: {
-        fontSize: 11.5,
-    },
-    statText: {
-        flex: 1,
-        color: 'rgba(255, 255, 255, 0.92)',
-        fontSize: 11.5,
-    },
-});
-
-const projectTypeTextMapping: Record<FbProject['projectType'], string> = {
-    [PROJECT_TYPE_FIND]: 'Find Features',
-    [PROJECT_TYPE_COMPARE]: 'Compare Dates',
-    [PROJECT_TYPE_COMPLETENESS]: 'Check Completeness',
-    [PROJECT_TYPE_VALIDATE]: 'Validate Footprints',
-    [PROJECT_TYPE_STREET]: 'View Streets',
-    [PROJECT_TYPE_VALIDATE_IMAGE]: 'Assess Image',
-    [PROJECT_TYPE_LOCATE_FEATURES]: 'Locate Objects',
-};
-
-interface ProjectItemProps {
-    project: FbProject;
-    featured: boolean;
-}
-
-function ProjectItem(props: ProjectItemProps) {
-    const {
-        project,
-        featured,
-    } = props;
-
-    const theme = useTheme();
-    const cardWidth = featured ? (SCREEN_WIDTH - CARD_PADDING * 2) : CARD_WIDTH;
-    // Featured cards are full-width 2:1 banners; regular cards stay taller (5/6).
-    const cardAspectRatio = featured ? 2 / 1 : 5 / 6;
-    const styles = useThemedStyles(createProjectStyles, {
-        width: cardWidth,
-        aspectRatio: cardAspectRatio,
-    });
-    const progressLabel = getProjectProgressForDisplay(project.progress);
-    const progressNum = Number(progressLabel);
-    const gradient = gradientForId(project.projectId);
-
-    const cardContent = (
-        <>
-            <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.78)']}
-                style={styles.scrim}
-            />
-            <View style={styles.topRow}>
-                <View style={styles.pill}>
-                    <ProjectTypeIcon
-                        type={project.projectType}
-                        size={12}
-                        color="#333"
-                    />
-                    <Text
-                        style={styles.pillText}
-                        numberOfLines={1}
-                        allowFontScaling={false}
-                    >
-                        {projectTypeTextMapping[project.projectType]}
-                    </Text>
-                </View>
-                {isDefined(project.projectNumber) && (
-                    <View style={styles.pillRight}>
-                        <Text
-                            style={styles.pillNumberText}
-                            numberOfLines={1}
-                            allowFontScaling={false}
-                        >
-                            {project.projectNumber}
-                        </Text>
-                    </View>
-                )}
-            </View>
-            <View style={styles.bottomContent}>
-                <Text
-                    style={styles.title}
-                    numberOfLines={2}
-                    allowFontScaling={false}
-                >
-                    {project.projectTopic}
-                </Text>
-                {isDefined(project.projectRegion) && (
-                    <InlineListView
-                        style={styles.metaRow}
-                        spacing="4xs"
-                        withoutWrap
-                    >
-                        <Icon
-                            name="map-pin"
-                            size={13}
-                            color="rgba(255, 255, 255, 0.92)"
-                        />
-                        <Text
-                            style={styles.metaText}
-                            numberOfLines={1}
-                            allowFontScaling={false}
-                        >
-                            {project.projectRegion}
-                        </Text>
-                    </InlineListView>
-                )}
-                {isDefined(project.requestingOrganisation) && (
-                    <InlineListView
-                        style={styles.metaRow}
-                        spacing="4xs"
-                        withoutWrap
-                    >
-                        <Icon
-                            name="buildings"
-                            size={13}
-                            color="rgba(255, 255, 255, 0.92)"
-                        />
-                        <Text
-                            style={styles.metaText}
-                            numberOfLines={1}
-                            allowFontScaling={false}
-                        >
-                            {project.requestingOrganisation}
-                        </Text>
-                    </InlineListView>
-                )}
-                <View style={styles.progressTrack}>
-                    <View
-                        style={[
-                            styles.progressFill,
-                            { width: `${progressNum}%` },
-                        ]}
-                    />
-                </View>
-                <InlineListView
-                    style={styles.statRow}
-                    spacing="4xs"
-                    withoutWrap
-                >
-                    <Text
-                        style={{ ...styles.statHeart, color: theme.accentRed }}
-                        allowFontScaling={false}
-                    >
-                        ❤
-                    </Text>
-                    <Text
-                        style={styles.statText}
-                        numberOfLines={1}
-                        allowFontScaling={false}
-                    >
-                        {`${progressLabel}% by ${project.contributorCount ?? 0} mapper${(project.contributorCount ?? 0) === 1 ? '' : 's'}`}
-                    </Text>
-                </InlineListView>
-            </View>
-        </>
-    );
-
+function renderGridItem(item: GridItem) {
     return (
-        <Link
-            href={{
-                pathname: '/(auth)/project/[id]',
-                params: {
-                    id: project.projectId,
-                },
-            }}
-            styleVariant="action"
-            withoutPadding
-        >
-            <View style={styles.card}>
-                <LinearGradient
-                    colors={gradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.background}
-                >
-                    {project.image && (
-                        <Image
-                            source={project.image}
-                            contentFit="cover"
-                            style={styles.backgroundImage}
-                        />
-                    )}
-                    {cardContent}
-                </LinearGradient>
-            </View>
-        </Link>
+        <Box flex={1}>
+            {item === FILLER ? null : <ProjectCard project={item} />}
+        </Box>
     );
 }
 
 function Projects() {
-    // The profile (and its teamId) is fetched once at the auth layer, so we read it
-    // from context here instead of refetching v2/users/{uid}.
     const { userDetails, userDetailsPending } = useAuth();
 
-    // Users that belong to a private organization (team) must only ever see that
-    // team's projects, never public ones. So when the user has a teamId we query
-    // projects by teamId instead of by public "active" status. Mirrors the old app
-    // (RecommendedCards.subscribeToProjects) and the web app.
     const teamId = userDetails?.teamId;
 
     const projectsQuery = useMemo(() => {
@@ -415,9 +68,8 @@ function Projects() {
         );
     }, [teamId]);
 
-    // Hold off on fetching projects until the user's profile has loaded, otherwise a
-    // team member would briefly see public projects while teamId is still unknown.
-    const { list: projectList } = useFirebaseDatabaseList<FbProject>({
+    // Waiting on the profile avoids flashing public projects while teamId is still unknown.
+    const { list: projectList, pending: projectsPending } = useFirebaseDatabaseList<FbProject>({
         query: projectsQuery,
         skip: userDetailsPending,
     });
@@ -475,45 +127,44 @@ function Projects() {
         filteredProjects?.filter((item) => !item.isFeatured)
     ), [filteredProjects]);
 
-    const styles = useThemedStyles(createStyles);
+    const gridItems = useMemo<GridItem[]>(() => {
+        if (nonFeaturedProjects.length % COLUMN_COUNT === 0) {
+            return nonFeaturedProjects;
+        }
+
+        return [...nonFeaturedProjects, FILLER];
+    }, [nonFeaturedProjects]);
 
     return (
-        <Page
+        <Screen
             title="Projects"
-            scrollable={false}
+            layout="fill"
         >
-            <FlatList
-                style={styles.projects}
-                data={nonFeaturedProjects}
-                numColumns={2}
-                keyExtractor={(project) => project.projectId}
-                columnWrapperStyle={styles.columnWrapper}
-                contentContainerStyle={styles.projectsContent}
-                ListHeaderComponent={(
-                    <BlockListView
-                        spacing="2xs"
-                    >
+            <ListView
+                data={gridItems}
+                keySelector={selectGridKey}
+                renderItem={renderGridItem}
+                numColumns={COLUMN_COUNT}
+                spacing="3xs"
+                padding="3xs"
+                grow="slot"
+                header={(
+                    <Stack spacing="2xs">
                         <AnnouncementBanner />
                         {featuredProjects.map((project) => (
-                            <ProjectItem
+                            <ProjectCard
                                 key={project.projectId}
                                 project={project}
-                                featured
                             />
                         ))}
-                    </BlockListView>
+                    </Stack>
                 )}
-                renderItem={({ item: project }) => (
-                    <View style={styles.projectItemContainer}>
-                        <ProjectItem
-                            key={project.projectId}
-                            project={project}
-                            featured={false}
-                        />
-                    </View>
-                )}
+                // A skipped query is not pending, so the wait has to include the profile.
+                pending={userDetailsPending || projectsPending}
+                // Featured cards render in the header, so "no projects" would be wrong beside them.
+                emptyMessage={featuredProjects.length === 0 ? EMPTY_MESSAGE : undefined}
             />
-        </Page>
+        </Screen>
     );
 }
 

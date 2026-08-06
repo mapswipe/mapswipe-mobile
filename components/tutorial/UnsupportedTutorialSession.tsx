@@ -1,34 +1,25 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
 
-import BlockListView from '@/components/BlockListView';
-import Text from '@/components/Text';
-import {
-    SPACING_2XS,
-    SPACING_MD,
-} from '@/constants/dimensions';
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: SPACING_MD,
-        justifyContent: 'center',
-        gap: SPACING_2XS,
-    },
-});
+import Stack from '@/components/ui/Stack';
+import Text from '@/components/ui/Text';
 
 function UnsupportedTutorialSession() {
     const { t } = useTranslation('tutorialScreen');
 
     return (
-        <BlockListView style={styles.container} spacing="sm">
-            <Text variant="title" colorVariant="brand">
+        <Stack
+            spacing="sm"
+            padding="md"
+            grow="fill"
+            justify="center"
+        >
+            <Text variant="title" colorVariant="onBrand">
                 {t('unsupportedTitle')}
             </Text>
-            <Text colorVariant="brand">
+            <Text colorVariant="onBrand">
                 {t('unsupportedDescription')}
             </Text>
-        </BlockListView>
+        </Stack>
     );
 }
 

@@ -2,44 +2,19 @@ import {
     useCallback,
     useState,
 } from 'react';
-import {
-    StyleSheet,
-    View,
-} from 'react-native';
 
-import { type IconName } from '@/components/Icon';
-import IconButton from '@/components/IconButton';
-import InlineListView from '@/components/InlineListView';
 import { TutorialSessionProps } from '@/components/tutorial/types';
-import ImageWrapper from '@/components/ValidateImageWrapper';
-import { SPACING_3XS } from '@/constants/dimensions';
+import Box from '@/components/ui/Box';
+import { type IconName } from '@/components/ui/Icon';
+import IconButton from '@/components/ui/IconButton';
+import Row from '@/components/ui/Row';
+import Stack from '@/components/ui/Stack';
+import ImageWrapper from '@/components/ui/tile/ValidateImageWrapper';
 import { getTutorialTaskKey } from '@/utils/tutorial';
 import {
     FbValidateImageTutorialTask,
     PROJECT_TYPE_VALIDATE_IMAGE,
 } from '@/utils/types';
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        minHeight: 0,
-    },
-    // The image fills this slot (ImageWrapper is flex + 100% height). Bounding it
-    // with minHeight:0 + overflow:hidden keeps the answer buttons on screen.
-    imageSlot: {
-        flex: 1,
-        minHeight: 0,
-        overflow: 'hidden',
-    },
-    buttons: {
-        // Override InlineListView's base flexGrow:1 — otherwise the button row
-        // grows to fill half the slot, leaving a large gap below it and
-        // shrinking the image.
-        flexGrow: 0,
-        flexShrink: 0,
-        paddingVertical: SPACING_3XS,
-    },
-});
 
 function ValidateImageTutorialSession(props: TutorialSessionProps) {
     const {
@@ -86,8 +61,16 @@ function ValidateImageTutorialSession(props: TutorialSessionProps) {
     const bbox = task.bbox as [number, number, number, number] | undefined;
 
     return (
-        <View style={styles.container}>
-            <View style={styles.imageSlot}>
+        <Stack
+            spacing="none"
+            grow="slot"
+        >
+            {/* ImageWrapper is flex at 100% height, so clip it to keep the buttons on screen. */}
+            <Box
+                flex={1}
+                minHeight={0}
+                clip
+            >
                 <ImageWrapper
                     item={task}
                     itemIndex={0}
@@ -95,27 +78,33 @@ function ValidateImageTutorialSession(props: TutorialSessionProps) {
                     onImageLoadEnd={handleImageLoadEnd}
                     bbox={bbox}
                 />
-            </View>
-            <InlineListView
-                withCenteredContent
-                style={styles.buttons}
+            </Box>
+            {/* Answers are author data, so each disc takes a raw colour, not a token. */}
+            <Row
+                spacing="md"
+                padding="3xs"
+                justify="center"
+                align="stretch"
+                wrap
             >
                 {customOptions?.map((option) => (
                     <IconButton
                         key={option.value}
                         name={option.value}
-                        title={option.title}
+                        label={option.title}
+                        accessibilityLabel={option.title}
+                        sizeVariant="lg"
+                        // FIXME: No casting
                         iconName={option.icon as IconName}
-                        tintColor={option.iconColor}
-                        width={50}
-                        active={selectedValue === option.value}
+                        backendSurfaceColor={option.iconColor}
+                        selected={selectedValue === option.value}
                         disabled={disableOptions}
-                        textColorVariant="brand"
+                        labelColorVariant="onBrand"
                         onPress={(value) => handleSelect(getTutorialTaskKey(task), value)}
                     />
                 ))}
-            </InlineListView>
-        </View>
+            </Row>
+        </Stack>
     );
 }
 

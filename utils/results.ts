@@ -15,8 +15,7 @@ import {
     Results,
 } from './types';
 
-// Tile-based projects (FIND / COMPLETENESS / COMPARE) use this fixed option set.
-// Keep in sync with the options defined in the corresponding session components.
+// Keep in sync with the options in the tile session components (FIND / COMPLETENESS / COMPARE).
 const TILE_OPTIONS: ResultOption[] = [
     { value: 0, label: 'No', color: 'transparent' },
     { value: 1, label: 'Yes', color: 'green' },
@@ -24,7 +23,6 @@ const TILE_OPTIONS: ResultOption[] = [
     { value: 3, label: 'Bad Imagery', color: 'red' },
 ];
 
-// Fallback for LOCATE_FEATURES projects without custom options.
 const LOCATE_DEFAULT_OPTIONS: ResultOption[] = [
     { value: 0, label: 'No', color: 'transparent' },
     { value: 1, label: 'Yes', color: 'green' },
@@ -40,11 +38,6 @@ const fromCustomOptions = (
     }))
 );
 
-/**
- * The answer options for a project, mapped to a common { value, label, color }
- * shape. Mirrors the per-type option logic in the session components so result
- * values can be labelled outside of those components (e.g. the session summary).
- */
 export function getResultOptions(projectDetails: FbProject): ResultOption[] {
     switch (projectDetails.projectType) {
         case PROJECT_TYPE_FIND:
@@ -72,11 +65,6 @@ export interface AnswerCount {
     count: number;
 }
 
-/**
- * Counts how many times each option value occurs across the results. Tile
- * answers are a single number per task; LOCATE_FEATURES answers are an array of
- * per-cell values, which are flattened and counted per cell.
- */
 export function getAnswerCounts(
     results: Results,
     options: ResultOption[],

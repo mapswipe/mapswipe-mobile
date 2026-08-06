@@ -1,11 +1,8 @@
 import {
+    useCallback,
     useEffect,
     useMemo,
 } from 'react';
-import {
-    ActivityIndicator,
-    StyleSheet,
-} from 'react-native';
 import {
     router,
     useLocalSearchParams,
@@ -20,38 +17,20 @@ import {
     query,
 } from 'firebase/database';
 
-import BlockListView from '@/components/BlockListView';
-import Button from '@/components/Button';
-import Icon from '@/components/Icon';
-import Page from '@/components/Page';
-import Text from '@/components/Text';
+import EmptyState from '@/components/ui/EmptyState';
+import Screen from '@/components/ui/Screen';
 import useAuth from '@/hooks/useAuth';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
-import useTheme from '@/hooks/useTheme';
 import { firebaseRef } from '@/utils/firebase';
 import { FbProject } from '@/utils/types';
 
 const TASK_CONTRIBUTION_COUNT_KEY = 'taskContributionCount';
 
-// A project can hold thousands of groups, so we only ever pull a small window
-// of them. 15 is what the previous app used and it leaves plenty of slack after
-// the already-mapped ones are filtered out.
+// A project can hold thousands of groups, so only a small window is ever pulled.
 const GROUP_WINDOW_SIZE = 15;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    completedText: {
-        textAlign: 'center',
-    },
-});
-
 function MapProjectIndex() {
-    const theme = useTheme();
     const { user } = useAuth();
     const userId = user?.uid;
 
@@ -70,12 +49,8 @@ function MapProjectIndex() {
     // This screen only picks a group; a direct taskGroupId means that's done.
     const skipSelection = isDefined(taskGroupId);
 
-    // Ordering by requiredCount and taking the *last* slice puts the groups that
-    // still need the most mappers at the front of the queue. We deliberately do
-    // not filter on requiredCount > 0: a group whose count was never written by
-    // the import would be dropped by such a filter and become unmappable
-    // forever, whereas serving an already-satisfied group is harmless — a
-    // duplicate contribution is rejected server-side.
+    // The last slice by requiredCount is the neediest groups. Deliberately no `requiredCount > 0`
+    // filter: a group whose count was never written would become unmappable forever.
     const availableGroupsQuery = useMemo(
         () => query(
             firebaseRef(`v2/groups/${projectId}`),
@@ -106,8 +81,6 @@ function MapProjectIndex() {
         skip: skipSelection,
     });
 
-    // Groups this user has already contributed to in this project (keyed by
-    // groupId), so we can push them to the back of the queue.
     const contributionsQuery = useMemo(
         () => (isDefined(userId)
             ? firebaseRef(`v2/users/${userId}/contributions/${projectId}`)
@@ -125,9 +98,7 @@ function MapProjectIndex() {
 
     const pending = groupsPending || contributionsPending || projectPending;
 
-    // A project can cap how much a single user contributes to it, so no one
-    // mapper dominates the results a group is verified against. Users can
-    // overshoot the cap mid-session, so this is a `>=` check, not `===`.
+    // Users can overshoot the per-project cap mid-session, so compare by range, not equality.
     const tasksCompleted = Number(userContributions?.[TASK_CONTRIBUTION_COUNT_KEY] ?? 0);
     const maxTasksPerUser = Number(project?.maxTasksPerUser ?? 0);
     const userCanMap = maxTasksPerUser <= 0 || tasksCompleted < maxTasksPerUser;
@@ -137,7 +108,6 @@ function MapProjectIndex() {
             Object.keys(userContributions ?? {})
                 .filter((key) => key !== TASK_CONTRIBUTION_COUNT_KEY),
         );
-        // Allowed Repeated Group
         const repeatableGroups = availableGroups.filter(
             (group) => group.key !== previousGroupId,
         );
@@ -146,6 +116,10 @@ function MapProjectIndex() {
         );
         return unmappedGroups.length > 0 ? unmappedGroups : repeatableGroups;
     }, [availableGroups, userContributions, previousGroupId]);
+
+    const handleBackToProjectsPress = useCallback(() => {
+        router.replace('/projects');
+    }, []);
 
     useEffect(() => {
         if (skipSelection || pending || !userCanMap || groupsToPickFrom.length === 0) {
@@ -166,79 +140,37 @@ function MapProjectIndex() {
         return null;
     }
 
-    if (!pending && (!userCanMap || groupsToPickFrom.length === 0)) {
-        // The per-user cap is the one case we can explain precisely. Otherwise
-        // all we know is that this user's window of groups is exhausted, which
-        // says nothing about the project as a whole.
-        let title = 'All done!';
-        let description = 'You\'ve completed all available groups for this project. Thank you!';
+    const exhausted = !pending && (!userCanMap || groupsToPickFrom.length === 0);
 
-        if (!userCanMap) {
-            title = 'That\'s your limit for this project';
-            description = 'You\'ve reached the maximum number of tasks for this project. Thank you!';
-        }
+    const atLimit = !userCanMap;
+    const title = atLimit
+        ? 'That\'s your limit for this project'
+        : 'All done!';
+    const description = atLimit
+        ? 'You\'ve reached the maximum number of tasks for this project. Thank you!'
+        : 'You\'ve completed all available groups for this project. Thank you!';
 
-        return (
-            <Page
-                title="Map project"
-                variant="brand"
-                scrollable={false}
-            >
-                <BlockListView
-                    withPadding
-                    withCenteredContent
-                    style={styles.container}
-                    spacing="md"
-                >
-                    <Icon
-                        name="checkmark-outline"
-                        color={theme.primaryGreen}
-                        size={96}
-                        weight="bold"
-                    />
-                    <Text
-                        variant="title"
-                        colorVariant="brand"
-                        style={styles.completedText}
-                    >
-                        {title}
-                    </Text>
-                    <Text
-                        colorVariant="brand"
-                        style={styles.completedText}
-                    >
-                        {description}
-                    </Text>
-                    <Button
-                        name="back-to-projects"
-                        colorVariant="primaryRed"
-                        styleVariant="filled"
-                        title="Back to projects"
-                        onPress={() => router.replace('/projects')}
-                    />
-                </BlockListView>
-            </Page>
-        );
-    }
-
-    // Still loading, or about to redirect to the selected group.
     return (
-        <Page
+        <Screen
             title="Map project"
-            scrollable={false}
-            variant="brand"
-        >
-            <BlockListView
-                withPadding
-                withCenteredContent
-                style={styles.container}
-            >
-                <ActivityIndicator size="large" />
-                <Text colorVariant="brand">
-                    Loading groups...
-                </Text>
-            </BlockListView>
-        </Page>
+            colorVariant="brand"
+            pending={!exhausted}
+            pendingLabel="Loading groups..."
+            empty={exhausted && (
+                <EmptyState
+                    sizeVariant="page"
+                    colorVariant="onBrand"
+                    iconName="checkmark-outline"
+                    iconColorVariant="positive"
+                    title={title}
+                    description={description}
+                    actionLabel="Back to projects"
+                    actionAccessibilityLabel="Back to projects"
+                    actionColorVariant="negative"
+                    onActionPress={handleBackToProjectsPress}
+                />
+            )}
+        />
     );
 }
 

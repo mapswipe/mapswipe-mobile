@@ -1,45 +1,33 @@
-import {
-    StyleSheet,
-    Text,
-    View,
-} from 'react-native';
-import {
-    Link,
-    Stack,
-} from 'expo-router';
+import { useCallback } from 'react';
+import { useRouter } from 'expo-router';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    link: {
-        marginTop: 15,
-        paddingVertical: 15,
-    },
-    linkText: {
-        fontSize: 14,
-        color: '#2e78b7',
-    },
-});
+import EmptyState from '@/components/ui/EmptyState';
+import Screen from '@/components/ui/Screen';
+
+const TITLE = 'Oops!';
+const MESSAGE = 'This screen does not exist.';
+const HOME_LABEL = 'Go to home screen';
 
 export default function NotFoundScreen() {
-    return (
-        <>
-            <Stack.Screen options={{ title: 'Oops!' }} />
-            <View style={styles.container}>
-                <Text style={styles.title}>This screen doesnot exist.</Text>
+    const router = useRouter();
 
-                <Link href="/" style={styles.link}>
-                    <Text style={styles.linkText}>Go to home screen!</Text>
-                </Link>
-            </View>
-        </>
+    const handleGoHome = useCallback(() => {
+        router.replace('/');
+    }, [router]);
+
+    return (
+        <Screen
+            title={TITLE}
+            layout="centered"
+        >
+            <EmptyState
+                sizeVariant="page"
+                iconName="question-mark"
+                title={MESSAGE}
+                actionLabel={HOME_LABEL}
+                actionAccessibilityLabel={HOME_LABEL}
+                onActionPress={handleGoHome}
+            />
+        </Screen>
     );
 }

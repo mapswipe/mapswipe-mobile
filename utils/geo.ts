@@ -19,7 +19,7 @@ export function getCenterFromBBox(bbox: BoundingBox | undefined): [number, numbe
     const [minLon, minLat, maxLon, maxLat] = bbox;
     const centerLon = (minLon + maxLon) / 2;
     const centerLat = (minLat + maxLat) / 2;
-    return [centerLon, centerLat] as const; // [longitude, latitude]
+    return [centerLon, centerLat] as const;
 }
 
 export function getBbox(geoJson: GeoJSON.GeoJSON | undefined): BoundingBox | undefined {

@@ -48,12 +48,7 @@ export function decompressTasks<T>(value: string | T[] | undefined | null): T[] 
     return JSON.parse(decompressed) as T[];
 }
 
-// Tutorial tasks carry a synthetic `taskId` that can repeat — across groups, and
-// even within one screen when it has more than 6 tiles (the backend cycles the
-// synthetic tile position every 6 tasks). `taskId_real`, present on tile-based
-// tutorial tasks, is the globally-unique real tile id. Prefer it for identity so
-// results and React keys don't collide; fall back to `taskId` for task types that
-// don't have it (validate / validate-image / street).
+// Tutorial taskId repeats across groups, so prefer the globally-unique taskId_real when present.
 export function getTutorialTaskKey(task: AnyTutorialTask): string {
     if ('taskId_real' in task && typeof task.taskId_real === 'string') {
         return task.taskId_real;
@@ -95,11 +90,7 @@ export interface TutorialTaskBucket {
     tasks: AnyTutorialTask[];
 }
 
-// Buckets tutorial tasks by (groupId, screen) so a single scenario only ever shows
-// tiles from one group. Tasks from different groups can reuse the same screen number
-// and synthetic taskId, so grouping by screen alone merges them into one scenario.
-// Ordered by groupId then screen so scenarios map onto buckets deterministically.
-// For single-group tutorials this is equivalent to grouping by screen.
+// Different groups reuse screen numbers, so bucket by (groupId, screen), not screen alone.
 export function groupTasksByGroupAndScreen(
     tasks: AnyTutorialTask[] | undefined,
 ): TutorialTaskBucket[] {
@@ -137,10 +128,7 @@ function getReferenceForTask(task: AnyTutorialTask): number | undefined {
     return undefined;
 }
 
-// Locate features stores results as Record<string, number[]> keyed by the
-// tile-level id (taskId_real). Each per-cell tutorial task carries a scalar
-// referenceAnswer plus a taskPartitionIndex telling us which array slot it
-// belongs to. Returns undefined for tasks that aren't locate-shaped.
+// Locate results are arrays keyed by tile id; taskPartitionIndex picks the cell slot.
 function getLocatePartition(
     task: AnyTutorialTask,
 ): { tileKey: string; partitionIndex: number } | undefined {

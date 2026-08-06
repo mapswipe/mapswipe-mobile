@@ -71,9 +71,7 @@ function BaseMap(props: Props) {
     }, [url, credits, tileSize]);
 
     const mapKey = useMemo(() => (
-        // FIXME(frozenhelium): map key is added here
-        // to completely destroy and create a new map
-        // to avoid race condition while recreating layers and sources
+        // FIXME(frozenhelium): new key recreates the map to dodge a layer/source race.
         randomString()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     ), [mapStyle]);
