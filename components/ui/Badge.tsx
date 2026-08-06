@@ -43,7 +43,6 @@ import {
     type SpacingType,
 } from '@/utils/styles';
 
-/** `circle` and `square` take a fixed extent; `pill` hugs its content. */
 const SHAPE_RADIUS = {
     circle: 'full',
     square: '2xs',
@@ -52,7 +51,6 @@ const SHAPE_RADIUS = {
 
 export type BadgeShape = keyof typeof SHAPE_RADIUS;
 
-/** Which slot fills the badge: `surface` for a chip, `content` for a swatch of the colour. */
 const STYLE_VARIANT = {
     filled: { fill: 'surface', withRing: false },
     swatch: { fill: 'content', withRing: false },
@@ -61,41 +59,29 @@ const STYLE_VARIANT = {
 
 export type BadgeStyleVariant = keyof typeof STYLE_VARIANT;
 
-interface ExtentRung {
+interface ExtentSize {
     extent: number;
     icon: IconSizeType;
     text: TextVariant;
 }
 
-/** Fixed-footprint ladder. The comment on each rung is its extent in points. */
 const EXTENT_VARIANT = {
-    /** 8 */
     '3xs': { extent: DOT_SIZE.sm, icon: 'xs', text: 'overline' },
-    /** 10 */
     '2xs': { extent: DOT_SIZE.md, icon: 'xs', text: 'overline' },
-    /** 12 */
     xs: { extent: DOT_SIZE.lg, icon: 'xs', text: 'overline' },
-    /** 18 */
     sm: { extent: BADGE_SIZE, icon: 'xs', text: 'caption' },
-    /** 24 */
     md: { extent: ICON_SIZE['2xl'], icon: 'sm', text: 'caption' },
-    /** 28 */
     lg: { extent: ICON_SIZE['3xl'], icon: 'md', text: 'caption' },
-    /** 35 */
     xl: { extent: MEDALLION_SIZE.xs, icon: '3xl', text: 'label' },
-    /** 50 */
     '2xl': { extent: MEDALLION_SIZE.md, icon: '3xl', text: 'label' },
-    /** 64 */
     '3xl': { extent: MEDALLION_SIZE.lg, icon: '4xl', text: 'title' },
-    /** 80 */
     '4xl': { extent: MEDALLION_SIZE.xl, icon: '6xl', text: 'title' },
-    /** 96 */
     '5xl': { extent: MEDALLION_SIZE['2xl'], icon: '6xl', text: 'heading' },
-} as const satisfies Record<string, ExtentRung>;
+} as const satisfies Record<string, ExtentSize>;
 
 export type BadgeExtentVariant = keyof typeof EXTENT_VARIANT;
 
-interface PillRung {
+interface PillSize {
     insetInline: SpacingType;
     insetBlock: SpacingType;
     space: SpacingType;
@@ -103,7 +89,6 @@ interface PillRung {
     text: TextVariant;
 }
 
-/** Hugging ladder. Both rungs are the shipped pills rounded to the spacing scale. */
 const PILL_VARIANT = {
     sm: {
         insetInline: '3xs', insetBlock: '4xs', space: '4xs', icon: 'xs', text: 'caption',
@@ -111,11 +96,10 @@ const PILL_VARIANT = {
     md: {
         insetInline: '2xs', insetBlock: '3xs', space: '4xs', icon: 'xs', text: 'label',
     },
-} as const satisfies Record<string, PillRung>;
+} as const satisfies Record<string, PillSize>;
 
 export type BadgePillVariant = keyof typeof PILL_VARIANT;
 
-/** `strong` is for a small glyph that has to read over imagery. */
 const ICON_EMPHASIS_WEIGHT = {
     regular: 'regular',
     strong: 'bold',
@@ -123,7 +107,6 @@ const ICON_EMPHASIS_WEIGHT = {
 
 export type BadgeIconEmphasis = keyof typeof ICON_EMPHASIS_WEIGHT;
 
-// Theme-independent, so built once rather than per render.
 const PRESSED_STYLE: ViewStyle = { opacity: OPACITY_PRESSED };
 const DISABLED_STYLE: ViewStyle = { opacity: OPACITY_DISABLED };
 
@@ -152,7 +135,6 @@ interface BadgeStyleOptions {
 interface BadgeStyles {
     container: ViewStyle;
     label: TextStyle;
-    /** Resolved rather than a variant: the glyph must pair with the fill, not with the page. */
     contentColor: string;
 }
 
@@ -172,7 +154,6 @@ const createStyles = (theme: AppTheme, options: BadgeStyleOptions): BadgeStyles 
 
     const { fill, withRing } = STYLE_VARIANT[styleVariant];
 
-    // A backend colour has no role to pair with, so the content falls back to textOnPrimary.
     const backgroundColor = dotColor ?? resolveColor(theme, colorVariant, fill);
     const contentColor = dotColor === undefined
         ? resolveColor(theme, colorVariant, 'onSurface')
@@ -181,7 +162,6 @@ const createStyles = (theme: AppTheme, options: BadgeStyleOptions): BadgeStyles 
     return {
         container: {
             ...resolveBoxStyle({
-                // Required by the pill; harmless for the shapes holding one centred child.
                 direction: 'row',
                 align: 'center',
                 justify: 'center',
@@ -214,52 +194,40 @@ const createStyles = (theme: AppTheme, options: BadgeStyleOptions): BadgeStyles 
 };
 
 interface CommonProps {
-    /** Defaults to `default`. A fill plus its paired foreground, never `content` alone. */
+    style?: never;
     colorVariant?: ColorVariant;
 
-    /** Defaults to `filled`. Picks which slot supplies the fill. */
     styleVariant?: BadgeStyleVariant;
 
-    /**
-     * Raw colour, and one of four sanctioned in the design system: answer colours are author data
-     * off Firebase, so they can never be theme tokens. Overrides colorVariant and forces the
-     * content to textOnPrimary, since no legible foreground can be computed for an arbitrary
-     * colour. Not a way out of the palette.
-     */
+    /** Raw colour for author data off Firebase; overrides colorVariant and forces textOnPrimary. */
     dotColor?: string;
 
-    /** Sized and coloured by the rung. Content renders in the order iconName, children, label. */
     iconName?: IconName;
 
-    /** Defaults to `regular`. `strong` for a small glyph that has to read over imagery. */
     iconEmphasis?: BadgeIconEmphasis;
 
     label?: string;
 
-    /** Content this layer cannot name. Prefer iconName and label, which cannot mispaint. */
     children?: ReactNode;
 
     testID?: string;
 }
 
 type BadgeGeometryProps = {
-    /** Defaults to `circle`. Content that outgrows the rung overflows rather than stretching it. */
+    style?: never;
     shape?: Exclude<BadgeShape, 'pill'>;
-    /** Required: eleven rungs with no majority, so a default would be a guess. */
     sizeVariant: BadgeExtentVariant;
-    /** A fixed badge is a circle or a square; shrinking would distort it. */
     shrink?: never;
 } | {
     shape: 'pill';
     sizeVariant: BadgePillVariant;
-    /** Lets the capsule truncate its label instead of pushing its row. */
     shrink?: boolean;
 };
 
 type BadgePressProps = {
+    style?: never;
     onPress?: never;
     disabled?: never;
-    /** A labelled badge announces itself; supply this for one whose only content is colour. */
     accessibilityLabel?: string;
 } | {
     onPress: () => void;
@@ -271,27 +239,27 @@ export type BadgeProps = CommonProps & BadgeGeometryProps & BadgePressProps;
 
 function resolveGeometry(props: BadgeProps): BadgeGeometry {
     if (props.shape === 'pill') {
-        const rung = PILL_VARIANT[props.sizeVariant];
+        const size = PILL_VARIANT[props.sizeVariant];
 
         return {
             extent: undefined,
-            insetInline: rung.insetInline,
-            insetBlock: rung.insetBlock,
-            space: rung.space,
-            icon: rung.icon,
-            text: rung.text,
+            insetInline: size.insetInline,
+            insetBlock: size.insetBlock,
+            space: size.space,
+            icon: size.icon,
+            text: size.text,
         };
     }
 
-    const rung = EXTENT_VARIANT[props.sizeVariant];
+    const size = EXTENT_VARIANT[props.sizeVariant];
 
     return {
-        extent: rung.extent,
+        extent: size.extent,
         insetInline: undefined,
         insetBlock: undefined,
         space: undefined,
-        icon: rung.icon,
-        text: rung.text,
+        icon: size.icon,
+        text: size.text,
     };
 }
 
@@ -320,7 +288,7 @@ function Badge(props: BadgeProps) {
         accessibilityLabel,
     } = props;
 
-    // Takes `props` whole: a destructured `shape` cannot narrow which ladder `sizeVariant` is on.
+    // Takes `props` whole: a destructured `shape` cannot narrow which size map applies.
     const geometry = resolveGeometry(props);
 
     const styles = useThemedStyles(createStyles, {
@@ -380,7 +348,7 @@ function Badge(props: BadgeProps) {
         <Pressable
             onPress={onPress}
             disabled={disabled}
-            // Several rungs are far below TOUCH_TARGET_MIN.
+            // Several sizes are far below TOUCH_TARGET_MIN.
             hitSlop={HIT_SLOP_MD}
             testID={testID}
             accessibilityRole="button"

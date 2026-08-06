@@ -15,6 +15,7 @@ import {
 import {
     type Edge,
     SafeAreaView,
+    useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import {
     useFocusEffect,
@@ -26,6 +27,7 @@ import {
 } from 'expo-status-bar';
 
 import Box from '@/components/ui/Box';
+import Divider, { type DividerColorVariant } from '@/components/ui/Divider';
 import IconButton from '@/components/ui/IconButton';
 import Positioned from '@/components/ui/Positioned';
 import Pressable from '@/components/ui/Pressable';
@@ -38,43 +40,74 @@ import { HEADER_ACTION_RESERVE } from '@/constants/size';
 import {
     type AppTheme,
     type ColorVariant,
+    resolveColor,
     type ThemeColorKey,
 } from '@/constants/theme';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import useViewport from '@/hooks/useViewport';
-import { type SpacingType } from '@/utils/styles';
+import {
+    type AlignType,
+    type JustifyType,
+} from '@/utils/layout';
+import {
+    getSpacingValue,
+    type SpacingType,
+} from '@/utils/styles';
 
-/**
- * Not a `ColorVariant`: no COLOR_ROLE `surface` slot reaches `background`, so a ColorVariant here
- * would silently repaint every ordinary screen. The fill still travels with a legible foreground.
- */
+// Not a `ColorVariant`: no COLOR_ROLE `surface` slot reaches `background`. `header` is the same
+// surface as the page, so a header never lands a navy bar on a light screen.
 const SCREEN_SURFACE = {
-    default: { fill: 'background', content: 'default' },
-    brand: { fill: 'backgroundBrand', content: 'onBrand' },
-} as const satisfies Record<string, { fill: ThemeColorKey; content: ColorVariant }>;
+    default: {
+        fill: 'background',
+        content: 'default',
+        header: 'background',
+        // Risen off the page, so the actions read as their own band.
+        footer: 'surface',
+        rule: 'default',
+        statusBar: 'dark',
+    },
+    brand: {
+        fill: 'backgroundBrand',
+        content: 'onBrand',
+        header: 'backgroundBrand',
+        footer: 'onBrand',
+        rule: 'onBrand',
+        statusBar: 'light',
+    },
+} as const satisfies Record<string, {
+    fill: ThemeColorKey;
+    content: ColorVariant;
+    header: ThemeColorKey;
+    footer: ColorVariant;
+    rule: DividerColorVariant;
+    statusBar: StatusBarStyle;
+}>;
 
 export type ScreenColorVariant = keyof typeof SCREEN_SURFACE;
 
 interface ScreenLayout {
-    /** The body scrolls, and its content container grows so a short page still fills the window. */
     withScroll: boolean;
-    /** How the content claims the body's block axis. */
     grow: GrowType | undefined;
+    align: AlignType | undefined;
+    justify: JustifyType | undefined;
 }
 
-/**
- * `fill` is the pane the children divide up themselves. It grows as a bounded `slot`: a pane that
- * refuses to shrink below its content is how a map pushes the buttons under it off screen.
- */
 const SCREEN_LAYOUT = {
-    scroll: { withScroll: true, grow: undefined },
-    fill: { withScroll: false, grow: 'slot' },
+    scroll: {
+        withScroll: true, grow: undefined, align: undefined, justify: undefined,
+    },
+    fill: {
+        withScroll: false, grow: 'slot', align: undefined, justify: undefined,
+    },
+    // A screen whose body is one block: a message, a result, an outcome.
+    centered: {
+        withScroll: false, grow: 'slot', align: 'center', justify: 'center',
+    },
 } as const satisfies Record<string, ScreenLayout>;
 
 export type ScreenLayoutType = keyof typeof SCREEN_LAYOUT;
 
-/** `bottom` is what a screen with a navigator header wants: the header covers the status bar. */
 const SAFE_AREA_EDGES = {
     top: ['top'],
     bottom: ['bottom'],
@@ -84,7 +117,7 @@ const SAFE_AREA_EDGES = {
 
 export type ScreenSafeAreaType = keyof typeof SAFE_AREA_EDGES;
 
-/** Logical, not physical: react-navigation's `left` already follows the writing direction. */
+// Logical, not physical: react-navigation's `left` follows the writing direction.
 const HEADER_TITLE_ALIGN = {
     start: 'left',
     center: 'center',
@@ -97,7 +130,15 @@ const KEYBOARD_BEHAVIOR: KeyboardAvoidingViewProps['behavior'] = Platform.OS ===
     ? 'padding'
     : undefined;
 
-/** `empty={flag && <X />}` is `false` when the flag is off, which is not a filled slot. */
+// What the band insets by when the body is unpadded and there is nothing to line up with.
+const FOOTER_FALLBACK_INSET: SpacingType = 'md';
+const FOOTER_SPACING: SpacingType = 'md';
+
+function renderNothing(): null {
+    return null;
+}
+
+// `flag && <X />` is `false` when the flag is off, which is not a filled slot.
 function isFilledSlot(slot: ReactNode): boolean {
     return slot !== undefined && slot !== null && typeof slot !== 'boolean';
 }
@@ -113,7 +154,7 @@ interface ScreenStyles {
     header: ViewStyle;
 }
 
-// Plain objects, not a StyleSheet: these are theme-dependent or handed to react-navigation.
+// Plain objects, not a StyleSheet: some of these are handed to react-navigation.
 const createStyles = (theme: AppTheme, options: ScreenStyleOptions): ScreenStyles => ({
     root: {
         flex: 1,
@@ -122,31 +163,27 @@ const createStyles = (theme: AppTheme, options: ScreenStyleOptions): ScreenStyle
     keyboardAvoider: {
         flex: 1,
     },
-    // Without it a short page pins its content to the top, so a centred empty state rides high.
     scrollContent: {
         flexGrow: 1,
     },
     header: {
-        backgroundColor: theme.backgroundBrand,
+        backgroundColor: theme[SCREEN_SURFACE[options.colorVariant].header],
     },
 });
 
 interface TitleWithPopupProps {
+    style?: never;
     title: string;
-    /** Measured: the window width less the space the header buttons reserve on both sides. */
     maxWidth: number;
+    colorVariant: ColorVariant;
 }
 
-/**
- * Bounded so it ellipsizes rather than sliding under the header buttons, with the full string a
- * long press away. Truncation is the normal case: a project's instruction is the mapping title.
- *
- * TODO: use ui/Modal for the popup once that exists.
- */
+// TODO: use ui/Modal once it can dismiss on backdrop press, this popup's only affordance.
 function TitleWithPopup(props: TitleWithPopupProps) {
     const {
         title,
         maxWidth,
+        colorVariant,
     } = props;
 
     const [visible, setVisible] = useState(false);
@@ -158,13 +195,12 @@ function TitleWithPopup(props: TitleWithPopupProps) {
         <Box maxWidth={maxWidth}>
             <Pressable
                 accessibilityLabel={title}
-                // The title is a label that happens to be long-pressable, not a control, so it
-                // must not dim under the finger.
+                // A long-pressable label, not a control, so it must not dim under the finger.
                 feedback="none"
                 onLongPress={handleOpen}
             >
                 <Text
-                    colorVariant="onBrand"
+                    colorVariant={colorVariant}
                     numberOfLines={1}
                 >
                     {title}
@@ -176,9 +212,6 @@ function TitleWithPopup(props: TitleWithPopupProps) {
                 animationType="fade"
                 onRequestClose={handleClose}
             >
-                {/* One target over the whole backdrop, labelled with the title it exists to
-                    show: there is no invented "close" copy to translate, and the popup holds
-                    nothing else to press. */}
                 <Pressable
                     accessibilityLabel={title}
                     feedback="none"
@@ -210,83 +243,79 @@ function TitleWithPopup(props: TitleWithPopupProps) {
 }
 
 interface CommonProps {
-    /** Drawn in the navigator header, and long-pressable there. See TitleWithPopup. */
+    style?: never;
     title: string;
 
-    /** Optional: a screen whose whole job is a state has no content of its own. */
     children?: ReactNode;
 
-    /** Defaults to `default`, i.e. `background`. */
     colorVariant?: ScreenColorVariant;
 
-    /** Defaults to `scroll`. */
     layout?: ScreenLayoutType;
 
-    /**
-     * Defaults to `top`. A screen with `withHeader` almost always wants `bottom`, or insetting
-     * the top again leaves a navy band under the header.
-     */
+    /** With `withHeader`, prefer `bottom`: insetting the top again leaves a band under it. */
     safeArea?: ScreenSafeAreaType;
 
-    /** Inset around the content, the footer and any state slot. The hero stays full bleed. */
     padding?: SpacingType;
 
-    /** Defaults to `none`. */
     spacing?: SpacingType;
 
     /** Takes precedence over `error` and `empty`. */
     pending?: boolean;
 
-    /** Without it the wait is silent: an unlabelled spinner stays out of the accessibility tree. */
     pendingLabel?: string;
 
-    /** A node, not a message, because the retry affordance belongs with the copy. */
     error?: ReactNode;
 
     /** Ranks below `error`. */
     empty?: ReactNode;
 
-    /** Escapes `padding` on purpose: that is what makes it a hero rather than a first child. */
+    /** Escapes `padding` on purpose, so it stays full bleed. */
     hero?: ReactNode;
 
-    /** Pinned below the body, outside the scroll. Survives `pending`, `error` and `empty`. */
+    /**
+     * Outside the scroll, and survives `pending`, `error` and `empty`. Insets and gaps itself,
+     * so a screen never picks those.
+     */
     footer?: ReactNode;
 
-    /** Overlay at the `chrome` rung, transparent to touches it does not claim. */
-    chrome?: ReactNode;
+    controls?: ReactNode;
 
-    /** Lifts the body clear of the keyboard. Off by default. */
     withKeyboardAvoidance?: boolean;
 
     testID?: string;
 }
 
-/** Header-only props travel with the header, so none can be set without one. */
 type ScreenHeaderProps = {
+    style?: never;
     withHeader?: false;
     backAccessibilityLabel?: never;
     onBackPress?: never;
     headerTitleAlign?: never;
     headerActions?: never;
+    withoutHeaderTitle?: never;
 } | {
     withHeader: true;
 
-    /** Required: the back button is a bare glyph with nothing else to be announced as. */
-    backAccessibilityLabel: string;
+    /** Its presence draws the back button. A screen with nowhere to go back to leaves it out. */
+    backAccessibilityLabel?: string;
 
-    /** Intercepts the back tap, e.g. to confirm before abandoning a session. Must be memoized. */
+    /** Intercepts the back tap. Must be memoized. */
     onBackPress?: () => void;
 
-    /** Defaults to `start`. */
     headerTitleAlign?: ScreenTitleAlignType;
 
     /** Must be memoized. */
     headerActions?: () => ReactNode;
+
+    /**
+     * Keeps the bar and its actions but draws no title. `title` is still required and still
+     * announced, so the screen keeps its name for a screen reader.
+     */
+    withoutHeaderTitle?: boolean;
 };
 
 export type ScreenProps = CommonProps & ScreenHeaderProps;
 
-/** The screen template: chrome, safe area, and the pending, error and empty states. */
 function Screen(props: ScreenProps) {
     const {
         title,
@@ -302,7 +331,7 @@ function Screen(props: ScreenProps) {
         empty,
         hero,
         footer,
-        chrome,
+        controls,
         withKeyboardAvoidance = false,
         testID,
         withHeader = false,
@@ -310,20 +339,20 @@ function Screen(props: ScreenProps) {
         onBackPress,
         headerTitleAlign = 'start',
         headerActions,
+        withoutHeaderTitle = false,
     } = props;
 
     const navigation = useNavigation();
     const theme = useTheme();
     const styles = useThemedStyles(createStyles, { colorVariant });
     const viewport = useViewport();
+    const insets = useSafeAreaInsets();
 
     const contentColorVariant = SCREEN_SURFACE[colorVariant].content;
 
     const titleMaxWidth = Math.max(0, viewport.width - HEADER_ACTION_RESERVE);
 
-    // The union makes this a string whenever a header exists; the destructured local cannot
-    // carry that narrowing, so the fallback is unreachable rather than a default.
-    const backLabel = backAccessibilityLabel ?? title;
+    // The union guarantees a string whenever a header exists, so the fallback is unreachable.
 
     const handleBackPress = useCallback(
         () => {
@@ -342,12 +371,13 @@ function Screen(props: ScreenProps) {
             <IconButton
                 name="back"
                 iconName="arrow-left"
-                accessibilityLabel={backLabel}
-                colorVariant="onBrand"
+                accessibilityLabel={backAccessibilityLabel ?? ''}
+                colorVariant={SCREEN_SURFACE[colorVariant].content}
+                sizeVariant="header"
                 onPress={handleBackPress}
             />
         ),
-        [backLabel, handleBackPress],
+        [backAccessibilityLabel, handleBackPress, colorVariant],
     );
 
     const headerTitle = useCallback(
@@ -355,29 +385,29 @@ function Screen(props: ScreenProps) {
             <TitleWithPopup
                 title={title}
                 maxWidth={titleMaxWidth}
+                colorVariant={SCREEN_SURFACE[colorVariant].content}
             />
         ),
-        [title, titleMaxWidth],
+        [title, titleMaxWidth, colorVariant],
     );
 
     useLayoutEffect(
         () => {
-            // Outside a navigator (the root layout's loading screen) useNavigation returns a
-            // placeholder whose setOptions throws. Nothing to configure there.
+            // Outside a navigator, useNavigation returns a placeholder whose setOptions throws.
             try {
                 navigation.setOptions({
                     headerShown: withHeader,
                     headerBackVisible: false,
                     headerStyle: styles.header,
-                    headerTintColor: theme.textOnBrand,
+                    headerTintColor: resolveColor(theme, SCREEN_SURFACE[colorVariant].content),
                     headerShadowVisible: false,
                     headerTitleAlign: HEADER_TITLE_ALIGN[headerTitleAlign],
-                    headerTitle,
+                    headerTitle: withoutHeaderTitle ? renderNothing : headerTitle,
                     headerRight: headerActions,
-                    headerLeft,
+                    headerLeft: backAccessibilityLabel === undefined ? undefined : headerLeft,
                 });
             } catch {
-                // not inside a navigator screen, so there is no header to configure
+                // no header to configure
             }
         },
         [
@@ -387,21 +417,17 @@ function Screen(props: ScreenProps) {
             withHeader,
             headerTitleAlign,
             headerTitle,
+            withoutHeaderTitle,
             headerActions,
             headerLeft,
+            colorVariant,
+            backAccessibilityLabel,
         ],
     );
 
-    // A brand page and a navigator header are both navy, so either way the bar needs light content.
-    const statusBarStyle: StatusBarStyle = colorVariant === 'brand' || withHeader
-        ? 'light'
-        : 'dark';
+    const statusBarStyle = SCREEN_SURFACE[colorVariant].statusBar;
 
-    /*
-     * Deliberately no <StatusBar> element as well as this: RN's StatusBar applies the instance
-     * mounted last, not the focused one, and both tabs stay mounted. The pair raced, which is
-     * what put light glyphs on the pale projects list.
-     */
+    // No <StatusBar> element too: RN applies the last-mounted instance, not the focused one.
     useFocusEffect(
         useCallback(() => {
             setStatusBarStyle(statusBarStyle);
@@ -433,8 +459,6 @@ function Screen(props: ScreenProps) {
     let body: ReactNode;
 
     if (stateContent !== undefined) {
-        // A state is never scrollable: it is one short block, and it wants the middle of the
-        // viewport rather than the top of a scroll region.
         body = (
             <Stack
                 spacing="sm"
@@ -454,6 +478,8 @@ function Screen(props: ScreenProps) {
                     spacing={spacing}
                     padding={padding}
                     grow={SCREEN_LAYOUT[layout].grow}
+                    align={SCREEN_LAYOUT[layout].align}
+                    justify={SCREEN_LAYOUT[layout].justify}
                 >
                     {children}
                 </Stack>
@@ -469,16 +495,35 @@ function Screen(props: ScreenProps) {
             : content;
     }
 
+    // Matched to the body so the band's contents line up with the content above it.
+    const footerInset = getSpacingValue(padding ?? FOOTER_FALLBACK_INSET);
+
     const pane = (
         <>
             {body}
             {isFilledSlot(footer) && (
-                <Stack
-                    spacing={spacing}
-                    padding={padding}
+                <Divider
+                    colorVariant={SCREEN_SURFACE[colorVariant].rule}
+                    spacing="none"
+                />
+            )}
+            {isFilledSlot(footer) && (
+                <Surface
+                    colorVariant={SCREEN_SURFACE[colorVariant].footer}
+                    padding="none"
                 >
-                    {footer}
-                </Stack>
+                    {/* The band reaches the window edge so its fill does, and pads its content
+                        past the system bar instead of letting the pane inset the whole thing. */}
+                    <Box
+                        paddingInline={footerInset}
+                        paddingBlockStart={footerInset}
+                        paddingBlockEnd={footerInset + insets.bottom}
+                    >
+                        <Stack spacing={FOOTER_SPACING}>
+                            {footer}
+                        </Stack>
+                    </Box>
+                </Surface>
             )}
         </>
     );
@@ -497,14 +542,14 @@ function Screen(props: ScreenProps) {
                     {pane}
                 </KeyboardAvoidingView>
             ) : pane}
-            {isFilledSlot(chrome) && (
+            {isFilledSlot(controls) && (
                 <Positioned
                     anchor="fill"
-                    layer="chrome"
-                    // An overlay that eats the touches meant for the map under it is a bug.
+                    layer="controls"
+                    // box-none, or the overlay eats touches meant for the map under it.
                     pointerEvents="box-none"
                 >
-                    {chrome}
+                    {controls}
                 </Positioned>
             )}
         </SafeAreaView>

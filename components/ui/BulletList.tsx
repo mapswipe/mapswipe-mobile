@@ -12,10 +12,11 @@ const BULLET_MARKER = '•';
 /** 4, the gap changeRow already uses between its marker and its text. */
 const MARKER_GAP = '4xs' satisfies SpacingType;
 
-/** 16, the rung the one live list gaps its entries by (`BlockListView spacing="xs"`). */
+/** 16, matching the one live list's entry gap (`BlockListView spacing="xs"`). */
 const ITEM_SPACING = 'xs' satisfies SpacingType;
 
 export interface BulletListProps {
+    style?: never;
     /**
      * `ReactNode`, since entries are plain strings in some places and `<Trans>` in others.
      *
@@ -34,7 +35,7 @@ export interface BulletListProps {
  * A list of bullets. The row aligns to `start` and the entry is the flexible child, so a wrapped
  * entry keeps its marker on the first line with its own lines aligned under each other.
  *
- * No icon-marker rung: per-entry markers need a slot per entry, which is a domain component.
+ * No icon-marker option: per-entry markers need a slot per entry, which is a domain component.
  */
 function BulletList(props: BulletListProps) {
     const {

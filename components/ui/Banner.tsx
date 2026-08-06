@@ -52,14 +52,13 @@ const FILL_LABEL = {
 export type BannerColorVariant = keyof typeof FILL_LABEL;
 
 interface BannerChrome {
-    /** The Surface rung that paints the box. */
     surface: SurfaceStyleVariant;
     /** Which slot the text, and with it the glyph, takes its colour from. */
     label: Extract<keyof ColorRole, 'content' | 'onSurface'>;
 }
 
 /**
- * Paint only: the density rung below owns the box.
+ * Paint only: SIZE_VARIANT below owns the box.
  *
  * `outlined` is a card fill with the role surviving as ring and label, which no single
  * COLOR_ROLE entry expresses. It uses Surface's `outlinedStrong`, whose ring reads `content`
@@ -114,13 +113,12 @@ const SIZE_VARIANT = {
 export type BannerSizeVariant = keyof typeof SIZE_VARIANT;
 
 interface CommonProps {
+    style?: never;
     /** Always bold, and required: a bold single-line banner is a title with no message. */
     title: string;
 
-    /** A second line under the title, at the rung's weight. The tutorial strips have one. */
     message?: string;
 
-    /** Leading glyph, sized and coloured by the rung so it always pairs with the fill. */
     iconName?: IconName;
 
     /** Required: a banner with no tone is a paragraph, and no role is the majority. */
@@ -140,6 +138,7 @@ interface CommonProps {
 
 /** Silent by default: its own text is what a screen reader reads. With onPress it is a target. */
 type BannerPressProps = {
+    style?: never;
     onPress?: never;
     accessibilityLabel?: never;
 } | {
@@ -185,11 +184,11 @@ function Banner(props: BannerProps) {
         testID,
     } = props;
 
-    const chrome = STYLE_VARIANT[styleVariant];
-    const rung = SIZE_VARIANT[sizeVariant];
+    const paint = STYLE_VARIANT[styleVariant];
+    const size = SIZE_VARIANT[sizeVariant];
     const press = resolvePress(props);
 
-    const labelColorVariant = chrome.label === 'onSurface'
+    const labelColorVariant = paint.label === 'onSurface'
         ? FILL_LABEL[colorVariant]
         : colorVariant;
 
@@ -198,23 +197,23 @@ function Banner(props: BannerProps) {
 
     const body = (
         <Row
-            spacing={rung.space}
+            spacing={size.space}
             align="start"
         >
             {iconName !== undefined && (
                 <Icon
                     name={iconName}
-                    sizeVariant={rung.icon}
+                    sizeVariant={size.icon}
                     colorVariant={labelColorVariant}
                 />
             )}
             <Stack
-                spacing={rung.textSpace}
+                spacing={size.textSpace}
                 // So a long line wraps inside the column instead of pushing the glyph out.
                 grow="fill"
             >
                 <Text
-                    variant={rung.title}
+                    variant={size.title}
                     weight="bold"
                     colorVariant={labelColorVariant}
                     align={align}
@@ -223,7 +222,7 @@ function Banner(props: BannerProps) {
                 </Text>
                 {message !== undefined && (
                     <Text
-                        variant={rung.message}
+                        variant={size.message}
                         colorVariant={labelColorVariant}
                         align={align}
                     >
@@ -234,23 +233,23 @@ function Banner(props: BannerProps) {
         </Row>
     );
 
-    const strip = chrome.surface === 'flat' ? (
+    const strip = paint.surface === 'flat' ? (
         <Surface
             colorVariant={colorVariant}
-            radius={rung.radius}
-            padding={rung.inset}
+            radius={size.radius}
+            padding={size.inset}
             testID={surfaceTestID}
         >
             {body}
         </Surface>
     ) : (
         <Surface
-            styleVariant={chrome.surface}
+            styleVariant={paint.surface}
             // The fill is the card and the role only rings it: see STYLE_VARIANT.
             colorVariant="default"
             borderColorVariant={colorVariant}
-            radius={rung.radius}
-            padding={rung.inset}
+            radius={size.radius}
+            padding={size.inset}
             testID={surfaceTestID}
         >
             {body}

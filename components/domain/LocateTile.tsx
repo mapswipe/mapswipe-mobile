@@ -13,6 +13,12 @@ import {
     View,
 } from 'react-native';
 
+import {
+    BORDER_WIDTH_HAIRLINE,
+    BORDER_WIDTH_NONE,
+    BORDER_WIDTH_SELECTION,
+} from '@/constants/border';
+import { OPACITY_MUTED } from '@/constants/opacity';
 import { type AppTheme } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { resolveGridCellIndex } from '@/utils/grid';
@@ -53,7 +59,7 @@ const createTileStyles = (
 });
 
 const createCellStyles = (
-    _: AppTheme,
+    theme: AppTheme,
     { size, color, isSelected }: {
         size: number,
         color: string | undefined,
@@ -68,14 +74,14 @@ const createCellStyles = (
     tint: {
         ...StyleSheet.absoluteFill,
         backgroundColor: color,
-        borderColor: 'rgba(255, 255, 255, 1)',
-        borderWidth: 0.5,
-        opacity: 0.6,
+        borderColor: theme.textOnPrimary,
+        borderWidth: BORDER_WIDTH_HAIRLINE,
+        opacity: OPACITY_MUTED,
     },
     selectionIndicator: {
         ...StyleSheet.absoluteFill,
-        borderColor: isSelected ? 'rgba(255, 255, 255, 0.5)' : 'transparent',
-        borderWidth: isSelected ? 5 : 0,
+        borderColor: theme.selectionRing,
+        borderWidth: isSelected ? BORDER_WIDTH_SELECTION : BORDER_WIDTH_NONE,
     },
 });
 
@@ -145,8 +151,7 @@ function LocateTile(props: Props) {
     } = props;
 
     const styles = useThemedStyles(createTileStyles, { width });
-    // Presentation only. The hit-test derives its own from width/gridSize in utils/grid, so a
-    // change to how a cell is drawn cannot move where a tap lands.
+    // Keep this divisor in sync with resolveGridCellIndex, which hit-tests taps the same way.
     const cellSize = width / gridSize;
     const selectedSet = useMemo(() => new Set(selectedCells ?? []), [selectedCells]);
 
@@ -213,9 +218,7 @@ function LocateTile(props: Props) {
         lastTouchedCellRef.current = undefined;
     }, []);
 
-    // False positive: PanResponder.create stores the handlers and invokes them
-    // during gestures, not during render. The refs read inside each useCallback
-    // handler are only accessed at gesture time.
+    // False positive: these handlers read the refs at gesture time, not during render.
     // eslint-disable-next-line react-hooks/refs
     const panResponder = useMemo(() => PanResponder.create({
         onStartShouldSetPanResponder: shouldSetResponder,

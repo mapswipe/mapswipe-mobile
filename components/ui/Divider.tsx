@@ -53,7 +53,8 @@ const createStyle = (
 };
 
 export interface DividerProps {
-    /** `default` for light surfaces, `onBrand` for the dark session chrome. */
+    style?: never;
+    /** `default` for light surfaces, `onBrand` for the dark session surface. */
     colorVariant?: DividerColorVariant;
     /**
      * Breathing room above and below the rule, as a margin. Leave it out when the parent

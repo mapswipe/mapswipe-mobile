@@ -51,7 +51,7 @@ interface ContentVariantSpec {
 }
 
 const CONTENT_VARIANT = {
-    /** Default. The only rung that lets the keyboard capitalise and autocorrect. */
+    /** Default. */
     text: {
         keyboardType: 'default',
         autoCapitalize: 'sentences',
@@ -104,7 +104,7 @@ const CONTENT_VARIANT = {
 export type TextInputContentVariant = keyof typeof CONTENT_VARIANT;
 
 /**
- * Three rungs, because a `readOnly` boolean cannot separate two intents: a busy form should
+ * Three states, because a `readOnly` boolean cannot separate two intents: a busy form should
  * read as unavailable, while a value on display should read as ordinary text. Only the first dims.
  */
 const EDIT_STATE = {
@@ -141,6 +141,7 @@ const createInputStyle = (
 });
 
 interface CommonProps {
+    style?: never;
     colorVariant?: TextInputColorVariant;
 
     /** Defaults to `text`. See CONTENT_VARIANT: this is the keyboard, not the look. */
@@ -152,7 +153,7 @@ interface CommonProps {
     value?: string;
     onChangeText?: (value: string) => void;
 
-    /** Defaults to `editable`. Both other rungs reach RN through `readOnly`. */
+    /** Defaults to `editable`. */
     stateVariant?: TextInputStateVariant;
 
     /** Character cap. Not a size token: it counts characters, not pixels. */
@@ -180,7 +181,7 @@ export type TextInputProps = CommonProps & ({
 });
 
 /**
- * A single-line text field: label, hint and error chrome from Field, keyboard from
+ * A single-line text field: label, hint and error from Field, keyboard from
  * `contentVariant`, colours from one role so the box and its text cannot disagree.
  */
 function TextInput(props: TextInputProps) {

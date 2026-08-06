@@ -21,9 +21,11 @@ import {
     isNotDefined,
 } from '@togglecorp/fujs';
 
+import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import {
     getBbox,
+    getCenterFromBBox,
     getOptimalZoomLevel,
     standardizeQuadKey,
 } from '@/utils/geo';
@@ -33,8 +35,7 @@ interface Props {
     geoJson: GeoJSON.GeoJSON;
     tileServer: FbObjRasterTileServer;
     hideLines?: boolean;
-    // Applied to the tile container, e.g. `{ flex: 1 }` so the map fills a
-    // flex slot (the container otherwise sizes to content and can collapse).
+    // The container sizes to content, so a caller filling a flex slot must pass `{ flex: 1 }`.
     style?: StyleProp<ViewStyle>;
 }
 
@@ -60,16 +61,15 @@ function MapTile(props: Props) {
 
     const instanceId = useId();
 
+    const theme = useTheme();
     const styles = useThemedStyles(createStyles);
 
     const bounds = useMemo(() => getBbox(geoJson), [geoJson]);
 
-    const center = useMemo<[number, number] | undefined>(() => {
-        if (isNotDefined(bounds)) {
-            return undefined;
-        }
-        return [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2];
-    }, [bounds]);
+    const center = useMemo<[number, number] | undefined>(
+        () => (isNotDefined(bounds) ? undefined : getCenterFromBBox(bounds)),
+        [bounds],
+    );
 
     const zoomLevel = useMemo(
         () => (isDefined(bounds) ? getOptimalZoomLevel(bounds) : 18),
@@ -79,8 +79,8 @@ function MapTile(props: Props) {
     const lineLayerStyle = useMemo(() => ({
         lineWidth: 1,
         lineOpacity: hideLines ? 0 : 0.9,
-        lineColor: '#ffffff' as string,
-    }), [hideLines]);
+        lineColor: theme.textOnPrimary as string,
+    }), [hideLines, theme]);
 
     return (
         <View style={[styles.container, style]}>

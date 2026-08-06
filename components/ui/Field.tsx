@@ -51,7 +51,7 @@ interface FieldStateOutline {
  * Only the outline and the dimming move; the surface stays put.
  *
  * `focused` uses `onSurface`, the one slot guaranteed legible against `surface`: brand navy on
- * a brand field would be an invisible ring. `errored` is the only rung that leaves the role.
+ * a brand field would be an invisible ring. `errored` is the only state that leaves the role.
  */
 const FIELD_STATE = {
     default: { colorVariant: undefined, slot: 'border', dimmed: false },
@@ -62,13 +62,13 @@ const FIELD_STATE = {
 
 export type FieldStateType = keyof typeof FIELD_STATE;
 
-/** 12, where the box used an off-ladder 14. The hairline is inside, so the height is unchanged. */
+/** 12, where the box used an untokenised 14. The hairline is inside, so the height is unchanged. */
 const CONTAINER_PADDING = '2xs' satisfies SpacingType;
 
 /** 8, not 16: forms gap their fields by 24, and 16 inside that does not read as grouping. */
 const FIELD_GAP = '3xs' satisfies SpacingType;
 
-/** 6, the radius the box already draws, as a rung rather than a literal. */
+/** 6, the radius the box already draws, as a token rather than a literal. */
 const CONTAINER_RADIUS = 'xs' satisfies RadiusType;
 
 interface FieldStateFlags {
@@ -130,7 +130,7 @@ const createStyles = (theme: AppTheme, options: FieldStyleOptions): FieldStyles 
             }),
             backgroundColor: theme[FIELD_SURFACE[colorVariant]],
             borderColor: resolveColor(theme, outline.colorVariant ?? colorVariant, outline.slot),
-            // Constant across every rung, so focusing never reflows the box: RN draws a
+            // Constant across every state, so focusing never reflows the box: RN draws a
             // border on the inside, so a state that thickened it would shift the text.
             borderWidth: BORDER_WIDTH_THIN,
         },
@@ -138,6 +138,7 @@ const createStyles = (theme: AppTheme, options: FieldStyleOptions): FieldStyles 
 };
 
 export interface FieldProps {
+    style?: never;
     /** Any subtree: focus arrives as a bubbled event, so nothing has to cooperate. */
     children: ReactNode;
 
@@ -162,7 +163,6 @@ export interface FieldProps {
 }
 
 /**
- * The chrome around an input: label above, box around, hint or error below.
  *
  * Focus needs no ref, cloneElement or slot contract: RN registers topFocus and topBlur as
  * bubbling events, so a control anywhere in the subtree reaches the box's own handlers.

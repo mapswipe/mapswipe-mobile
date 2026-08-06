@@ -9,12 +9,9 @@ import {
 import Box from '@/components/ui/Box';
 import useTheme from '@/hooks/useTheme';
 
-/**
- * An adapter over @symbiot.dev/react-native-heatmap, which takes its cell size, gap, radius and
- * five-colour ramp as props rather than styles. It lives in ui because it needs the theme's actual
- * colour values to fill that ramp, the same reason ui/Toast/config does.
- */
+// The library takes its cell size, gap, radius and colour ramp as props, not styles.
 type HeatMapProps = {
+    style?: never;
     activityData: Record<string, number>;
 };
 
@@ -63,7 +60,6 @@ function HeatMap({ activityData }: HeatMapProps) {
         sidebarTextColor: theme.textPrimary,
         headerTextColor: theme.textPrimary,
     };
-    // flexGrow: 1 in a row, which is all the shim resolved to for a single child.
     return (
         <Box
             direction="row"

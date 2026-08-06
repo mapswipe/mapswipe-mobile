@@ -10,13 +10,13 @@ interface Props {
     );
     sourceKey: string;
     layerKey: string;
-    layerOptions?: unknown;
+    layerOptions: unknown;
     overrideZoomLevel?: number;
     overrideBounds?: GeoJSON.Polygon | null;
     withPadding?: boolean;
 }
 
-// Native stub: GeoJsonMapSource.web.tsx is the real implementation, so every prop is ignored here.
+// Native stub: GeoJsonMapSource.web.tsx is the real implementation.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function GeoJsonMapSource(_props: Props) {
     return (

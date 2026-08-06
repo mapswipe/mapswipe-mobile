@@ -32,7 +32,7 @@ export type MediaSource = ImageSourcePropType | string | undefined;
 // a percentage string. Named, because a bare '100%' is a size literal the lint rejects.
 const FULL_EXTENT = '100%';
 
-/** Square footprints, smallest first. Short on purpose: no rung is picked by eye. */
+/** Square footprints, smallest first. Short on purpose: no size is picked by eye. */
 const SQUARE_FOOTPRINT = {
     /** 24. The heart beside the contribution count in the project detail bottom bar. */
     xs: { width: ICON_SIZE['2xl'], height: ICON_SIZE['2xl'] },
@@ -70,7 +70,7 @@ const OPEN_STYLE_VARIANT = {
 
 /**
  * RN clamps a radius to half the shorter side, so `full` is a circle on a square box and a
- * pill on anything else. Its own map is what offers it on the square rungs only.
+ * pill on anything else. Its own map is what offers it on the square sizes only.
  */
 const SQUARE_STYLE_VARIANT = {
     circle: { borderRadius: RADIUS.full },
@@ -113,6 +113,7 @@ const createStyle = (theme: AppTheme, options: StyleOptions): ImageStyle => {
 };
 
 interface CommonProps {
+    style?: never;
     source: MediaSource;
     /** Shows while a remote image loads and through a transparent asset. */
     colorVariant?: ColorVariant;
@@ -123,6 +124,7 @@ interface CommonProps {
 
 /** A label, or an explicit statement that there is nothing to say. The opt-out is greppable. */
 type MediaLabelProps = {
+    style?: never;
     accessibilityLabel: string;
     withoutAccessibilityLabel?: never;
 } | {
@@ -132,7 +134,8 @@ type MediaLabelProps = {
 };
 
 type MediaShapeProps = {
-    /** Required: no rung is the majority, so a default would be a guess. */
+    style?: never;
+    /** Required: no option is the majority, so a default would be a guess. */
     sizeVariant: MediaSquareSizeType;
     /** Corner treatment. Defaults to `plain`. */
     styleVariant?: MediaStyleVariant;

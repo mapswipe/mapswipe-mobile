@@ -8,9 +8,8 @@ import { type TextVariant } from '@/constants/typography';
 import { type SpacingType } from '@/utils/styles';
 
 interface SectionLayout {
-    /** Rung of the type scale the heading is drawn at. */
     titleVariant: TextVariant;
-    /** One rung for the heading gap, the item gap and (with `withPadding`) the inset. */
+    /** One value for the heading gap, the item gap and (with `withPadding`) the inset. */
     spacing: SpacingType;
 }
 
@@ -18,8 +17,8 @@ interface SectionLayout {
  * `default` is a settings-group heading over a list of rows; `compact` is a titled block nested
  * in a row or card, where the wider gap would break the pairing.
  *
- * Deliberately no page-title rung: the screen's name belongs to the screen, and a Section that
- * could impersonate one would put two page titles on a screen.
+ * Deliberately no page-title variant: the screen's name belongs to the screen, and a
+ * Section that could impersonate one would put two page titles on a screen.
  */
 const SIZE_VARIANT = {
     default: { titleVariant: 'title', spacing: 'xs' },
@@ -29,6 +28,7 @@ const SIZE_VARIANT = {
 export type SectionSizeVariant = keyof typeof SIZE_VARIANT;
 
 export interface SectionProps {
+    style?: never;
     /** A string, not a node: it is also the accessible name of the header landmark. */
     title: string;
 

@@ -20,10 +20,6 @@ import {
     type SpacingType,
 } from '@/utils/styles';
 
-/**
- * A designed inset is a spacing rung, a measured one a number. Both are needed, and they cannot
- * be confused, because a rung is a string.
- */
 type Inset = SpacingType | number;
 
 function resolveInset(inset: Inset | undefined): number | undefined {
@@ -34,57 +30,39 @@ function resolveInset(inset: Inset | undefined): number | undefined {
     return typeof inset === 'number' ? inset : getSpacingValue(inset);
 }
 
-// `display`, not `opacity`: an anchored box is out of flow, so removing it reflows nothing,
-// and unlike conditional rendering it leaves the subtree mounted.
+// `display`, not conditional rendering: it hides the box but leaves the subtree mounted.
 const hiddenStyle: ViewStyle = { display: 'none' };
 
 export interface PositionedProps {
+    style?: never;
     children?: ReactNode;
 
-    /**
-     * Required: every rung emits position: absolute, so a Positioned is never accidentally in
-     * flow. The stretching rungs pin both inline edges, giving extent without a width.
-     */
+    /** Every anchor emits position: absolute, so a Positioned is never in flow. */
     anchor: AnchorType;
 
-    /**
-     * Inset on every edge the anchor pins. Negative values overhang the parent, which is how
-     * a corner badge sits proud of the icon it counts.
-     */
+    /** Inset on every edge the anchor pins. Negative values overhang the parent. */
     offset?: Inset;
     offsetBlock?: Inset;
     offsetInline?: Inset;
 
-    /**
-     * Measured geometry, as numbers: a slot height from onLayout, a tile width divided out of
-     * the viewport. A designed size is a token the caller reads and passes as its number.
-     */
     width?: number;
     height?: number;
 
-    /** How the box places its own content, e.g. a control bottom-anchored inside a tall bar. */
     align?: AlignType;
     justify?: JustifyType;
 
-    /** The box's own content inset. Rhythm between children belongs to Stack and Row. */
     padding?: SpacingType;
     paddingInline?: SpacingType;
     paddingBlockEnd?: SpacingType;
 
-    /**
-     * Stacking rung. zIndex and Android's elevation move together, because elevation can
-     * outrank zIndex there and leave a lifted overlay underneath its siblings.
-     */
+    /** Android's elevation can outrank zIndex, so both move together. */
     layer?: LayerType;
 
-    /** Out of layout, children still mounted. */
     hidden?: boolean;
 
-    /** An overlay that eats touches meant for the map or tile under it is a bug. */
     pointerEvents?: ViewProps['pointerEvents'];
 }
 
-/** Anchored box. Every position: absolute in the app resolves through this. */
 function Positioned(props: PositionedProps) {
     const {
         children,

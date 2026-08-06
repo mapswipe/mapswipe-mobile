@@ -17,6 +17,7 @@ import {
     CONTROL_SIZE,
     ICON_SIZE,
     type IconSizeType,
+    TOUCH_TARGET_MIN,
 } from '@/constants/size';
 import {
     type AppTheme,
@@ -25,39 +26,40 @@ import {
     resolveColor,
 } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
-import { resolveBoxStyle } from '@/utils/layout';
+import {
+    type AlignType,
+    resolveBoxStyle,
+} from '@/utils/layout';
 import { getSpacingValue } from '@/utils/styles';
 
-/**
- * `hug` is off the CONTROL_SIZE ladder: its box is the glyph plus a symmetric inset rather than
- * a designed diameter. Written as the sum so the box and the glyph cannot drift apart.
- */
+// `hug` sizes its box off the glyph instead of the CONTROL_SIZE scale.
 const HUG_GLYPH: IconSizeType = '2xl';
 const HUG_INSET = getSpacingValue('3xs');
 
-/** The glyph is derived, not a second size prop: box and glyph are not independent. */
 const CONTROL_SIZING = {
-    hug: { footprint: ICON_SIZE[HUG_GLYPH] + HUG_INSET + HUG_INSET, glyph: HUG_GLYPH },
-    sm: { footprint: CONTROL_SIZE.sm, glyph: 'md' },
-    md: { footprint: CONTROL_SIZE.md, glyph: 'xl' },
-    lg: { footprint: CONTROL_SIZE.lg, glyph: '2xl' },
-} as const satisfies Record<string, { footprint: number; glyph: IconSizeType }>;
+    hug: { align: 'center', footprint: ICON_SIZE[HUG_GLYPH] + HUG_INSET + HUG_INSET, glyph: HUG_GLYPH },
+    // A native header slot bounds touches to its own frame, so hitSlop cannot reach out of it
+    // and the box has to be the whole target. Leading-aligned, or centring the glyph in a
+    // 44 box would push it past the platform keyline the slot already sits on.
+    header: { footprint: TOUCH_TARGET_MIN, glyph: HUG_GLYPH, align: 'start' },
+    sm: { align: 'center', footprint: CONTROL_SIZE.sm, glyph: 'md' },
+    md: { align: 'center', footprint: CONTROL_SIZE.md, glyph: 'xl' },
+    lg: { align: 'center', footprint: CONTROL_SIZE.lg, glyph: '2xl' },
+} as const satisfies Record<string, {
+    footprint: number;
+    glyph: IconSizeType;
+    align: AlignType;
+}>;
 
 export type IconButtonSizeVariant = keyof typeof CONTROL_SIZING;
 
 interface IconButtonChrome {
-    /** Fills the disc from the role's `surface` slot. */
     withSurface: boolean;
-    /** Hairline ring from the role's `border` slot. */
     withBorder: boolean;
 }
 
-/**
- * `outlined` fills as well as rings, because the one ringed button sits over imagery.
- *
- * `plain` paints nothing, which Surface cannot express (it always emits a backgroundColor), and
- * Surface has no outline either. That is why this file owns its disc rather than composing one.
- */
+// The disc is drawn here rather than with Surface, which always emits a backgroundColor and has
+// no outline.
 const STYLE_VARIANT = {
     plain: { withSurface: false, withBorder: false },
     filled: { withSurface: true, withBorder: false },
@@ -66,25 +68,19 @@ const STYLE_VARIANT = {
 
 export type IconButtonStyleVariant = keyof typeof STYLE_VARIANT;
 
-/** The rungs that paint a disc, so the colour prop can be narrowed on exactly those. */
 type PaintedStyleVariant = Exclude<IconButtonStyleVariant, 'plain'>;
 
 type RoleSlots<KEY extends ColorVariant> = (typeof COLOR_ROLE)[KEY];
 
-/**
- * Roles whose `content` and `onSurface` are the same key. ui/Icon can only resolve `content`,
- * so on any other role a filled button would draw the glyph in the colour of its own fill.
- */
+// Roles whose `content` and `onSurface` are the same key: on any other role a filled disc would
+// draw the glyph in the colour of its own fill.
 type SelfLegibleColorVariant = {
     [KEY in ColorVariant]: RoleSlots<KEY>['content'] extends RoleSlots<KEY>['onSurface']
         ? KEY
         : never;
 }[ColorVariant];
 
-/**
- * The glyph over an author-supplied fill. The one pairing the theme cannot vouch for: no token
- * knows how dark the author's colour is, so a pale customOption still yields a pale glyph.
- */
+// The glyph over an author-supplied fill: no token can know how dark that colour is.
 const GLYPH_ON_AUTHOR_FILL = 'onBrand' satisfies ColorVariant;
 
 interface IconButtonStyleOptions {
@@ -95,10 +91,7 @@ interface IconButtonStyleOptions {
     selected: boolean | undefined;
 }
 
-/**
- * One box, so this returns the style rather than a StyleSheet. Chrome is a conditional spread:
- * an explicit `backgroundColor: undefined` is not the same as no key. Opacity is Pressable's.
- */
+// Spread conditionally: `backgroundColor: undefined` is not the same as no key at all.
 const createButtonStyle = (theme: AppTheme, options: IconButtonStyleOptions): ViewStyle => {
     const {
         colorVariant,
@@ -109,13 +102,9 @@ const createButtonStyle = (theme: AppTheme, options: IconButtonStyleOptions): Vi
     } = options;
 
     const { withSurface, withBorder } = STYLE_VARIANT[styleVariant];
-    const { footprint } = CONTROL_SIZING[sizeVariant];
+    const { footprint, align } = CONTROL_SIZING[sizeVariant];
 
-    // Verified to render on RN 0.85's New Architecture. An outline sits outside the border box,
-    // so unlike a border it costs the glyph no room and the disc keeps its footprint whether
-    // or not the button is selected. `selectionRing` rather than `card`, which is what ships
-    // today: card is #0F172A in the dark theme, i.e. a ring that all but disappears against
-    // the dark session background it is drawn on.
+    // An outline sits outside the border box, so the disc keeps its footprint when selected.
     const selectionRing: ViewStyle = {
         outlineStyle: 'dashed',
         outlineWidth: FOCUS_RING_WIDTH,
@@ -125,12 +114,11 @@ const createButtonStyle = (theme: AppTheme, options: IconButtonStyleOptions): Vi
 
     return {
         ...resolveBoxStyle({
-            align: 'center',
+            align,
             justify: 'center',
             width: footprint,
             height: footprint,
-            // RN clamps a corner to half the shorter side, so `full` on a square box is a
-            // circle. This is the borderRadius: '50%' the component ships today.
+            // RN clamps a corner to half the shorter side, so `full` on a square box is a circle.
             radius: 'full',
         }),
         ...(withSurface ? {
@@ -145,6 +133,7 @@ const createButtonStyle = (theme: AppTheme, options: IconButtonStyleOptions): Vi
 };
 
 interface CommonProps<NAME> {
+    style?: never;
     /** Handed back to every handler, so a row of buttons shares one callback. */
     name: NAME;
 

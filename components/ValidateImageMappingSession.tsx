@@ -20,7 +20,7 @@ import Pager from '@/components/ui/Pager';
 import ProgressBar from '@/components/ui/ProgressBar';
 import Row from '@/components/ui/Row';
 import Stack from '@/components/ui/Stack';
-import ImageWrapper from '@/components/ValidateImageWrapper';
+import ImageWrapper from '@/components/ui/tile/ValidateImageWrapper';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
 import {

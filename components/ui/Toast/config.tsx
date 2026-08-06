@@ -14,26 +14,17 @@ import Stack from '../Stack';
 import Surface from '../Surface';
 import Text from '../Text';
 
-/**
- * The library centres the card in a full-width container, so nothing above it gives it a width:
- * without one a short toast is a pill and a sentence runs edge to edge. 340 is the library's own
- * BaseToast width, which it does not export. Not a token: it is the third-party frame.
- */
+// Nothing above the card gives it a width; 340 is the library's own unexported BaseToast width.
 const TOAST_WIDTH = 340;
 
-/** The library draws 5 pt; this is the widest generic rung, one point thinner. */
 const ACCENT_RULE_WIDTH = BORDER_WIDTH_THICK;
 
 interface ToastKindTreatment {
-    /** One prop for rule and glyph: all four roles hold the same colour in both slots. */
     colorVariant: ColorVariant;
     iconName: IconName;
 }
 
-/**
- * Keys are the library's own `type` strings, which is the wire: it looks the renderer up by them
- * and throws on a type with no entry. Values are roles, not situations.
- */
+// Keys are the library's own `type` strings: it looks renderers up by them.
 const TOAST_KIND = {
     success: { colorVariant: 'positive', iconName: 'checkmark-outline' },
     error: { colorVariant: 'negative', iconName: 'ban-outline' },
@@ -44,20 +35,12 @@ const TOAST_KIND = {
 export type ToastKind = keyof typeof TOAST_KIND;
 
 export interface ToastCardProps {
-    /** Which treatment to draw. Derived from the map, so a kind with no entry cannot compile. */
+    style?: never;
     kind: ToastKind;
-    /** Required-but-nullable, so the renderer cannot forget a line the library may omit. */
     title: string | undefined;
     message: string | undefined;
 }
 
-/**
- * One toast: a card whose leading edge carries the kind's colour, with a glyph and two lines.
- *
- * Not the library's BaseToast, which hard-codes a white fill with black text and so ignores the
- * dark theme. No press target either: the library defaults `onPress` to a noop, so a renderer
- * cannot tell "no action" from "an action". Swipe-to-dismiss lives on the container, not here.
- */
 export function ToastCard(props: ToastCardProps) {
     const {
         kind,
@@ -67,8 +50,7 @@ export function ToastCard(props: ToastCardProps) {
 
     const { colorVariant, iconName } = TOAST_KIND[kind];
 
-    // A toast is out of the reading order, so a screen reader gets one node with both lines
-    // rather than two stray labels it may never reach.
+    // A toast is out of the reading order, so announce both lines as one node.
     const announcement = [title, message].filter(isTruthyString).join('. ');
 
     return (
@@ -82,8 +64,7 @@ export function ToastCard(props: ToastCardProps) {
                 styleVariant="elevated"
                 radius="xs"
                 width={TOAST_WIDTH}
-                // So the inner card's square corners follow the outer radius, the way a
-                // borderLeft does.
+                // Clip so the inner card's square corners follow the outer radius.
                 withClipping
             >
                 <Row spacing="none" align="stretch">
@@ -102,9 +83,6 @@ export function ToastCard(props: ToastCardProps) {
                             />
                             <Stack spacing="4xs" grow="fill">
                                 {isTruthyString(title) && (
-                                    // One line, matching the library's text1NumberOfLines
-                                    // default; the message below it is free to wrap, which is
-                                    // what text2NumberOfLines={0} was asking for.
                                     <Text variant="subtitle" numberOfLines={1}>
                                         {title}
                                     </Text>
@@ -123,10 +101,7 @@ export function ToastCard(props: ToastCardProps) {
     );
 }
 
-/**
- * The library calls a config entry rather than mounting it, so it must return an element of a
- * real component: hooks written here would belong to the library's render.
- */
+// The library calls the entry rather than mounting it, so no hooks belong here.
 function createToastRenderer(kind: ToastKind) {
     return function renderToast(params: ToastConfigParams<unknown>) {
         return (
@@ -139,13 +114,7 @@ function createToastRenderer(kind: ToastKind) {
     };
 }
 
-/**
- * The whole surface react-native-toast-message sees, derived from TOAST_KIND so the two cannot
- * drift. Object.keys widens to string[], hence the cast.
- *
- * Only this file and components/Toast.ts know the library exists; a `type` with no entry here
- * throws at show time.
- */
+// Derived from TOAST_KIND: a `type` with no entry here throws at show time.
 export const toastConfig: ToastConfig = Object.fromEntries(
     (Object.keys(TOAST_KIND) as ToastKind[]).map(
         (kind) => [kind, createToastRenderer(kind)],

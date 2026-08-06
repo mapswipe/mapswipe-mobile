@@ -40,10 +40,8 @@ interface SurfaceChrome {
 }
 
 /**
- * The chrome each rung adds on top of the fill.
- *
- * The two ringed rungs differ in slot as well as width: a hairline in `border` is divider-weight
- * chrome, while a 2px ring is a statement and wants the saturated `content` slot.
+ * The two ringed variants differ in slot as well as width: a hairline in `border` is
+ * divider-weight, while a 2px ring is a statement and wants the saturated `content` slot.
  */
 const STYLE_VARIANT = {
     flat: {
@@ -66,7 +64,7 @@ const STYLE_VARIANT = {
 
 export type SurfaceStyleVariant = keyof typeof STYLE_VARIANT;
 
-/** The rungs that draw a ring, so the border colour prop can be closed off on the others. */
+/** The variants that draw a ring, so the border colour prop can be closed off on the others. */
 type RingedStyleVariant = Extract<SurfaceStyleVariant, 'outlined' | 'outlinedStrong'>;
 
 /**
@@ -81,7 +79,7 @@ const FLEX_STYLE = {
 export type SurfaceFlexType = keyof typeof FLEX_STYLE;
 
 function resolvePadding(padding: SpacingType | undefined): number | undefined {
-    // getSpacingValue defaults an absent rung to 'md', so the guard is what keeps an
+    // getSpacingValue defaults an absent value to 'md', so the guard is what keeps an
     // unpadded surface unpadded.
     return padding === undefined ? undefined : getSpacingValue(padding);
 }
@@ -102,8 +100,8 @@ interface SurfaceStyleOptions {
 }
 
 /**
- * One box, so this returns the style directly. Chrome is a conditional spread: RN reads a
- * present-but-undefined border differently from an absent one.
+ * The border is a conditional spread: RN reads a present-but-undefined border differently
+ * from an absent one.
  */
 const createSurfaceStyle = (theme: AppTheme, options: SurfaceStyleOptions): ViewStyle => {
     const {
@@ -149,6 +147,7 @@ const createSurfaceStyle = (theme: AppTheme, options: SurfaceStyleOptions): View
 };
 
 interface CommonProps {
+    style?: never;
     children: ReactNode;
 
     /** The role's `surface` slot, so a fill and not a foreground. Defaults to `default`. */

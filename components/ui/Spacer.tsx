@@ -7,6 +7,7 @@ import {
 } from '@/utils/styles';
 
 export interface SpacerProps {
+    style?: never;
     /**
      * Required for the same reason Stack's spacing is: an unspecified amount of space is how
      * inconsistent rhythm gets in. Pass 'none' for a purely flexible spacer.
@@ -25,7 +26,7 @@ export interface SpacerProps {
  *
  * Block axis only, because nothing needs the inline one yet: the two inline fillers in the app
  * (AccessibilityInfoModal's blank badge slot and TileGridMappingSession's page filler) are sized
- * by a size token and by measured geometry, neither of which is a rung on the spacing scale.
+ * by a size token and by measured geometry, neither of which is on the spacing scale.
  */
 function Spacer(props: SpacerProps) {
     const {

@@ -18,12 +18,12 @@ import {
     listToMap,
 } from '@togglecorp/fujs';
 
-import HideTileSelectionButton from '@/components/HideTileSelectionButton';
-import LocateTile from '@/components/LocateTile';
-import ScaleBar from '@/components/ScaleBar';
+import LocateTile from '@/components/domain/LocateTile';
 import Badge from '@/components/ui/Badge';
 import Box from '@/components/ui/Box';
+import HideTileSelectionButton from '@/components/ui/HideTileSelectionButton';
 import IconButton from '@/components/ui/IconButton';
+import ScaleBar from '@/components/ui/map/ScaleBar';
 import Pager, {
     type PageGeometry,
     type PagerPosition,
@@ -49,53 +49,29 @@ import {
     type TileTask,
 } from '@/utils/types';
 
-/**
- * Inline chrome the tile does not get: a 10pt gutter on each side, so 20 for the pair. It has
- * to be stated as the pair, because that is what useFittedTileWidth takes off the page before
- * it divides.
- */
 const TILE_RESERVE_INLINE = 20;
 
 const TILE_ROWS = 2;
 
-/**
- * Gap kept between the bottom of the selection-controls bar and the top of the tile. The bar is
- * sized to the space above the tile less this, so it never overlaps the imagery.
- */
+// Gap kept above the tile, so the selection controls bar never overlaps the imagery.
 const CONTROLS_BAR_CLEARANCE = 16;
 
 const OPTIONS_BAR_WIDTH_FRACTION = 0.92;
 
-/**
- * What LocateTile paints onto a cell whose answer has no colour of its own. A sentinel and not
- * a token: ResultOption.color is a required string, and the tile leaf has always taken this
- * exact word to mean "leave the imagery bare".
- */
+// Sentinel LocateTile reads as "leave the imagery bare"; ResultOption.color cannot be undefined.
 const TRANSPARENT_ANSWER = 'transparent';
 
-/** Frozen, so holding the hide-tiles button does not hand LocateTile a new map every render. */
+// Module level, so holding the hide-tiles button does not hand LocateTile a new map every render.
 const NO_ANSWER_COLORS: Record<number, ResultOption> = {};
 
-// Locate features stores an array of cell values per task. CellResults is the
-// locate-specific projection of the shared Results union.
+// Locate stores an array of cell values per task.
 type CellResults = Record<string, number[]>;
 
-/**
- * An answer as this session needs it, and the one place the two colour sources are reconciled.
- *
- * A project's own `customOptions` are Firebase author data: `iconColor` is an arbitrary string
- * that can never be a theme token. A project that ships none falls back to the two built-in
- * locate answers, whose colours are tokens and are resolved through useAnswerColors, the bridge
- * that exists because LocateTile has not moved into components/ui yet and still takes a colour
- * string. Conflating the two would route author data through the token table, or paint a token
- * answer in whatever colour a project happened to publish.
- */
 interface LocateOption {
     value: number;
     label: string;
-    /** Cell tint. `undefined` leaves the imagery bare, which is what the "No" answer does. */
+    // undefined leaves the imagery bare, which is what the "No" answer does.
     tintColor: string | undefined;
-    /** Fill for the chip's leading dot, or `undefined` for the muted swatch. */
     dotColor: string | undefined;
 }
 
@@ -104,9 +80,7 @@ interface Props {
     projectDetails: LocateFeaturesProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
-    // Project completion screen, rendered as the final swipeable page.
     completionPage: ReactNode;
-    // Fired once the user scrolls onto the completion page (mapping finished).
     onReachedEnd?: () => void;
 }
 
@@ -120,14 +94,10 @@ function LocateFeaturesMappingSession(props: Props) {
         onReachedEnd,
     } = props;
 
-    // The page showing now, counted the way the pager reports it: the tasks first, then the
-    // completion page. Held here rather than left to the pager because "Go Back" on the outro
-    // sets it.
+    // Owned here, not by the pager, because "Go Back" on the outro sets it.
     const [pageIndex, setPageIndex] = useState(0);
     const [mode, setMode] = useState<'mapping' | 'selection'>('mapping');
     const [selectedCellsByTask, setSelectedCellsByTask] = useState<Record<string, number[]>>({});
-    // Height of the scroll viewport, so the completion page can fill it and the floating bars
-    // can be anchored against it.
     const [viewportHeight, setViewportHeight] = useState(0);
 
     const { t } = useTranslation('mappingSession');
@@ -173,8 +143,7 @@ function LocateFeaturesMappingSession(props: Props) {
     const options = useMemo<LocateOption[]>(() => {
         if (isDefined(customOptions) && customOptions.length > 0) {
             return customOptions.map((option) => {
-                // The author's own sentinel for a colourless answer, handled here so a backend
-                // 'transparent' reaches the chip as the muted swatch rather than as a raw fill.
+                // An author's 'transparent' means no fill, not a colour to paint.
                 const color = option.iconColor === TRANSPARENT_ANSWER
                     ? undefined
                     : option.iconColor;
@@ -188,8 +157,7 @@ function LocateFeaturesMappingSession(props: Props) {
             }).sort((a, b) => compareNumber(a.value, b.value));
         }
 
-        // labelKey is not in public/locales yet, so defaultLabel is what renders: the same
-        // hardcoded 'No' / 'Yes' the fallback list shipped before, now translatable.
+        // labelKey is not in public/locales yet, so defaultLabel is what renders.
         return LOCATE_DEFAULT_ANSWER_OPTIONS.map((option) => ({
             value: option.value,
             label: t(option.labelKey, option.defaultLabel),
@@ -309,8 +277,6 @@ function LocateFeaturesMappingSession(props: Props) {
         }
     }, [currentTaskId]);
 
-    // Applies the chosen option's value to every selected cell, then clears the
-    // selection so the next batch can be selected fresh.
     const handleApplyOptionToSelected = useCallback((value: number) => {
         if (isNotDefined(currentTaskId)) {
             return;
@@ -366,10 +332,7 @@ function LocateFeaturesMappingSession(props: Props) {
         setViewportHeight(geometry.height);
     }, []);
 
-    // "Go Back" on the outro returns to the first task so the user reviews the
-    // group from the start. The jump is instant (not animated): animating all
-    // the way back from the completion page would render every intermediate
-    // page and is what made repeated go-backs unstable.
+    // Jump must stay instant: animating back from the outro renders every page in between.
     const handleOutroGoBack = useCallback(() => {
         setPageIndex(0);
     }, []);
@@ -381,14 +344,9 @@ function LocateFeaturesMappingSession(props: Props) {
         rows: TILE_ROWS,
     });
 
-    // The tile is vertically centered in the viewport, so its bottom edge sits
-    // at (viewportHeight + tileHeight) / 2. Anchor the options bar just below
-    // it, clear of the scale bar / progress bar / hide-tiles button.
+    // The tile is centred, so its bottom edge sits at (viewportHeight + tileWidth) / 2.
     const optionsBarTop = (viewportHeight + tileWidth) / 2;
-    // Mirror that above the tile: the controls bar spans the gap above the tile
-    // (height = the top gap, less the clearance), so the selection controls sit
-    // in the band above the imagery. Fall back to pageHeight before the viewport
-    // is measured, so the control is visible from the first frame.
+    // Mirrored above the tile; pageHeight stands in until the viewport is measured.
     const controlsBarHeight = Math.max(
         0,
         ((viewportHeight || pageHeight) - tileWidth) / 2 - CONTROLS_BAR_CLEARANCE,
@@ -450,10 +408,8 @@ function LocateFeaturesMappingSession(props: Props) {
                         handleCellSelect(task.taskId, cellIndex, action)
                     )}
                 />
-                {/* Below the tile and inside the centred group, so the pair is what gets
-                    centred: the tile ends up half a rung above the viewport's middle, clear
-                    of the scale bar and the progress bar. This is the page's 40pt bottom
-                    padding, which a centring parent spent the same way. */}
+                {/* Inside the centred group on purpose: it lifts the tile clear of the
+                    controls below. */}
                 <Spacer size="3xl" />
             </Stack>
         );
@@ -489,10 +445,9 @@ function LocateFeaturesMappingSession(props: Props) {
                 justify="center"
                 paddingInline="xs"
                 paddingBlockEnd="3xs"
-                layer="chrome"
-                // Hide the selection-mode controls on the completion page, without unmounting.
+                layer="controls"
                 hidden={atCompletion}
-                // Full-width, so the corner chrome underneath has to stay tappable.
+                // Full-width, so the corner controls underneath have to stay tappable.
                 pointerEvents="box-none"
             >
                 <Row spacing="sm">
@@ -525,8 +480,7 @@ function LocateFeaturesMappingSession(props: Props) {
                 index={pageIndex}
                 onIndexChange={handleIndexChange}
                 onGeometryChange={handleGeometryChange}
-                // Holds the user on the tile while cells are being dragged out, where a swipe
-                // would otherwise be read as paging.
+                // A drag across cells would otherwise be read as a page swipe.
                 withPagingLocked={mode === 'selection'}
                 scrollBehavior="instant"
             />
@@ -562,17 +516,15 @@ function LocateFeaturesMappingSession(props: Props) {
                     anchor="top"
                     offsetBlock={optionsBarTop}
                     align="center"
-                    layer="chrome"
-                    // Spans the window so the pill can centre in it, so it must not take the
-                    // touches meant for the corner chrome beside it.
+                    layer="controls"
+                    // Spans the window, so it must not take touches meant for the corner controls.
                     pointerEvents="box-none"
                 >
                     <Box maxWidth={pageWidth * OPTIONS_BAR_WIDTH_FRACTION}>
                         <Surface
                             styleVariant="outlined"
                             colorVariant="brand"
-                            // The hairline is the theme's divider, which the brand role's own
-                            // border slot does not carry.
+                            // The brand role carries no border colour of its own.
                             borderColorVariant="muted"
                             radius="lg"
                             paddingBlock="3xs"

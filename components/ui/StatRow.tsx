@@ -21,13 +21,14 @@ const DOT_SPACING: SpacingType = '3xs';
 const DOT_SIZE_VARIANT = '2xs' satisfies BadgeExtentVariant;
 
 export interface StatRowProps {
+    style?: never;
     /** What is being counted. */
     label: string;
 
     /** Already formatted for the locale. Optional: a row may carry its number in a Badge. */
     value?: string;
 
-    /** Defaults to `default`. `onBrand` on the dark session chrome. */
+    /** Defaults to `default`. `onBrand` on the dark session surface. */
     colorVariant?: ColorVariant;
 
     /** Separate from the value's: the pair is a `secondary` label against a `default` value. */

@@ -17,13 +17,13 @@ import {
 } from '@togglecorp/fujs';
 
 import AccessibilityInfoModal from '@/components/AccessibilityInfoModal';
-import HideTileSelectionButton from '@/components/HideTileSelectionButton';
-import ImageTile from '@/components/ImageTile';
-import ScaleBar from '@/components/ScaleBar';
+import HideTileSelectionButton from '@/components/ui/HideTileSelectionButton';
+import ScaleBar from '@/components/ui/map/ScaleBar';
 import Pager, { type PagerPosition } from '@/components/ui/Pager';
 import ProgressBar from '@/components/ui/ProgressBar';
 import Stack from '@/components/ui/Stack';
 import Text from '@/components/ui/Text';
+import ImageTile from '@/components/ui/tile/ImageTile';
 import { TILE_ANSWER_OPTIONS } from '@/constants/answers';
 import useAnswerBadgesEnabled from '@/hooks/useAnswerBadgesEnabled';
 import useAnswerColors from '@/hooks/useAnswerColors';
@@ -38,17 +38,11 @@ import {
     Results,
 } from '@/utils/types';
 
-/**
- * The tap cycle, and the answer values that reach the backend: 0 No, 1 Yes, 2 Maybe,
- * 3 Bad Imagery, in that order. Spread out of the readonly tuple so listToMap and findIndex
- * can take it.
- */
+// Tap cycle order, and the values sent to the backend: 0 No, 1 Yes, 2 Maybe, 3 Bad Imagery.
 const OPTIONS = [...TILE_ANSWER_OPTIONS];
 
-// Before and After are stacked, so the two of them share the window's block axis.
 const TILE_ROWS = 2;
 
-// Inline chrome the pair does not get: a 10pt gutter on each side of a tile.
 const TILE_RESERVE_INLINE = 20;
 
 const TILE_RESERVE_BLOCK = 240;
@@ -58,9 +52,7 @@ interface Props {
     projectDetails: CompareProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
-    // Project completion screen, rendered as the final swipeable page.
     completionPage: ReactNode;
-    // Fired once the user scrolls onto the completion page (mapping finished).
     onReachedEnd?: () => void;
 }
 
@@ -74,9 +66,7 @@ function CompareMappingSession(props: Props) {
         onReachedEnd,
     } = props;
 
-    // The page showing now, counted the way the pager reports it: the tasks first, then the
-    // completion page. Held here rather than left to the pager because "Go Back" on the outro
-    // sets it.
+    // Owned here, not by the pager, because "Go Back" on the outro sets it.
     const [pageIndex, setPageIndex] = useState(0);
 
     const {
@@ -168,9 +158,7 @@ function CompareMappingSession(props: Props) {
         }
     }, [onReachedEnd]);
 
-    // "Go Back" on the outro returns to the first task so the user reviews the group from the
-    // start. The jump is instant (not animated): animating all the way back from the completion
-    // page would render every intermediate page and is what made repeated go-backs unstable.
+    // Jump must stay instant: animating back from the outro renders every page in between.
     const handleOutroGoBack = useCallback(() => {
         setPageIndex(0);
     }, []);

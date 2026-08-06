@@ -101,7 +101,7 @@ export type ListViewVirtualizationType = keyof typeof VIRTUALIZATION;
 
 /**
  * Borrowed from Stack so the two agree: `slot` may shrink below its content, `fill` only takes
- * the leftover. The `satisfies Record<GrowType, ...>` breaks this file if Stack gains a rung.
+ * the leftover. The `satisfies Record<GrowType, ...>` breaks this file if GrowType changes.
  */
 const GROW_STYLE = {
     slot: resolveBoxStyle({ flex: 1, minHeight: 0 }),
@@ -140,7 +140,7 @@ interface ContentStyleOptions {
 }
 
 function resolvePadding(padding: SpacingType | undefined): number | undefined {
-    // getSpacingValue defaults an absent rung to 'md', so the guard is what keeps an unpadded
+    // getSpacingValue defaults an absent value to 'md', so the guard is what keeps an unpadded
     // list unpadded.
     return padding === undefined ? undefined : getSpacingValue(padding);
 }
@@ -174,6 +174,7 @@ export interface ListViewHandle {
 }
 
 interface CommonProps<ITEM> {
+    style?: never;
     /** `undefined` and `null` both read as "nothing yet". */
     data: readonly ITEM[] | null | undefined;
 

@@ -6,8 +6,7 @@ import { getSpacingValue } from '@/utils/styles';
 
 type SizeVariant = 'small' | 'large';
 
-/** 30 and 40, which are ui/IconButton's `sm` and `md` footprints. */
-const SIZE_RUNG = {
+const SIZE_VARIANT = {
     small: 'sm',
     large: 'md',
 } as const satisfies Record<SizeVariant, 'sm' | 'md'>;
@@ -16,11 +15,11 @@ const CONTAINER_INSET_END = getSpacingValue('2xs');
 const CONTAINER_INSET_BOTTOM = getSpacingValue('sm');
 
 interface HideTileSelectionButtonProps {
-    /** Both halves, because ui/IconButton treats a hold that cannot end as a mistake. */
+    style?: never;
     handleHideTileSelectionPressIn: () => void;
     handleHideTileSelectionPressOut: () => void;
     size?: SizeVariant;
-    /** For a caller that already positions the button, e.g. inside a Positioned corner. */
+    /** For a caller that already positions the button. */
     withoutContainer?: boolean;
 }
 
@@ -39,7 +38,7 @@ function HideTileSelectionButton(props: HideTileSelectionButtonProps) {
             name="hide"
             iconName="eye-closed"
             accessibilityLabel={t('hideTileOverlay')}
-            sizeVariant={SIZE_RUNG[size]}
+            sizeVariant={SIZE_VARIANT[size]}
             styleVariant="outlined"
             colorVariant="onImage"
             onPressIn={handleHideTileSelectionPressIn}

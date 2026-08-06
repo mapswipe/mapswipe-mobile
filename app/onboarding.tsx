@@ -16,7 +16,6 @@ import Button from '@/components/ui/Button';
 import Media, { type MediaSource } from '@/components/ui/Media';
 import PageIndicator from '@/components/ui/PageIndicator';
 import Pager, { type PageGeometry } from '@/components/ui/Pager';
-import Positioned from '@/components/ui/Positioned';
 import Screen from '@/components/ui/Screen';
 import Stack from '@/components/ui/Stack';
 import Text from '@/components/ui/Text';
@@ -85,6 +84,18 @@ function Onboarding() {
         }
     }, [router]);
 
+    const headerActions = useCallback(() => (
+        <Button
+            title={t('welcomeScreen:skip')}
+            accessibilityLabel={t('welcomeScreen:skip')}
+            colorVariant="brand"
+            styleVariant="transparent"
+            width="hug"
+            padding="none"
+            onPress={handleSignUp}
+        />
+    ), [t, handleSignUp]);
+
     const renderPage = useCallback(
         (item: Slide, itemIndex: number, geometry: PageGeometry) => (
             <Stack
@@ -94,9 +105,8 @@ function Onboarding() {
                 justify="center"
                 grow="fill"
             >
-                {/* The footprint is a measured Box and the bitmap spans it: Media's spanning
-                    rungs are a fixed 200 and 240 tall, and this illustration is a fraction of
-                    the page it is dealt into. */}
+                {/* Media's own spanning sizes are a fixed 200 and 240 tall, so the Box measures
+                    the page fraction instead. */}
                 <Box
                     width={geometry.width * SCREEN_FRACTION.contentWidth}
                     height={geometry.height * SCREEN_FRACTION.heroHeight}
@@ -118,9 +128,6 @@ function Onboarding() {
                     <Box width={geometry.width * SCREEN_FRACTION.headingWidth}>
                         <Text
                             variant="display"
-                            // `brand`, whose content slot IS theme.primaryBlue. Not `default`:
-                            // that is textPrimary, a near-black that flips to near-white in the
-                            // dark theme, and this page is not a brand-backed one.
                             colorVariant="brand"
                             align="center"
                         >
@@ -153,38 +160,19 @@ function Onboarding() {
 
     return (
         <Screen
-            title="onboarding"
+            title={t('welcomeScreen:pageTitle')}
             layout="fill"
-            chrome={(
-                <>
-                    <Positioned
-                        anchor="topEnd"
-                        offset="3xs"
-                    >
-                        <Button
-                            title={t('welcomeScreen:skip')}
-                            accessibilityLabel={t('welcomeScreen:skip')}
-                            colorVariant="brand"
-                            styleVariant="transparent"
-                            width="hug"
-                            onPress={handleSignUp}
-                        />
-                    </Positioned>
-                    <Positioned
-                        anchor="bottom"
-                        offsetBlock="3xl"
-                    >
-                        {/* `brand`: the active dot is the role's content, i.e. the same navy the
-                            page drew as backgroundBrand, and its spent dots are the grey rung.
-                            `onBrand` is the tutorial's white pair and would vanish here. */}
-                        <PageIndicator
-                            count={slides.length}
-                            currentIndex={index}
-                            colorVariant="brand"
-                            spacing="2xs"
-                        />
-                    </Positioned>
-                </>
+            withHeader
+            withoutHeaderTitle
+            headerActions={headerActions}
+            footer={(
+                // `brand`, not `onBrand`: the white pair the tutorial uses would vanish here.
+                <PageIndicator
+                    count={slides.length}
+                    currentIndex={index}
+                    colorVariant="brand"
+                    spacing="2xs"
+                />
             )}
         >
             <Pager

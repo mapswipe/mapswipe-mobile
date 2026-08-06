@@ -114,6 +114,7 @@ function toVoidHandler(handler: ((event: never) => void) | null | undefined): ()
 }
 
 interface TabBarButtonProps {
+    style?: never;
     /** The glyph and the label, both rendered by react-navigation from the screen's options. */
     children: ReactNode;
     accessibilityLabel: string;
@@ -192,7 +193,7 @@ function createTabBarButtonRenderer(label: string) {
 
 /**
  * Called with both states: react-navigation draws the glyph twice and cross-fades, so the weight
- * change animates. Its `color` and `size` are ignored in favour of a role and a rung.
+ * change animates. Its `color` and `size` are ignored in favour of a role and a size variant.
  */
 function createTabIconRenderer(name: IconName) {
     return function renderTabIcon(props: { focused: boolean }) {
@@ -216,12 +217,13 @@ export interface TabBarItem {
 }
 
 export interface TabBarProps {
+    style?: never;
     /** In bar order. */
     tabs: TabBarItem[];
 }
 
 /**
- * The bottom tab chrome: the navigator, the bar it paints, and the button each tab gets.
+ * The bottom tab bar: the navigator, the bar it paints, and the button each tab gets.
  *
  * A component rather than a hook returning screenOptions, so neither the ViewStyle nor the
  * per-screen glyph crosses back to the layout. Unlisted screens still get a tab, since

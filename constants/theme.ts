@@ -1,17 +1,9 @@
 export type AppTheme = {
-  // Brand
-  primaryBlue: string;
-  primaryGreen: string;
-  primaryRed: string;
-
-  // Role aliases for the three brand colours above. Prefer these: they say what the colour
-  // is for rather than what it looks like, so a rebrand does not leave `primaryRed` green.
   brand: string;
   positive: string;
   negative: string;
   accent: string;
 
-  // Surfaces
   background: string;
   backgroundBrand: string;
   backgroundMuted: string;
@@ -21,19 +13,16 @@ export type AppTheme = {
   border: string;
   divider: string;
 
-  // Surfaces layered on the brand background (session chrome)
   surfaceOnBrand: string;
   surfaceOnBrandStrong: string;
   borderOnBrand: string;
   dividerOnBrand: string;
 
-  // Surfaces layered on imagery
   surfaceInverse: string;
   pillSurface: string;
   pillSurfaceInverse: string;
   trackOnImage: string;
 
-  // Text
   textPrimary: string;
   textSecondary: string;
   textMuted: string;
@@ -42,7 +31,7 @@ export type AppTheme = {
   textOnBrand: string;
   textOnImage: string;
 
-  // Scrims, ordered by strength. `overlay` is the original name for `scrim`.
+  // Ordered by strength. `overlay` is an alias of `scrim`, so keep the two values in sync.
   scrim: string;
   scrimSoft: string;
   scrimMedium: string;
@@ -52,7 +41,6 @@ export type AppTheme = {
 
   shadowColor: string;
 
-  // Feedback
   success: string;
   successSurface: string;
   successText: string;
@@ -62,28 +50,22 @@ export type AppTheme = {
   errorText: string;
   info: string;
 
-  // MapSwipe-specific states
   mapSelection: string;
   mapUncertain: string;
   mapRejected: string;
   mapBoundary: string;
   mapFeatureLine: string;
 
-  // Tile and grid chrome
   gridLine: string;
   gridLineMuted: string;
   tileOverlay: string;
   selectionRing: string;
 
-  // Accent
-  accentRed: string;
-  // Misc
   heatMapDayColor1: string;
   heatMapDayColor2: string;
   heatMapDayColor3: string;
   heatMapDayColor4: string;
 
-  // Not a colour: the project card gradient pairs. Excluded from ThemeColorKey by construction.
   projectCardGradients: [string, string][];
 };
 
@@ -97,15 +79,10 @@ const PROJECT_CARD_GRADIENTS: [string, string][] = [
 ];
 
 export const lightTheme: AppTheme = {
-    // Brand
-    primaryBlue: '#0D1949',
-    primaryGreen: '#32A929',
-    primaryRed: '#E61C1C',
     brand: '#0D1949',
     positive: '#32A929',
     negative: '#E61C1C',
     accent: '#E5484D',
-    // Surfaces
     background: '#F8FAFC',
     backgroundBrand: '#0D1949',
     backgroundMuted: '#F1F5F9',
@@ -114,17 +91,14 @@ export const lightTheme: AppTheme = {
     card: '#FFFFFF',
     border: '#E2E8F0',
     divider: '#E2E8F0',
-    // Surfaces on brand
     surfaceOnBrand: 'rgba(255, 255, 255, 0.05)',
     surfaceOnBrandStrong: 'rgba(255, 255, 255, 0.85)',
     borderOnBrand: 'rgba(255, 255, 255, 0.12)',
     dividerOnBrand: 'rgba(255, 255, 255, 0.15)',
-    // Surfaces on imagery
     surfaceInverse: '#212121',
     pillSurface: 'rgba(255, 255, 255, 0.84)',
     pillSurfaceInverse: 'rgba(60, 60, 67, 0.75)',
     trackOnImage: 'rgba(255, 255, 255, 0.3)',
-    // Text
     textPrimary: '#0F172A',
     textSecondary: '#475569',
     textMuted: '#94A3B8',
@@ -132,7 +106,6 @@ export const lightTheme: AppTheme = {
     textOnSecondary: '#FFFFFF',
     textOnBrand: '#FFFFFF',
     textOnImage: 'rgba(255, 255, 255, 0.92)',
-    // Scrims
     scrim: 'rgba(17, 24, 39, 0.45)',
     scrimSoft: 'rgba(52, 52, 52, 0.5)',
     scrimMedium: 'rgba(52, 52, 52, 0.7)',
@@ -140,7 +113,6 @@ export const lightTheme: AppTheme = {
     scrimModal: 'rgba(0, 0, 0, 0.2)',
     overlay: 'rgba(17, 24, 39, 0.45)',
     shadowColor: 'rgba(0, 0, 0, 0.12)',
-    // Feedback
     success: '#32A929',
     successSurface: 'rgba(50, 169, 41, 0.18)',
     successText: '#FFFFFF',
@@ -149,20 +121,15 @@ export const lightTheme: AppTheme = {
     error: '#E61C1C',
     errorText: '#FFFFFF',
     info: '#2563EB',
-    // MapSwipe-specific states
     mapSelection: '#22C55E',
     mapUncertain: '#3B82F6',
     mapRejected: '#EF4444',
     mapBoundary: '#9CA3AF',
     mapFeatureLine: '#ffffff',
-    // Tile and grid chrome
     gridLine: 'rgba(255, 255, 255, 1)',
     gridLineMuted: 'rgba(255, 255, 255, 0.5)',
     tileOverlay: 'rgba(255, 255, 255, 0.2)',
     selectionRing: '#FFFFFF',
-    // Accent
-    accentRed: '#E5484D',
-    // Misc
     heatMapDayColor1: '#d6e685',
     heatMapDayColor2: '#8cc665',
     heatMapDayColor3: '#44a340',
@@ -171,15 +138,10 @@ export const lightTheme: AppTheme = {
 };
 
 export const darkTheme: AppTheme = {
-    // Brand
-    primaryBlue: '#0D1949',
-    primaryGreen: '#32A929',
-    primaryRed: '#E61C1C',
     brand: '#0D1949',
     positive: '#32A929',
     negative: '#E61C1C',
     accent: '#E5484D',
-    // Surfaces
     background: '#020617',
     backgroundBrand: '#0D1949',
     backgroundMuted: '#1E293B',
@@ -188,17 +150,15 @@ export const darkTheme: AppTheme = {
     card: '#0F172A',
     border: '#1E293B',
     divider: '#1E293B',
-    // Surfaces on brand: unchanged, they are translucent white over the same brand navy
+    // Shared with lightTheme on purpose: these sit over imagery or the brand navy, not the page.
     surfaceOnBrand: 'rgba(255, 255, 255, 0.05)',
     surfaceOnBrandStrong: 'rgba(255, 255, 255, 0.85)',
     borderOnBrand: 'rgba(255, 255, 255, 0.12)',
     dividerOnBrand: 'rgba(255, 255, 255, 0.15)',
-    // Surfaces on imagery: also unchanged, imagery does not follow the theme
     surfaceInverse: '#212121',
     pillSurface: 'rgba(255, 255, 255, 0.84)',
     pillSurfaceInverse: 'rgba(60, 60, 67, 0.75)',
     trackOnImage: 'rgba(255, 255, 255, 0.3)',
-    // Text
     textPrimary: '#F8FAFC',
     textSecondary: '#CBD5F5',
     textMuted: '#64748B',
@@ -206,7 +166,6 @@ export const darkTheme: AppTheme = {
     textOnSecondary: '#FFFFFF',
     textOnBrand: '#FFFFFF',
     textOnImage: 'rgba(255, 255, 255, 0.92)',
-    // Scrims: same over imagery, but a darker page needs a heavier shadow to read
     scrim: 'rgba(17, 24, 39, 0.45)',
     scrimSoft: 'rgba(52, 52, 52, 0.5)',
     scrimMedium: 'rgba(52, 52, 52, 0.7)',
@@ -214,7 +173,6 @@ export const darkTheme: AppTheme = {
     scrimModal: 'rgba(0, 0, 0, 0.2)',
     overlay: 'rgba(17, 24, 39, 0.45)',
     shadowColor: 'rgba(0, 0, 0, 0.4)',
-    // Feedback
     success: '#32A929',
     successSurface: 'rgba(50, 169, 41, 0.18)',
     successText: '#052E16',
@@ -223,20 +181,15 @@ export const darkTheme: AppTheme = {
     error: '#E61C1C',
     errorText: '#450A0A',
     info: '#3B82F6',
-    // MapSwipe-specific states
     mapSelection: '#22C55E',
     mapUncertain: '#3B82F6',
     mapRejected: '#EF4444',
     mapBoundary: '#9CA3AF',
     mapFeatureLine: '#ffffff',
-    // Tile and grid chrome
     gridLine: 'rgba(255, 255, 255, 1)',
     gridLineMuted: 'rgba(255, 255, 255, 0.5)',
     tileOverlay: 'rgba(255, 255, 255, 0.2)',
     selectionRing: '#FFFFFF',
-    // Accent
-    accentRed: '#E5484D',
-    // Misc
     heatMapDayColor1: '#d6e685',
     heatMapDayColor2: '#8cc665',
     heatMapDayColor3: '#44a340',
@@ -252,20 +205,15 @@ export function getThemeColors(colorScheme: 'light' | 'dark' = 'light') {
     return lightTheme;
 }
 
-/**
- * Every AppTheme key whose value is a colour string, so projectCardGradients cannot be
- * passed where a colour is expected.
- */
+/** AppTheme keys holding a colour string, so projectCardGradients cannot pass as a colour. */
 export type ThemeColorKey = {
     [K in keyof AppTheme]: AppTheme[K] extends string ? K : never;
 }[keyof AppTheme];
 
 export interface ColorRole {
-    /** this colour used as a foreground */
     content: ThemeColorKey;
-    /** this colour used as a background */
     surface: ThemeColorKey;
-    /** a foreground guaranteed legible on `surface` */
+    /** A foreground guaranteed legible on `surface`. */
     onSurface: ThemeColorKey;
     border: ThemeColorKey;
 }

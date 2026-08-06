@@ -11,12 +11,12 @@ import {
     mapToList,
 } from '@togglecorp/fujs';
 
-import HideTileSelectionButton from '@/components/HideTileSelectionButton';
-import ImageTile from '@/components/ImageTile';
 import { TutorialSessionProps } from '@/components/tutorial/types';
 import Box from '@/components/ui/Box';
+import HideTileSelectionButton from '@/components/ui/HideTileSelectionButton';
 import Positioned from '@/components/ui/Positioned';
 import Row from '@/components/ui/Row';
+import ImageTile from '@/components/ui/tile/ImageTile';
 import { TILE_ANSWER_OPTIONS } from '@/constants/answers';
 import useAnswerColors from '@/hooks/useAnswerColors';
 import useFittedTileWidth from '@/hooks/useFittedTileWidth';
@@ -30,30 +30,20 @@ import {
     Results,
 } from '@/utils/types';
 
-/**
- * The tap cycle: 0 No, 1 Yes, 2 Maybe, 3 Bad Imagery. BUILT-IN answers, the same list
- * TileGridMappingSession maps with, so the tints are theme tokens resolved through
- * useAnswerColors rather than a project's customOptions.
- */
+// Array order is the tap cycle.
 const OPTIONS = [...TILE_ANSWER_OPTIONS];
 
-/** A 4pt gutter on each side of the grid. */
+// A 4pt gutter each side of the grid.
 const TILE_RESERVE_INLINE = 8;
 
-/** Floor a tile never shrinks past, however short the scenario page gets. */
 const MIN_TILE_WIDTH = 60;
 
-/** Stand-in inline extent before onLayout reports one: the window less a 12pt gutter a side. */
+// Fallback before onLayout: a 12pt gutter each side.
 const FALLBACK_INLINE_CHROME = 24;
 
-/** Stand-in block extent before onLayout reports one, as a share of the window. */
 const FALLBACK_BLOCK_FRACTION = 0.6;
 
-/**
- * Where the hide-tiles button sits once it is anchored to the grid area rather than left to
- * float under it. The pair is the inset the button's own container applies when it is in flow,
- * so the two placements read the same.
- */
+// Mirrors the inset HideTileSelectionButton's own container applies when it sits in flow.
 const HIDE_BUTTON_INSET_BLOCK = 20;
 const HIDE_BUTTON_INSET_INLINE = 14;
 
@@ -80,9 +70,6 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
 
     const { width: pageWidth, height: pageHeight } = useViewport();
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
-    // Measured size of the grid slot, so tiles fit the space actually available
-    // (between the instruction banner and the Check Answer button) rather than a
-    // fixed fraction of the window, which overflowed and overlapped them.
     const [gridSize, setGridSize] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -169,8 +156,6 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
                 clip
                 onLayout={(event) => setGridSize(event.nativeEvent.layout)}
             >
-                {/* The columns butt together, and `stretch` is the row's own default: the
-                    hand-written row set no alignItems, so a short column stayed full height. */}
                 <Row
                     spacing="none"
                     align="stretch"
@@ -218,8 +203,7 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
                 <HideTileSelectionButton
                     handleHideTileSelectionPressIn={handleHideTilePressIn}
                     handleHideTileSelectionPressOut={handleHideTilePressOut}
-                    // Positioned already places this in the slot's corner, so the button's own
-                    // container padding would shift it inwards again.
+                    // Positioned already insets it; the button's own padding would double up.
                     withoutContainer
                 />
             </Positioned>

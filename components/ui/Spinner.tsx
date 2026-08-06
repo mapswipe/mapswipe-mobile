@@ -37,8 +37,8 @@ const STYLE_MARK = {
 export type SpinnerStyleVariant = keyof typeof STYLE_MARK;
 
 /**
- * Two rungs, because the platform indicator has two: `size` takes a number on Android only, so
- * an ICON_SIZE ladder would be one size on iOS and eleven on Android.
+ * Two options, because the platform indicator has two: `size` takes a number on Android only, so
+ * offering every ICON_SIZE would be one size on iOS and eleven on Android.
  */
 const INDICATOR_SIZE = {
     /** Inline, sharing a line with text. */
@@ -50,12 +50,13 @@ const INDICATOR_SIZE = {
 export type SpinnerSizeVariant = keyof typeof INDICATOR_SIZE;
 
 /**
- * Footprint of the splash mark. Loader draws the gif at 100 and the nearest rung on the medallion
- * ladder is 96; 4 pt on a full-screen mark is not a look, and a token is the point.
+ * Footprint of the splash mark. Loader draws the gif at 100 and the nearest medallion size is
+ * 96; 4 pt on a full-screen mark is not a look, and a token is the point.
  */
 const MARK_SIZE = MEDALLION_SIZE['2xl'];
 
 interface CommonProps {
+    style?: never;
     /** Omit it when text beside the spinner already says it: unlabelled, it stays silent. */
     accessibilityLabel?: string;
     testID?: string;
@@ -65,7 +66,7 @@ export type SpinnerProps = CommonProps & ({
     styleVariant?: Extract<SpinnerStyleVariant, 'indicator'>;
     /** Defaults to `default`; RN's own fallback is near-invisible on the brand navy. */
     colorVariant?: ColorVariant;
-    /** Defaults to `lg`, the block-level rung. `sm` is the deliberate inline exception. */
+    /** Defaults to `lg`. `sm` is the deliberate inline exception. */
     sizeVariant?: SpinnerSizeVariant;
 } | {
     styleVariant: Extract<SpinnerStyleVariant, 'splash'>;

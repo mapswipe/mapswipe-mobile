@@ -37,7 +37,7 @@ type ScrimAnchorType = Extract<AnchorType, 'top' | 'bottom' | 'fill'>;
 const NO_PAINT = 'transparent';
 
 // RN accepts a share of the parent only as a percentage string. The 100 is arithmetic, not a size
-// literal. The share itself is never a caller's number: it comes from a named SCRIM_EXTENT rung,
+// literal. The share itself is never a caller's number: it comes from a named SCRIM_EXTENT value,
 // so a call site asks for the look it wants rather than stating a percentage.
 const PERCENT = 100;
 
@@ -87,6 +87,7 @@ const createScrim = (theme: AppTheme, options: ScrimOptions): ScrimPaint => {
 };
 
 interface CommonProps {
+    style?: never;
     /** Required: no strength is the majority. */
     colorVariant: ScrimColorVariant;
 }

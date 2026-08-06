@@ -14,12 +14,12 @@ import {
 import { decode } from 'base-64';
 import { inflate } from 'pako';
 
-import HideTileSelectionButton from '@/components/HideTileSelectionButton';
-import MapTile from '@/components/MapTile';
-import ScaleBar from '@/components/ScaleBar';
+import MapTile from '@/components/domain/MapTile';
 import Box from '@/components/ui/Box';
+import HideTileSelectionButton from '@/components/ui/HideTileSelectionButton';
 import { type IconName } from '@/components/ui/Icon';
 import IconButton from '@/components/ui/IconButton';
+import ScaleBar from '@/components/ui/map/ScaleBar';
 import Pager from '@/components/ui/Pager';
 import Positioned from '@/components/ui/Positioned';
 import ProgressBar from '@/components/ui/ProgressBar';
@@ -42,9 +42,9 @@ import {
 } from '@/utils/types';
 
 /**
- * Inline chrome the map does not get: the task page insets it by the `sm` rung on each side, so
- * the pair of gutters is twice that. It has to be stated as one number because it is the reserve
- * `useFittedTileWidth` takes off the page before dividing, and it has to agree with the
+ * Inline controls the map does not get: the task page insets it by the `sm` spacing on each side,
+ * so the pair of gutters is twice that. It has to be stated as one number because it is the
+ * reserve `useFittedTileWidth` takes off the page before dividing, and it has to agree with the
  * `padding="sm"` on the page below: the ScaleBar draws its metres against this width, so a
  * reserve smaller than the real padding would over-state the map and under-state the scale.
  */

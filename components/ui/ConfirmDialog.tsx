@@ -31,6 +31,7 @@ const STYLE_VARIANT = {
 export type ConfirmDialogStyleVariant = keyof typeof STYLE_VARIANT;
 
 export interface ConfirmDialogProps {
+    style?: never;
     visible: boolean;
 
     title: string;
@@ -93,7 +94,7 @@ function ConfirmDialog(props: ConfirmDialogProps) {
                         <Text variant="label">{message}</Text>
                     )}
                 </Stack>
-                {/* Cancel leads, on both rungs: it is the reversible answer, and it is the
+                {/* Cancel leads, in both variants: it is the reversible answer, and it is the
                     order the platform alert this replaces already puts them in. */}
                 <Button
                     accessibilityLabel={cancelLabel}

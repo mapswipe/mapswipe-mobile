@@ -13,10 +13,10 @@ import {
 } from '@/utils/styles';
 
 export interface RowProps {
+    style?: never;
     children: React.ReactNode;
     /** Required on purpose: an unspecified gap is how inconsistent rhythm gets in. */
     spacing: SpacingType;
-    /** Applies the same rung as inset padding. */
     padding?: SpacingType;
     /**
      * Defaults to 'center', because a row of mixed-height content almost always wants its

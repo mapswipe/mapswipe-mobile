@@ -75,11 +75,12 @@ const createCheckbox = (theme: AppTheme, options: CheckboxOptions): CheckboxPain
 };
 
 interface CommonProps {
-    /** A state, not a styling opt-in. No indeterminate rung: nothing needs tri-state. */
+    style?: never;
+    /** A state, not a styling opt-in. No indeterminate option: nothing needs tri-state. */
     checked: boolean;
 
     /**
-     * Required: no rung is the majority. Pick a role whose surface reads against the page.
+     * Required: no option is the majority. Pick a role whose surface reads against the page.
      *
      * The trap is `default`/`surface` on a brand page: both resolve to `card`, which follows the
      * theme, while `backgroundBrand` is navy in both, so the box vanishes in dark mode. The

@@ -8,15 +8,15 @@ import {
     View,
 } from 'react-native';
 
+import BaseMap from '@/components/BaseMap';
+import GeoJsonMapSource from '@/components/GeoJsonMapSource';
 import { AppTheme } from '@/constants/theme';
+import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import {
     FbObjRasterTileServer,
     FeatureGeoJson,
 } from '@/utils/types';
-
-import BaseMap from './BaseMap';
-import GeoJsonMapSource from './GeoJsonMapSource';
 
 const MapContainerLazy = lazy(async () => {
     const mod = await import('@togglecorp/re-map');
@@ -50,19 +50,20 @@ function MapTile(props: Props) {
     } = props;
 
     const { height } = useWindowDimensions();
+    const theme = useTheme();
     const styles = useThemedStyles(createStyles, { height });
 
     const layerOptions = useMemo(() => ({
         type: 'line' as const,
         paint: {
-            'line-color': '#ffffff',
+            'line-color': theme.mapFeatureLine,
             'line-width': 2,
             'line-opacity': hideLines ? 0 : 1,
         },
         layout: {
             visibility: 'visible' as const,
         },
-    }), [hideLines]);
+    }), [hideLines, theme]);
 
     return (
         <View

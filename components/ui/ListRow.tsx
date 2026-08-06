@@ -79,6 +79,7 @@ const AFFORDANCE = {
 export type ListRowAffordanceType = keyof typeof AFFORDANCE;
 
 interface CommonProps {
+    style?: never;
     /** The row's label, at 14pt regular: the same ramp all nine rows draw. */
     title: string;
 

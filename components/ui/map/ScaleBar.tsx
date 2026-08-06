@@ -1,15 +1,22 @@
 import { useMemo } from 'react';
 import {
-    StyleSheet,
     View,
+    type ViewStyle,
 } from 'react-native';
 import Svg, {
     Path,
     Text,
 } from 'react-native-svg';
 
+import { BORDER_WIDTH_THIN } from '@/constants/border';
+import {
+    OPACITY_HIDDEN,
+    OPACITY_MAP_CHROME,
+} from '@/constants/opacity';
 import { type AppTheme } from '@/constants/theme';
+import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import { getSpacingValue } from '@/utils/styles';
 
 const createStyles = (_theme: AppTheme, {
     bottomPadding, position, visible, inline,
@@ -18,14 +25,14 @@ const createStyles = (_theme: AppTheme, {
     visible: boolean;
     bottomPadding: number;
     inline: boolean;
-}) => StyleSheet.create({
+}): { container: ViewStyle } => ({
     container: {
-        opacity: visible ? 0.5 : 0,
+        opacity: visible ? OPACITY_MAP_CHROME : OPACITY_HIDDEN,
         ...(inline ? {} : {
             position: 'absolute' as const,
-            left: 10,
+            left: getSpacingValue('3xs'),
             bottom: position === 'bottom' ? bottomPadding : undefined,
-            top: position === 'top' ? 20 : undefined,
+            top: position === 'top' ? getSpacingValue('sm') : undefined,
         }),
     },
 });
@@ -55,6 +62,7 @@ const getScaleBarPath = (
 };
 
 interface Props {
+    style?: never;
     latitude: number;
     position?: 'bottom' | 'top';
     referenceSize: number;
@@ -77,6 +85,7 @@ function ScaleBar(props: Props) {
         inline = false,
     } = props;
 
+    const theme = useTheme();
     const styles = useThemedStyles(createStyles, {
         bottomPadding, position, visible, inline,
     });
@@ -107,9 +116,9 @@ function ScaleBar(props: Props) {
     return (
         <View style={styles.container}>
             <Svg height={tileSize / 5} width={referenceSize}>
-                <Path d={path} stroke="white" strokeWidth={1} />
+                <Path d={path} stroke={theme.textOnImage} strokeWidth={BORDER_WIDTH_THIN} />
                 <Text
-                    fill="white"
+                    fill={theme.textOnImage}
                     fontSize={13}
                     fontFamily="Helvetica, Arial"
                     x="3"
@@ -118,7 +127,7 @@ function ScaleBar(props: Props) {
                     {`${meters}m`}
                 </Text>
                 <Text
-                    fill="white"
+                    fill={theme.textOnImage}
                     fontSize={13}
                     fontFamily="Helvetica, Arial"
                     x="3"

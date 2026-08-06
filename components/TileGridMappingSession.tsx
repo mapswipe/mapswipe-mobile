@@ -21,13 +21,13 @@ import {
 } from '@togglecorp/fujs';
 
 import AccessibilityInfoModal from '@/components/AccessibilityInfoModal';
-import HideTileSelectionButton from '@/components/HideTileSelectionButton';
-import ImageTile from '@/components/ImageTile';
-import ScaleBar from '@/components/ScaleBar';
 import Box from '@/components/ui/Box';
+import HideTileSelectionButton from '@/components/ui/HideTileSelectionButton';
+import ScaleBar from '@/components/ui/map/ScaleBar';
 import Pager, { type PagerPosition } from '@/components/ui/Pager';
 import ProgressBar from '@/components/ui/ProgressBar';
 import Stack from '@/components/ui/Stack';
+import ImageTile from '@/components/ui/tile/ImageTile';
 import {
     ANSWER_OPTIONS,
     TILE_ANSWER_OPTIONS,
@@ -49,32 +49,19 @@ import {
     TileTask,
 } from '@/utils/types';
 
-/**
- * The tap cycle, and the answer values that reach the backend: 0 No, 1 Yes, 2 Maybe,
- * 3 Bad Imagery, in that order. Spread out of the readonly tuple so listToMap and findIndex
- * can take it.
- */
+// Tap cycle order, and the values sent to the backend: 0 No, 1 Yes, 2 Maybe, 3 Bad Imagery.
 const OPTIONS = [...TILE_ANSWER_OPTIONS];
 
-/** The answer a downward swipe over the grid writes onto every visible tile. */
 const BAD_IMAGERY_VALUE = ANSWER_OPTIONS.badImagery.value;
 
-/**
- * Tiles across a page and down it. Both numbers are load-bearing twice over: they divide the
- * tile out of the window, and `TILE_COLUMNS` is also how a page index is turned back into a
- * column index, which is what the swipe-to-reject gesture marks.
- */
+// TILE_COLUMNS both divides the tile out of the window and maps a page index back to a column,
+// so the layout and the swipe hit-test must keep using the same number.
 const TILE_COLUMNS = 2;
 const TILE_ROWS = 4;
 
-/**
- * Distance the scale bar is lifted off the bottom of the session, clearing the hide-tiles row
- * and the progress bar that sit under the grid. A ScaleBar prop rather than a style: the leaf
- * has not moved into components/ui yet and takes its geometry as numbers.
- */
+// Lifts the scale bar clear of the hide-tiles row and the progress bar below the grid.
 const SCALE_BAR_BOTTOM_INSET = 40;
 
-/** One column of the grid, after the tasks are sorted and grouped by their tile X. */
 type TileColumnTask = Omit<TileTask, 'taskX' | 'taskY'> & {
     taskX: number;
     taskY: number;
@@ -90,9 +77,7 @@ interface Props {
     projectDetails: FindProject | CompletenessProject;
     onResultsChange: Dispatch<SetStateAction<Results>>;
     results: Results;
-    // Project completion screen, rendered as the final swipeable page.
     completionPage: ReactNode;
-    // Fired once the user scrolls onto the completion page (mapping finished).
     onReachedEnd?: () => void;
 }
 
@@ -106,9 +91,7 @@ function TileGridMappingSession(props: Props) {
         onReachedEnd,
     } = props;
 
-    // The page showing now, counted the way the pager reports it: the columns first (two to a
-    // page), then the completion page. Held here rather than left to the pager because "Go Back"
-    // on the outro sets it, and because the progress bar and the swipe gesture read it.
+    // Owned here, not by the pager: the outro's "Go Back", the progress bar and the swipe read it.
     const [currentPage, setCurrentPage] = useState(0);
 
     const {
@@ -212,9 +195,7 @@ function TileGridMappingSession(props: Props) {
         rows: TILE_ROWS,
     });
 
-    // Counted here as well as inside the pager, and off the window for the same reason the tile
-    // is: the progress bar and the completion check need the page count before the pager has
-    // reported an index, and a column is narrower than a page so the two do not divide evenly.
+    // Page count is needed before the pager reports an index, and columns do not divide evenly.
     const columnsWidth = groupedTasks.length * tileWidth;
     const contentPages = groupedTasks.length === 0
         ? 0
@@ -222,8 +203,7 @@ function TileGridMappingSession(props: Props) {
 
     const atCompletion = contentPages > 0 && currentPage >= contentPages;
 
-    // The leftmost column showing on the current page, which is where the swipe-to-reject
-    // gesture starts marking.
+    // Leftmost column on the current page, where swipe-to-reject starts marking.
     const currentTaskIndex = Math.min(currentPage * TILE_COLUMNS, groupedTasks.length - 1);
 
     const handleIndexChange = useCallback((index: number, position: PagerPosition) => {
@@ -234,9 +214,7 @@ function TileGridMappingSession(props: Props) {
         }
     }, [onReachedEnd]);
 
-    // "Go Back" on the outro returns to the first task so the user reviews the group from the
-    // start. The jump is instant (not animated): animating all the way back from the completion
-    // page would render every intermediate page and is what made repeated go-backs unstable.
+    // Jump must stay instant: animating back from the outro renders every page in between.
     const handleOutroGoBack = useCallback(() => {
         setCurrentPage(0);
     }, []);
@@ -275,8 +253,7 @@ function TileGridMappingSession(props: Props) {
     const markVisibleTilesAsWrong = useCallback(() => {
         onResultsChange((prevResults) => {
             const newResults = { ...prevResults };
-            // Derived from TILE_COLUMNS rather than a hardcoded `+ 1`, so the gesture marks
-            // exactly the columns on screen if that layout number ever changes.
+            // Derived from TILE_COLUMNS so the gesture marks exactly the columns on screen.
             const range = resolveVisibleColumnRange({
                 firstColumnIndex: currentTaskIndex,
                 columns: TILE_COLUMNS,
@@ -369,8 +346,7 @@ function TileGridMappingSession(props: Props) {
 
     return (
         <>
-            {/* Clips the grid and owns the downward swipe that rejects the visible columns.
-                Box spreads the responder itself, so nothing else can ride in on it. */}
+            {/* Owns the downward swipe that rejects the visible columns. */}
             <Box
                 flex={1}
                 clip
@@ -400,7 +376,6 @@ function TileGridMappingSession(props: Props) {
                             bottomPadding={SCALE_BAR_BOTTOM_INSET}
                         />
                     )}
-                    {/* Its own line below the grid, so the button never grazes the tiles. */}
                     <Stack
                         spacing="none"
                         align="end"
@@ -408,8 +383,7 @@ function TileGridMappingSession(props: Props) {
                         <HideTileSelectionButton
                             handleHideTileSelectionPressIn={handleHideTilePressIn}
                             handleHideTileSelectionPressOut={handleHideTilePressOut}
-                            // The row above already places this at the end of its own line, so
-                            // the button's default container padding would shift it inwards.
+                            // The row already end-aligns it; the default padding would shift it in.
                             withoutContainer
                         />
                     </Stack>

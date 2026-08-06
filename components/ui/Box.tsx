@@ -18,6 +18,7 @@ import {
  * crosses the boundary here, as a number.
  */
 export interface BoxProps extends BoxStyleProps {
+    style?: never;
     children?: ReactNode;
 
     /** Measuring is the point: this is how a view learns the geometry it then feeds back in. */

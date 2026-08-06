@@ -11,6 +11,7 @@ export interface InfoCardSegment {
 }
 
 export interface InfoCardProps {
+    style?: never;
     /** The caption above the value. */
     label: string;
     value: string | readonly InfoCardSegment[];

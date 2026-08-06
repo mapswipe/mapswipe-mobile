@@ -13,28 +13,18 @@ import { bound } from '@togglecorp/fujs';
 import Box from '@/components/ui/Box';
 import ListView, { type ListViewHandle } from '@/components/ui/ListView';
 
-/**
- * The box a page is laid into, handed to the caller as data, and the reason this component
- * exists: a horizontal list sizes items to their content on the block axis, so a tall page
- * grows past the screen. Measuring once and passing the numbers down removes that per-item style.
- */
 export interface PageGeometry {
     width: number;
     height: number;
 }
 
-/** Everything a caller needs to place the reported index, without counting pages itself. */
 export interface PagerPosition {
-    /** Pages in total, the trailing page included when one is rendered. */
+    /** Includes the trailing page when one is rendered. */
     pageCount: number;
-    /** True when the page now showing is the appended trailing page rather than an item. */
     isTrailingPage: boolean;
 }
 
-/**
- * How a change to `index` is honoured. A long jump goes unanimated on purpose: animating it
- * renders every intermediate page. A user's own swipe is animated by the swipe either way.
- */
+// `instant` exists because animating a long jump renders every intermediate page.
 const SCROLL_ANIMATED = {
     animated: true,
     instant: false,
@@ -43,59 +33,43 @@ const SCROLL_ANIMATED = {
 export type PagerScrollBehavior = keyof typeof SCROLL_ANIMATED;
 
 interface CommonProps<ITEM> {
+    style?: never;
     data: readonly ITEM[];
     keyExtractor: (item: ITEM, index: number) => string;
 
-    /** Receives its box, so a page never states a size of its own. */
     renderPage: (item: ITEM, index: number, geometry: PageGeometry) => ReactNode;
 
-    /**
-     * A full-width page appended after the data, e.g. a session outro. Rendered only when there
-     * is at least one item, so an empty group does not open on it.
-     */
+    /** Appended after the data, only when there is at least one item. */
     renderTrailingPage?: (geometry: PageGeometry) => ReactNode;
 
-    /** Setting it scrolls the pager; leaving it out lets the pager run uncontrolled. */
     index?: number;
     onIndexChange?: (index: number, position: PagerPosition) => void;
 
-    /** Defaults to 'animated'. */
     scrollBehavior?: PagerScrollBehavior;
 
-    /** Holds the user in place, e.g. on an unanswered scenario or mid-drag. */
     withPagingLocked?: boolean;
 
-    /** For geometry a caller needs outside the pages, e.g. a floating bar beside the list. */
     onGeometryChange?: (geometry: PageGeometry) => void;
 
     testID?: string;
 }
 
 interface PageSizedProps {
-    /** One item per page. `index` is both the page and the item. */
+    style?: never;
+    /** One item per page: `index` is both the page and the item. */
     sizeVariant: 'page';
     itemWidth?: never;
 }
 
 interface StripSizedProps {
-    /**
-     * Items narrower than a page, snapping at page boundaries. `index` counts pages, not items,
-     * and the trailing page is padded out so the outro still snaps on an odd count.
-     */
+    style?: never;
+    /** Items narrower than a page: `index` still counts pages. */
     sizeVariant: 'strip';
-    /**
-     * Measured geometry, so a number: the app's one strip divides it out of the viewport as
-     * `min(width / 2, height / 4)`.
-     */
     itemWidth: number;
 }
 
 export type PagerProps<ITEM> = CommonProps<ITEM> & (PageSizedProps | StripSizedProps);
 
-/**
- * Horizontal paging list, and a thin one: the scrolling is ListView's `pager` rung. What is left
- * is measuring the slot the pages are dealt into and handing those numbers to the caller.
- */
 function Pager<ITEM>(props: PagerProps<ITEM>) {
     const {
         data,
@@ -113,9 +87,7 @@ function Pager<ITEM>(props: PagerProps<ITEM>) {
     } = props;
 
     const listRef = useRef<ListViewHandle>(null);
-    // The page showing now, as a ref rather than state: it is read by the scroll handler and by
-    // the alignment effect to tell the user's own paging apart from a caller's, and rendering
-    // does not depend on it.
+    // A ref, not state: the scroll handler and the alignment effect read it, rendering does not.
     const currentIndexRef = useRef(0);
     const alignedRef = useRef(false);
     const lastWidthRef = useRef(0);
@@ -150,11 +122,8 @@ function Pager<ITEM>(props: PagerProps<ITEM>) {
         [slotWidth, pageHeight],
     );
 
-    // A strip's items do not divide evenly into pages, so the pages it fills are counted from
-    // the content width, and the shortfall becomes the filler that pushes the trailing page onto
-    // the next boundary. Page-sized items are counted directly rather than divided out: a width
-    // over itself lands a hair under a whole number often enough in floating point, and one
-    // ceil() away from an extra empty page at the end of every session.
+    // Page-sized items are counted directly, never divided out: ceil(width / width) rounds up in
+    // floating point and adds an empty page at the end.
     const contentWidth = data.length * slotWidth;
     let contentPages = data.length;
     if (sizeVariant === 'strip') {
@@ -165,8 +134,7 @@ function Pager<ITEM>(props: PagerProps<ITEM>) {
     const hasTrailingPage = renderTrailingPage !== undefined && data.length > 0;
     const pageCount = contentPages + (hasTrailingPage ? 1 : 0);
 
-    // Explicit stops rather than the variant's `pagingEnabled` alone: in a strip the paging
-    // interval is not the item width, and pagingEnabled can only snap by the viewport's width.
+    // Explicit stops: `pagingEnabled` can only snap by the viewport width, which a strip is not.
     const snapOffsets = useMemo(
         () => Array.from({ length: pageCount }, (_, page) => page * pageWidth),
         [pageCount, pageWidth],
@@ -181,8 +149,7 @@ function Pager<ITEM>(props: PagerProps<ITEM>) {
         </Box>
     ), [renderPage, slotGeometry]);
 
-    // Every frame of the scroll rather than the settle, because a caller that mirrors the page
-    // into its own state must follow a drag the user has not let go of yet.
+    // Fires during the drag, not on the settle, so a caller mirroring the index keeps up.
     const handleScrollOffsetChange = useCallback((offset: number) => {
         if (pageWidth <= 0 || pageCount === 0) {
             return;
@@ -220,8 +187,7 @@ function Pager<ITEM>(props: PagerProps<ITEM>) {
 
         listRef.current?.scrollToOffset({
             offset: target * pageWidth,
-            // The first alignment and a re-measure after a rotation are corrections rather than
-            // navigation, so they never animate however the caller paged.
+            // First alignment and a re-measure are corrections, not navigation, so never animated.
             withAnimation: wasAligned && !widthChanged && SCROLL_ANIMATED[scrollBehavior],
         });
     }, [index, pageWidth, scrollBehavior]);
@@ -261,9 +227,7 @@ function Pager<ITEM>(props: PagerProps<ITEM>) {
                     data={data}
                     keySelector={keyExtractor}
                     renderItem={renderSlot}
-                    // ListView's cells only repaint when a prop they watch changes, and the
-                    // caller's closure is what carries the answers, the loading flags and the
-                    // hide-tiles toggle into a page.
+                    // Cells only repaint on a watched prop, and renderSlot carries the page state.
                     extraData={renderSlot}
                     // Pages butt together: any gap would land inside the snap interval.
                     spacing="none"
@@ -272,8 +236,7 @@ function Pager<ITEM>(props: PagerProps<ITEM>) {
                     itemSize={slotWidth}
                     snapOffsets={pageCount > 0 ? snapOffsets : undefined}
                     withoutScrolling={withPagingLocked}
-                    // Pages are viewport-sized, so the default window would keep twenty full
-                    // screens of maps and tiles mounted at once.
+                    // Pages are viewport-sized, so the default window would mount twenty screens.
                     virtualization="heavyItems"
                     onScrollOffsetChange={handleScrollOffsetChange}
                 />

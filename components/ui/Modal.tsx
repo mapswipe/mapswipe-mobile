@@ -37,7 +37,7 @@ import Surface from './Surface';
 
 interface ModalMotion {
     /**
-     * What NativeModal animates on its own. `none` on the rung this file drives, because the
+     * What NativeModal animates on its own. `none` on the motion this file drives, because the
      * platform transition and the spring would otherwise both move the sheet.
      */
     native: NativeModalProps['animationType'];
@@ -57,7 +57,7 @@ const MOTION = {
 
 export type ModalMotionType = keyof typeof MOTION;
 
-/** Reduce motion collapses the whole axis, rather than each rung collapsing separately. */
+/** Reduce motion collapses the whole axis, rather than each option collapsing separately. */
 const MOTION_REDUCED: ModalMotionType = 'none';
 
 // Centres the sheet over a backdrop that fills the window. Resolved once: the values are
@@ -74,6 +74,7 @@ const OVERLAY_LAYOUT: ViewStyle = resolveBoxStyle({
 const SCROLL_CONTENT: ViewStyle = { flexGrow: 1 };
 
 interface CommonProps {
+    style?: never;
     /** Mounted only while true. The sheet has no exit animation, so this is not a fade-out. */
     visible: boolean;
     children: ReactNode;
@@ -123,7 +124,7 @@ function Modal(props: ModalProps) {
     const { native, driven } = MOTION[reduceMotion ? MOTION_REDUCED : motion];
 
     useEffect(() => {
-        // Reduced motion, or a rung the platform animates: jump to the resting values and start
+        // Reduced motion, or a motion the platform animates: jump to the resting values and start
         // nothing. Running the same animation at zero duration is not the same thing, because a
         // zero-duration timing completes the moment it starts.
         if (!driven) {

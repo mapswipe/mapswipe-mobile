@@ -4,22 +4,34 @@ import {
 } from 'react';
 import {
     ImageBackground,
+    type ImageStyle,
     Pressable,
-    StyleSheet,
     View,
+    type ViewStyle,
 } from 'react-native';
 import { Image } from 'expo-image';
 
-import Modal from '@/components/Modal';
+import Modal from '@/components/ui/Modal';
+import {
+    BORDER_WIDTH_HAIRLINE,
+    BORDER_WIDTH_THIN,
+} from '@/constants/border';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import {
     ICON_GLYPH,
     type IconName,
 } from '@/constants/icons';
+import {
+    OPACITY_TILE_TINT,
+    OPACITY_TILE_UNDERLAY,
+} from '@/constants/opacity';
+import { RADIUS } from '@/constants/radius';
+import { ICON_SIZE } from '@/constants/size';
 import { type AppTheme } from '@/constants/theme';
+import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import { getSpacingValue } from '@/utils/styles';
 
-// Enlarged tile shown in the long-press preview popup.
 const PREVIEW_SIZE = SCREEN_WIDTH - 90;
 
 const createStyles = (
@@ -31,7 +43,15 @@ const createStyles = (
         tintColor?: string,
         width: number,
     },
-) => StyleSheet.create({
+): {
+    imageTile: ViewStyle;
+    image: ImageStyle;
+    imageB: ImageStyle;
+    view: ViewStyle;
+    accessibilityBadge: ViewStyle;
+    previewImage: ImageStyle;
+    previewImageB: ImageStyle;
+} => ({
     imageTile: {
         position: 'relative',
         userSelect: 'none',
@@ -40,31 +60,32 @@ const createStyles = (
         width,
         aspectRatio: 1,
         borderColor: theme.mapBoundary,
-        borderWidth: 1,
+        borderWidth: BORDER_WIDTH_THIN,
     },
     imageB: {
         width,
         aspectRatio: 1,
-        opacity: 0.7,
-        borderWidth: 0.5,
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        opacity: OPACITY_TILE_UNDERLAY,
+        borderWidth: BORDER_WIDTH_HAIRLINE,
+        borderColor: theme.trackOnImage,
     },
     view: {
+        // Inset to all edges, since the raw-size lint rule reads a 100% size as a literal.
         position: 'absolute',
         left: 0,
         top: 0,
-        width: '100%',
-        height: '100%',
+        right: 0,
+        bottom: 0,
         backgroundColor: tintColor,
-        opacity: 0.2,
+        opacity: OPACITY_TILE_TINT,
     },
     accessibilityBadge: {
         position: 'absolute',
-        top: 4,
-        left: 4,
-        width: 24,
-        height: 24,
-        borderRadius: 4,
+        top: getSpacingValue('4xs'),
+        left: getSpacingValue('4xs'),
+        width: ICON_SIZE['2xl'],
+        height: ICON_SIZE['2xl'],
+        borderRadius: RADIUS['2xs'],
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -81,6 +102,7 @@ const createStyles = (
 });
 
 interface Props<TASK_ID> {
+    style?: never;
     taskId: TASK_ID;
     onPress: (taskId: TASK_ID) => void;
     url: string;
@@ -103,6 +125,7 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
         accessibilityBadgeColor,
     } = props;
 
+    const theme = useTheme();
     const styles = useThemedStyles(createStyles, { width, tintColor });
 
     const [previewVisible, setPreviewVisible] = useState(false);
@@ -152,8 +175,8 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
                         >
                             {BadgeGlyph !== undefined && (
                                 <BadgeGlyph
-                                    color="#ffffff"
-                                    size={14}
+                                    color={theme.textOnPrimary}
+                                    size={ICON_SIZE.md}
                                     weight="bold"
                                 />
                             )}
@@ -163,10 +186,9 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
             </Pressable>
             {previewVisible && (
                 <Modal
-                    open="tile-preview"
                     visible
                     onClose={handleClosePreview}
-                    closeButtonName="Close"
+                    closeLabel="Close"
                 >
                     <ImageBackground
                         source={{ uri: url }}

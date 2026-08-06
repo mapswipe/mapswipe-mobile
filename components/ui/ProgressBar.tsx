@@ -21,10 +21,10 @@ import { resolveBoxStyle } from '@/utils/layout';
 /**
  * A bar is two colours and only the fill is a role. No `surface` slot reaches `backgroundTrack`,
  * and the roles this wants carry a `surface` identical to their `content`, so a bar built from
- * one role's pair would paint fill on fill and read as empty. Each rung names its own track.
+ * one role's pair would paint fill on fill and read as empty. Each variant names its own track.
  */
 const TRACK_COLOR = {
-    /** White on the lighter navy: the session chrome, sitting on `backgroundBrand`. */
+    /** White on the lighter navy, sitting on `backgroundBrand`. */
     onBrand: 'backgroundTrack',
     /** Green on a sunken light track: level progress on a page surface. */
     positive: 'backgroundMuted',
@@ -107,6 +107,7 @@ const createStyles = (theme: AppTheme, options: ProgressBarOptions): ProgressBar
 };
 
 export interface ProgressBarProps {
+    style?: never;
     /**
      * How full the bar is, as a fraction from 0 to 1. Values outside that clamp, and a
      * non-finite value reads as 0.

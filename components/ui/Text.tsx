@@ -45,7 +45,7 @@ const FONT_WEIGHT = {
 
 export type TextWeightType = keyof typeof FONT_WEIGHT;
 
-/** No `uppercase` or `lowercase` rung yet: nothing in the app needs one. */
+/** No `uppercase` or `lowercase` option yet: nothing in the app needs one. */
 const TEXT_TRANSFORM = {
     none: 'none',
     capitalize: 'capitalize',
@@ -105,6 +105,7 @@ const createTextStyle = (theme: AppTheme, options: TextStyleOptions): TextStyle 
 };
 
 interface CommonProps {
+    style?: never;
     children: ReactNode;
 
     /**

@@ -158,13 +158,11 @@ const nodeConfig = {
     },
 };
 
-// Appended as a plain flat-config object, not through compat.config({overrides}): the
-// .map() above rewrites `files` on every object FlatCompat emits.
+// Appended plainly, not via compat.config({overrides}): the .map() above rewrites `files`.
 const testConfig = {
     files: ['__tests__/**/*.{ts,tsx}', 'jest/**/*.{ts,tsx}'],
     rules: {
-        // jest.mock factories are hoisted above imports, so they can only reach a module
-        // through require, and inline stub components are the point of a mock file.
+        // jest.mock factories are hoisted above imports, so they can only require.
         '@typescript-eslint/no-require-imports': 'off',
         'react/function-component-definition': 'off',
     },
@@ -184,14 +182,15 @@ const testConfig = {
     },
 };
 
-// Styling is a directory privilege, not a per-file judgement call: only components/ui/** may
-// build styles. Everything below is appended as plain flat-config objects rather than going
-// through compat.config({overrides}), because the .map() above rewrites `files` on every object
-// FlatCompat emits, which would silently widen these to the whole app.
+// Only components/ui/** may build styles. The configs below are plain flat-config objects: the
+// .map() above rewrites `files`, which would widen them to the whole app.
 const UI = ['components/ui/**/*.{ts,tsx}'];
 
-// Flat config REPLACES an option array rather than merging it, so Airbnb's four entries have to
-// be re-listed wherever no-restricted-syntax is set, or they are silently dropped.
+// Domain leaves may lay out measured geometry, but colours and sizes still come from tokens.
+const DOMAIN = ['components/domain/**/*.{ts,tsx}'];
+
+// Flat config replaces an option array instead of merging, so Airbnb's entries must be re-listed
+// wherever no-restricted-syntax is set.
 const AIRBNB_RESTRICTED_SYNTAX = [
     { selector: 'ForInStatement', message: 'for..in iterates the prototype chain. Use Object.{keys,values,entries}.' },
     { selector: 'ForOfStatement', message: 'iterators/generators need regenerator-runtime. Prefer array iteration.' },
@@ -206,9 +205,8 @@ const NO_RAW_COLOR = [
 
 const SIZE_PROPS = [
     'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
-    // 'start' and 'end' are deliberately absent: esquery matches on key NAME alone, so they
-    // also hit ordinary maps like { start: 'auto' } in an alignment table. The logical inset
-    // spellings below are what this codebase actually uses.
+    // 'start' and 'end' are deliberately absent: esquery matches key names alone, so they would
+    // also hit maps like { start: 'auto' }.
     'top', 'bottom', 'left', 'right',
     'insetBlockStart', 'insetBlockEnd', 'insetInlineStart', 'insetInlineEnd',
     'margin', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight',
@@ -218,18 +216,24 @@ const SIZE_PROPS = [
     'borderRadius', 'borderWidth', 'fontSize', 'lineHeight', 'gap', 'rowGap', 'columnGap',
 ].join('|');
 
-// The allowlist holds literal paths so the ratchet can verify each one exists, but `ignores`
-// takes minimatch globs. expo-router's dynamic segments are the trap: in a glob, `[id]` is a
-// character class matching one of i or d, so 'project/[id]/index.tsx' silently matches nothing
-// and the file stays unignored. Escape the metacharacters on the way in.
+// `ignores` takes minimatch globs, where `[id]` is a character class, so an unescaped
+// 'project/[id]/index.tsx' matches nothing and the file stays unignored.
 const asIgnorePattern = (path) => path.replace(/[[\]{}()!+@]/g, (ch) => `\\${ch}`);
+
+const noRawPaintInDomain = {
+    files: DOMAIN,
+    rules: {
+        'react-native/no-inline-styles': 'error',
+        'react-native/no-color-literals': 'error',
+        'react-native/no-single-element-style-arrays': 'error',
+        'no-restricted-syntax': ['error', ...NO_RAW_COLOR],
+    },
+};
 
 const noStylingInViews = {
     files: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}'],
-    // The allowlist grandfathers every file that styles something today. It only ever shrinks:
-    // scripts/check-styling-allowlist.ts fails CI if an entry is added, and rejects globs so a
-    // single 'components/**' cannot silently re-exempt the tree.
-    ignores: [...UI, 'app/playground/**', ...STYLING_ALLOWLIST.map(asIgnorePattern)],
+    // The allowlist may only shrink; scripts/check-styling-allowlist.ts fails CI on an addition.
+    ignores: [...UI, ...DOMAIN, 'app/playground/**', ...STYLING_ALLOWLIST.map(asIgnorePattern)],
     rules: {
         'react-native/no-inline-styles': 'error',
         'react-native/no-color-literals': 'error',
@@ -263,9 +267,7 @@ const noStylingInViews = {
                 selector: "CallExpression[callee.object.name='StyleSheet'][callee.property.name='create']",
                 message: 'No StyleSheet.create in views.',
             },
-            // Anchored, so it catches style and contentContainerStyle but not styleVariant.
-            // `mapStyle` is excluded: it is MapLibre's style *document*, not an RN style, and
-            // every map on the web build would otherwise be a false positive.
+            // `mapStyle` is excluded: it is MapLibre's style document, not an RN style.
             {
                 selector: "JSXAttribute[name.name=/[Ss]tyle$/]:not([name.name='mapStyle'])",
                 message: 'No style prop in views. Add a variant.',
@@ -296,16 +298,14 @@ const tokensOnlyInUi = {
         'no-restricted-syntax': ['error',
             ...AIRBNB_RESTRICTED_SYNTAX,
             ...NO_RAW_COLOR,
-            // [value!=0] is required: esquery does not coerce numeric literal values, so a
-            // /^[0-9]/ regex never matches one. Zero needs no token.
+            // [value!=0] is required: esquery does not coerce numeric literals, so /^[0-9]/ fails.
             { selector: `Property[key.name=/^(${SIZE_PROPS})$/] > Literal[value!=0]`, message: 'Raw size. Use a token.' },
             { selector: `Property[key.name=/^(${SIZE_PROPS})$/] > UnaryExpression > Literal`, message: 'Raw size. Use a token.' },
         ],
     },
 };
 
-// The token layer mints values; nothing else may. theme.ts and typography.ts are the only files
-// allowed a colour literal, and both are already the sole holders of one.
+// theme.ts and typography.ts are the only files allowed a colour literal.
 const tokenSources = {
     files: ['constants/**/*.ts', 'utils/**/*.ts'],
     ignores: ['constants/theme.ts', 'constants/typography.ts'],
@@ -320,6 +320,7 @@ export default [
     nodeConfig,
     testConfig,
     noStylingInViews,
+    noRawPaintInDomain,
     tokensOnlyInUi,
     tokenSources,
 ];

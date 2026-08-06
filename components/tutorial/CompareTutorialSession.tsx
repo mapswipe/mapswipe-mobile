@@ -6,12 +6,12 @@ import {
 import { useTranslation } from 'react-i18next';
 import { isNotDefined } from '@togglecorp/fujs';
 
-import HideTileSelectionButton from '@/components/HideTileSelectionButton';
-import ImageTile from '@/components/ImageTile';
 import { TutorialSessionProps } from '@/components/tutorial/types';
 import Box from '@/components/ui/Box';
+import HideTileSelectionButton from '@/components/ui/HideTileSelectionButton';
 import Stack from '@/components/ui/Stack';
 import Text from '@/components/ui/Text';
+import ImageTile from '@/components/ui/tile/ImageTile';
 import { TILE_ANSWER_OPTIONS } from '@/constants/answers';
 import useAnswerColors from '@/hooks/useAnswerColors';
 import useFittedTileWidth from '@/hooks/useFittedTileWidth';
@@ -19,29 +19,20 @@ import useViewport from '@/hooks/useViewport';
 import { getTutorialTaskKey } from '@/utils/tutorial';
 import { Results } from '@/utils/types';
 
-/**
- * The tap cycle: 0 No, 1 Yes, 2 Maybe, 3 Bad Imagery, in that order. These are the BUILT-IN
- * answers, the same list CompareMappingSession maps with, so their colours are theme tokens
- * resolved through useAnswerColors and never a project's customOptions. Spread out of the
- * readonly tuple so findIndex can take it.
- */
+// Array order is the tap cycle; spread so findIndex can take the readonly tuple.
 const OPTIONS = [...TILE_ANSWER_OPTIONS];
 
-// Before and After are stacked, so the two of them share the slot's block axis.
+// Before and After stack, so the pair spans two rows.
 const TILE_ROWS = 2;
 
-/** A 12pt gutter on each side of the pair. */
+// A 12pt gutter on each side of the pair.
 const TILE_RESERVE_INLINE = 24;
 
 const TILE_RESERVE_BLOCK = 64;
 
-/** Floor the pair never shrinks past, however short the scenario page gets. */
 const MIN_TILE_WIDTH = 80;
 
-/**
- * Stand-in for the slot's block extent before onLayout reports one, as the window less the
- * scenario page's chrome (the feedback banner, the Check Answer button and their gaps).
- */
+// Fallback before onLayout: the window less the scenario page's own bars.
 const FALLBACK_BLOCK_CHROME = 300;
 
 function getNextValue(value: number | undefined) {
@@ -67,8 +58,6 @@ function CompareTutorialSession(props: TutorialSessionProps) {
     const { t } = useTranslation('tutorialScreen');
     const { width: pageWidth, height: pageHeight } = useViewport();
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
-    // Measured size of the pair slot, so the before/after tiles fit the space available
-    // rather than a fixed fraction of the window.
     const [pairsSize, setPairsSize] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -135,8 +124,6 @@ function CompareTutorialSession(props: TutorialSessionProps) {
                 clip
                 onLayout={(event) => setPairsSize(event.nativeEvent.layout)}
             >
-                {/* The Box above owns the slot and the measurement; this owns the rhythm
-                    between pairs, which is a spacing rung and so not Box's to state. */}
                 <Stack
                     spacing="3xs"
                     align="center"

@@ -9,7 +9,7 @@ import { type IconName } from '@/components/ui/Icon';
 import IconButton from '@/components/ui/IconButton';
 import Row from '@/components/ui/Row';
 import Stack from '@/components/ui/Stack';
-import ImageWrapper from '@/components/ValidateImageWrapper';
+import ImageWrapper from '@/components/ui/tile/ValidateImageWrapper';
 import { getTutorialTaskKey } from '@/utils/tutorial';
 import {
     FbValidateImageTutorialTask,
@@ -61,14 +61,11 @@ function ValidateImageTutorialSession(props: TutorialSessionProps) {
     const bbox = task.bbox as [number, number, number, number] | undefined;
 
     return (
-        // No gap of its own: the 8pt above and below the answer bar is the bar's own inset, and
-        // a Stack gap would only reach the top of it.
         <Stack
             spacing="none"
             grow="slot"
         >
-            {/* The image fills this slot (ImageWrapper is flex + 100% height). Bounding it with
-                a shrinkable slot and clipping keeps the answer buttons on screen. */}
+            {/* ImageWrapper is flex at 100% height, so clip it to keep the buttons on screen. */}
             <Box
                 flex={1}
                 minHeight={0}
@@ -82,9 +79,7 @@ function ValidateImageTutorialSession(props: TutorialSessionProps) {
                     bbox={bbox}
                 />
             </Box>
-            {/* The answers are the tutorial's own customOptions: per-project author data off
-                Firebase, so each disc is filled with IconButton's documented raw-colour prop
-                and never with a token from the built-in answer palette. */}
+            {/* Answers are author data, so each disc takes a raw colour, not a token. */}
             <Row
                 spacing="md"
                 padding="3xs"

@@ -86,6 +86,7 @@ const SIZE_VARIANT = {
 export type EmptyStateSizeVariant = keyof typeof SIZE_VARIANT;
 
 interface CommonProps {
+    style?: never;
     /**
      * Required, unlike everything else here. An empty state with no sentence is a blank area
      * with a glyph in it, which reads as a loading state that never finished.
@@ -131,7 +132,7 @@ export type EmptyStateProps = CommonProps & EmptyStateAction;
 /**
  * The "there is nothing here" block: a glyph, a title, a sentence and a way out.
  *
- * The button is composed here rather than taken as a node, so its width follows the rung:
+ * The button is composed here rather than taken as a node, so its width follows the size:
  * full-width on a page state, hugging its label inline.
  */
 function EmptyState(props: EmptyStateProps) {

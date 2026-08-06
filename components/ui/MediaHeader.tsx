@@ -26,6 +26,7 @@ const createFooterStyle = (theme: AppTheme): ViewStyle => ({
 });
 
 interface CommonProps {
+    style?: never;
     /** The background image. Sized by Media's `hero` footprint: full width, HERO_HEIGHT tall. */
     source: MediaSource;
 
@@ -45,6 +46,7 @@ interface CommonProps {
  * stays explicit, as on Media.
  */
 type MediaHeaderLabelProps = {
+    style?: never;
     imageAccessibilityLabel: string;
     withoutImageAccessibilityLabel?: never;
 } | {
@@ -128,7 +130,7 @@ function MediaHeader(props: MediaHeaderProps) {
                     )}
                 </Stack>
             </Positioned>
-            {/* Last child and on its own rung, so the corner control stays above the wash on
+            {/* Last child and on its own layer, so the corner control stays above the wash on
                 both platforms: Android compares elevation before paint order. */}
             {action !== undefined && (
                 <Positioned
@@ -136,7 +138,7 @@ function MediaHeader(props: MediaHeaderProps) {
                     // 4, so the glyph lands on the page's 16 gutter: IconButton centres a 16
                     // glyph in a 40 target. The eye lines up the arrow, not the touch box.
                     padding="4xs"
-                    layer="chrome"
+                    layer="controls"
                 >
                     {action}
                 </Positioned>

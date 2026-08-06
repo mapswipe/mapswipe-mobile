@@ -25,6 +25,7 @@ import {
     type ThemeColorKey,
 } from '@/constants/theme';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import useTouchTargetSlop from '@/hooks/useTouchTargetSlop';
 import {
     type AlignType,
     resolveBoxStyle,
@@ -88,7 +89,7 @@ interface ButtonSurface {
 }
 
 /**
- * The ring takes the role's `content` slot, not its `border` slot: `border` is the chrome
+ * The ring takes the role's `content` slot, not its `border` slot: `border` is the divider
  * hairline, while an outline button rings itself in the colour of its own label.
  */
 const STYLE_VARIANT = {
@@ -203,6 +204,7 @@ const createButtonPaint = (theme: AppTheme, options: ButtonPaintOptions): Button
 };
 
 interface CommonProps {
+    style?: never;
     /** Required even with a title: `accessibilityLabel ?? title` quietly made it optional. */
     accessibilityLabel: string;
 
@@ -275,6 +277,8 @@ function ButtonLayout(props: ButtonLayoutProps) {
     const width = isUnderline ? 'hug' : (widthProp ?? 'fill');
     const padding = isUnderline ? 'none' : (paddingProp ?? 'xs');
 
+    const { hitSlop, onLayout } = useTouchTargetSlop();
+
     const {
         container,
         labelColorVariant,
@@ -295,6 +299,9 @@ function ButtonLayout(props: ButtonLayoutProps) {
             accessibilityLabel={accessibilityLabel}
             accessibilityRole="button"
             accessibilityState={{ disabled: !pressable, busy }}
+            // An unpadded button is only as tall as its label, so the target grows instead.
+            hitSlop={hitSlop}
+            onLayout={onLayout}
             testID={testID}
         >
             <Row
