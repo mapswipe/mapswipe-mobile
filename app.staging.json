@@ -2,7 +2,7 @@
     "expo": {
         "name": "MapSwipe Dev",
         "slug": "mapswipe-mobile-staging",
-        "version": "3.0.3",
+        "version": "3.0.4",
         "orientation": "portrait",
         "icon": "./assets/images/icon.png",
         "scheme": "devmapswipe",
@@ -11,7 +11,7 @@
         "userInterfaceStyle": "light",
         "ios": {
             "bundleIdentifier": "org.missingmaps.mapswipe-dev",
-            "buildNumber": "1",
+            "buildNumber": "0",
             "backgroundColor": "#0D1949",
             "supportsTablet": true,
             "infoPlist": {
@@ -26,7 +26,7 @@
             },
             "predictiveBackGestureEnabled": false,
             "package": "org.missingmaps.mapswipe.dev",
-            "versionCode": 3000301,
+            "versionCode": 3000400,
             "userInterfaceStyle": "light"
         },
         "web": {
