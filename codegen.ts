@@ -4,12 +4,12 @@ const schema = process.env.EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT;
 
 if (!schema) {
   throw new Error(
-    'EXPO_PUBLIC_GRAPHQL_ENDPOINT is not set. Add it to your .env file.'
+    'EXPO_PUBLIC_GRAPHQL_CODEGEN_ENDPOINT is not set. Add it to your .env.local file.'
   );
 }
 
 const config: CodegenConfig = {
-  schema,                         
+  schema,
   documents: [
     'app/**/*.tsx',
     'app/**/*.ts',

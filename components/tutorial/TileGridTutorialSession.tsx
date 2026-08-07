@@ -111,18 +111,24 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
     }, [tasks, onResultsChange]);
 
     const groupedColumns = useMemo(() => {
+        // The backend generated wrong taskX/taskY for tutorials (a since-fixed
+        // scramble bug), and tutorials published before that fix keep those wrong
+        // values in Firebase. taskId_real (`z-x-y`) was always correct, so we
+        // position tiles from it instead of the synthetic taskX/taskY.
+        const getX = (t: TileTutorialTask) => Number(t.taskId_real.split('-')[1]);
+        const getY = (t: TileTutorialTask) => Number(t.taskId_real.split('-')[2]);
+
         const tileTasks = tasks.filter((t): t is TileTutorialTask => (
-            'taskX' in t && 'taskY' in t
-            && typeof t.taskX === 'number' && typeof t.taskY === 'number'
+            'taskId_real' in t && typeof t.taskId_real === 'string'
         )).sort((a, b) => (
-            compareNumber(a.taskX, b.taskX) || compareNumber(a.taskY, b.taskY)
+            compareNumber(getX(a), getX(b)) || compareNumber(getY(a), getY(b))
         ));
 
         return mapToList(
-            listToGroupList(tileTasks, (t) => t.taskX),
+            listToGroupList(tileTasks, getX),
             (rows, key) => ({
-                taskX: key,
-                rows: [...rows].sort((a, b) => compareNumber(a.taskY, b.taskY)),
+                x: Number(key),
+                rows: [...rows].sort((a, b) => compareNumber(getY(a), getY(b))),
             }),
         );
     }, [tasks]);
@@ -167,7 +173,7 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
             >
                 <View style={styles.row}>
                     {groupedColumns.map((column) => (
-                        <View key={column.taskX} style={styles.column}>
+                        <View key={column.x} style={styles.column}>
                             {column.rows.map((task) => {
                                 const taskKey = getTutorialTaskKey(task);
                                 const result = results[taskKey];
