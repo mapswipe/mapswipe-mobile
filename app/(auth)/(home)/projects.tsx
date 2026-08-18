@@ -144,25 +144,10 @@ const createProjectStyles = (
         paddingHorizontal: 8,
         paddingVertical: 4,
     },
-    pillRight: {
-        flexShrink: 0,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        backgroundColor: 'rgba(60, 60, 67, 0.75)',
-        borderRadius: 99,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-    },
     pillText: {
         flexShrink: 1,
         fontSize: 11,
         color: '#333',
-        fontWeight: '500',
-    },
-    pillNumberText: {
-        fontSize: 11,
-        color: '#fff',
         fontWeight: '500',
     },
     bottomContent: {
@@ -264,17 +249,6 @@ function ProjectItem(props: ProjectItemProps) {
                         {projectTypeTextMapping[project.projectType]}
                     </Text>
                 </View>
-                {isDefined(project.projectNumber) && (
-                    <View style={styles.pillRight}>
-                        <Text
-                            style={styles.pillNumberText}
-                            numberOfLines={1}
-                            allowFontScaling={false}
-                        >
-                            {project.projectNumber}
-                        </Text>
-                    </View>
-                )}
             </View>
             <View style={styles.bottomContent}>
                 <Text
@@ -282,7 +256,9 @@ function ProjectItem(props: ProjectItemProps) {
                     numberOfLines={2}
                     allowFontScaling={false}
                 >
-                    {project.projectTopic}
+                    {isDefined(project.projectNumber)
+                        ? `${project.projectTopic} (${project.projectNumber})`
+                        : project.projectTopic}
                 </Text>
                 {isDefined(project.projectRegion) && (
                     <InlineListView
