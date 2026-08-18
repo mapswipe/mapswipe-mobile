@@ -32,7 +32,11 @@ Both modes share the same flow:
 4. **Build number** — free-form integer (current value shown).
 5. **Description** — one line; becomes the commit subject suffix and the tag's
    annotation message.
-6. **Confirmation** — a summary box (plus any warnings) is shown; type `yes` to
+6. **Changelog** — your `$EDITOR` opens on a scratch file; write **one
+   user-facing bullet per line**. Blank lines and `#` comments are ignored. If
+   `changeLog.json` already has an entry for this version, its bullets are
+   pre-filled for you to edit. **Saving an empty file aborts the release.**
+7. **Confirmation** — a summary box (plus any warnings) is shown; type `yes` to
    proceed, anything else aborts with no changes.
 
 ### What it changes (both modes)
@@ -41,9 +45,15 @@ Both modes share the same flow:
 | --- | --- |
 | Sets `version` | in `package.json`, `app.prod.json`, `app.staging.json` |
 | Sets `ios.buildNumber` | in `app.prod.json`, `app.staging.json` |
+| Sets `android.versionCode` | in `app.prod.json`, `app.staging.json` — **derived**, not typed: `major×1000000 + minor×10000 + patch×100 + build` |
+| Writes `changeLog.json` | your bullets, under the `X.Y.Z` key — this is what the in-app "What's new" modal shows |
 | Commits | production: `release(vX.Y.Z): <desc>` · test: `test(vX.Y.Z-bN): <desc>` |
 | Tags (annotated) | production: `vX.Y.Z` · test: `test-vX.Y.Z-bN` |
 | Pushes | production: `develop` + tag · test: current branch + tag |
+
+The in-app changelog is keyed by `X.Y.Z` and matched against `expo.version`, so
+the modal is driven by the version alone — test releases of the same version
+share the production entry.
 
 ### Warnings (proceed on explicit `yes`)
 
@@ -53,6 +63,9 @@ Both modes share the same flow:
 3. **Version change in test mode** — a test release that changes the version.
    That change lands on `develop` (directly if you're on it, or via merge from a
    feature branch); version bumps belong to production releases.
+4. **`versionCode` component overflow** — the formula assumes minor, patch and
+   build are each `< 100`. If one reaches 100 the derived code can collide with a
+   neighbouring version, and the numbering scheme needs revisiting.
 
 ---
 
@@ -92,7 +105,7 @@ tag vX.Y.Z pushed
 **Stage 2 — Production (⚠️ requires manual approval).** `build-production`
 targets the protected `production` Environment and will **not run until approved**:
 
-1. Open the [Actions tab](https://github.com/toggle-corp/mapswipe-mobile/actions)
+1. Open the [Actions tab](https://github.com/mapswipe/mapswipe-mobile/actions)
    and click into the running run for your tag.
 2. The `build-production` job waits with a **“Review deployments”** button.
 3. **Approve and deploy.** (iOS and Android are separate workflows — approve
@@ -138,18 +151,19 @@ the staging database):
   follow-up). This is why you set the build number by hand — TestFlight requires
   it to increase for each upload of the same version.
 
-### Keep `develop` clean
+### What reaches `develop`
 
-Test releases **commit** to your branch, so **squash-merge** the branch into
-`develop` to collapse those `test(...)` commits. Note: squashing removes the
-*commits* but keeps the *net file diff* — so the `buildNumber` value still lands
-on `develop`. That's harmless (the next production release resets it via a fresh
-version, and develop's CI only lint/typechecks). But a **version** change would
-leak, which is exactly what warning #3 exists to catch — keep test releases to
-build-number-only unless you mean it.
+Test releases **commit** to your branch, and branches here are merged with a
+merge commit rather than squashed (see
+[workflow.md](workflow.md#branching-model)) — so the `test(...)` commits and the
+`buildNumber` they set both reach `develop` when the PR merges. The build number
+is harmless: the next production release sets version and build explicitly, and
+`develop` only ever gets lint/typechecked. A **version** change is not, which is
+exactly what warning #3 exists to catch — keep test releases to
+build-number-only bumps unless you mean it.
 
-A test release run from `develop` itself commits straight to `develop` (no squash
-to clean it up) — prefer a feature branch for iterative test builds.
+Prefer a feature branch over `develop` for iterative test builds: run from
+`develop`, `deploy.sh` commits and pushes straight to trunk with no review.
 
 ---
 
@@ -177,12 +191,13 @@ To cancel only the production build, **reject** the deployment in the Actions
 ## Known gaps
 
 - **Release notes:** GitHub Release bodies come from a hardcoded template in the
-  workflows — your `deploy.sh` description is **not** included there (it lives in
-  the commit and tag).
+  workflows — neither your `deploy.sh` description nor the `changeLog.json`
+  bullets appear there. The description lives in the commit and tag; the bullets
+  drive the in-app "What's new" modal only.
 - **iOS uploads are manual:** both production and test IPAs are workflow
   artifacts; there's no automated TestFlight/App Store Connect upload yet.
-- **Android `versionCode`:** neither app config sets `android.versionCode`, so
-  Expo prebuild uses its default (`1`). Google Play rejects re-uploads with a
-  non-incrementing `versionCode` — set/increment it before shipping to Play.
+- **Android ships as an APK, not an AAB:** the workflows attach an APK to the
+  GitHub Release. Google Play requires an App Bundle, so Play uploads are not
+  automated.
 - **Test-tag cleanup:** test pre-releases/tags accumulate; prune them manually
   for now.

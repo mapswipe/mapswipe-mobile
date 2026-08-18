@@ -26,7 +26,22 @@ This application encompasses only the mobile Android & iOS clients. The role of 
 
 If you'd like to modify and improve MapSwipe, read through the following to get familiar with the project. Please also read [CONTRIBUTING](CONTRIBUTING.md).
 
-To cut a release, see [docs/deployment.md](docs/deployment.md).
+### Documentation
+
+| Doc | What it covers |
+| --- | --- |
+| [architecture.md](docs/architecture.md) | How the code is organised: the two backends, routing and auth, project types, theming |
+| [develop-android.md](docs/develop-android.md) | Setting up an Android development environment |
+| [develop-ios.md](docs/develop-ios.md) | Setting up an iOS development environment, and release code signing |
+| [workflow.md](docs/workflow.md) | Branching, PRs, reviews and release cadence |
+| [deployment.md](docs/deployment.md) | Cutting a release with `deploy.sh` |
+| [dev-release.md](docs/dev-release.md) | Building a release-mode APK locally |
+| [translating.md](docs/translating.md) | Adding user-facing text, and how translation works |
+| [osm-login.md](docs/osm-login.md) | The OpenStreetMap OAuth login flow |
+| [upgrading-dependencies.md](docs/upgrading-dependencies.md) | Dependency and Expo SDK upgrades |
+| [privacy.md](docs/privacy.md) | Privacy policy |
+
+New here? Start with [architecture.md](docs/architecture.md), then the setup page for your platform.
 
 ## Technology Used
 
