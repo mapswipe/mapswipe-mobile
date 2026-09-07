@@ -15,11 +15,14 @@ import {
     listToMap,
 } from '@togglecorp/fujs';
 
+import AccessibilityInfoModal from '@/components/AccessibilityInfoModal';
 import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import ImageTile from '@/components/ImageTile';
 import Text from '@/components/Text';
 import { TutorialSessionProps } from '@/components/tutorial/types';
 import { SPACING_3XS } from '@/constants/dimensions';
+import useAccessibility from '@/hooks/useAccessibility';
+import { getAccessibilityBadge } from '@/utils/results';
 import { getTutorialTaskKey } from '@/utils/tutorial';
 import {
     ResultOption,
@@ -127,6 +130,8 @@ function CompareTutorialSession(props: TutorialSessionProps) {
         setHideTilePressValue(false);
     }, []);
 
+    const { isAccessibilityEnabled } = useAccessibility();
+
     return (
         <View style={styles.container}>
             <View
@@ -143,6 +148,12 @@ function CompareTutorialSession(props: TutorialSessionProps) {
                         ? optionsByValue[result]
                         : undefined;
 
+                    const badge = isAccessibilityEnabled && !hideTilePressValue
+                        ? getAccessibilityBadge(
+                            typeof result === 'number' ? result : undefined,
+                        )
+                        : undefined;
+
                     return (
                         <View key={taskKey} style={styles.pair}>
                             <Text colorVariant="brand">{t('compareBefore')}</Text>
@@ -153,6 +164,8 @@ function CompareTutorialSession(props: TutorialSessionProps) {
                                 width={tileWidth}
                                 tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                 onPress={handleTilePress}
+                                accessibilityBadgeIconName={badge?.iconName}
+                                accessibilityBadgeColor={badge?.color}
                             />
                             <Text colorVariant="brand">{t('compareAfter')}</Text>
                             <ImageTile
@@ -162,6 +175,8 @@ function CompareTutorialSession(props: TutorialSessionProps) {
                                 width={tileWidth}
                                 tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                 onPress={handleTilePress}
+                                accessibilityBadgeIconName={badge?.iconName}
+                                accessibilityBadgeColor={badge?.color}
                             />
                         </View>
                     );
@@ -172,6 +187,7 @@ function CompareTutorialSession(props: TutorialSessionProps) {
                 handleHideTileSelectionPressOut={handleHideTilePressOut}
                 isPressed={hideTilePressValue}
             />
+            {isAccessibilityEnabled && <AccessibilityInfoModal />}
         </View>
     );
 }

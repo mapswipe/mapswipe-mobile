@@ -33,6 +33,7 @@ import useAccessibility from '@/hooks/useAccessibility';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { firebaseRef } from '@/utils/firebase';
+import { getAccessibilityBadge } from '@/utils/results';
 import { buildTasks } from '@/utils/task';
 import {
     CompletenessProject,
@@ -314,15 +315,6 @@ function TileGridMappingSession(props: Props) {
     }), [markVisibleTilesAsWrong]);
 
     const { isAccessibilityEnabled } = useAccessibility();
-
-    const getAccessibilityBadge = useCallback((value: number | undefined) => {
-        switch (value) {
-            case 1: return { iconName: 'checkmark-outline', color: '#22C55E' } as const;
-            case 2: return { iconName: 'question-mark', color: '#F59E0B' } as const;
-            case 3: return { iconName: 'ban-outline', color: '#EF4444' } as const;
-            default: return undefined;
-        }
-    }, []);
 
     return (
         <>

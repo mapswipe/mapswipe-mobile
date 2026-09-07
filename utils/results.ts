@@ -99,3 +99,19 @@ export function getAnswerCounts(
         count: counts[option.value] ?? 0,
     }));
 }
+
+export interface AccessibilityBadge {
+    iconName: 'checkmark-outline' | 'question-mark' | 'ban-outline';
+    color: string;
+}
+
+export function getAccessibilityBadge(
+    value: number | undefined,
+): AccessibilityBadge | undefined {
+    switch (value) {
+        case 1: return { iconName: 'checkmark-outline', color: '#22C55E' };
+        case 2: return { iconName: 'question-mark', color: '#F59E0B' };
+        case 3: return { iconName: 'ban-outline', color: '#EF4444' };
+        default: return undefined;
+    }
+}

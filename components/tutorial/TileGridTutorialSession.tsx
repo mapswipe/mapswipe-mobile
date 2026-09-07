@@ -5,6 +5,7 @@ import {
     useState,
 } from 'react';
 import {
+    PanResponder,
     StyleSheet,
     useWindowDimensions,
     View,
@@ -17,9 +18,12 @@ import {
     mapToList,
 } from '@togglecorp/fujs';
 
+import AccessibilityInfoModal from '@/components/AccessibilityInfoModal';
 import HideTileSelectionButton from '@/components/HideTileSelectionButton';
 import ImageTile from '@/components/ImageTile';
 import { TutorialSessionProps } from '@/components/tutorial/types';
+import useAccessibility from '@/hooks/useAccessibility';
+import { getAccessibilityBadge } from '@/utils/results';
 import {
     getTutorialTaskKey,
     TileTutorialTask,
@@ -64,6 +68,8 @@ const OPTIONS: ResultOption[] = [
 ];
 
 const optionsByValue = listToMap(OPTIONS, ({ value }) => value);
+
+const BAD_IMAGERY_VALUE = 3;
 
 function getNextValue(value: number | undefined) {
     if (isNotDefined(value)) {
@@ -157,6 +163,33 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
         });
     }, [disabled, onResultsChange]);
 
+    const markVisibleTilesAsWrong = useCallback(() => {
+        if (disabled) {
+            return;
+        }
+        onResultsChange((prev) => {
+            const next: Results = { ...prev };
+            groupedColumns.forEach((column) => {
+                column.rows.forEach((task) => {
+                    next[getTutorialTaskKey(task)] = BAD_IMAGERY_VALUE;
+                });
+            });
+            return next;
+        });
+    }, [disabled, groupedColumns, onResultsChange]);
+
+    const swipeResponder = useMemo(() => PanResponder.create({
+        onStartShouldSetPanResponderCapture: () => false,
+        onMoveShouldSetPanResponderCapture: (_, { dy, dx }) => (
+            dy > 50 && Math.abs(dy) > Math.abs(dx) * 2
+        ),
+        onPanResponderRelease: (_, { dy }) => {
+            if (dy > 80) {
+                markVisibleTilesAsWrong();
+            }
+        },
+    }), [markVisibleTilesAsWrong]);
+
     const handleHideTilePressIn = useCallback(() => {
         setHideTilePressValue(true);
     }, []);
@@ -165,11 +198,15 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
         setHideTilePressValue(false);
     }, []);
 
+    const { isAccessibilityEnabled } = useAccessibility();
+
     return (
         <View style={styles.container}>
             <View
                 style={styles.gridArea}
                 onLayout={(event) => setGridSize(event.nativeEvent.layout)}
+                /* eslint-disable-next-line react/jsx-props-no-spreading */
+                {...swipeResponder.panHandlers}
             >
                 <View style={styles.row}>
                     {groupedColumns.map((column) => (
@@ -185,6 +222,12 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
                                     return null;
                                 }
 
+                                const badge = isAccessibilityEnabled && !hideTilePressValue
+                                    ? getAccessibilityBadge(
+                                        typeof result === 'number' ? result : undefined,
+                                    )
+                                    : undefined;
+
                                 return (
                                     <ImageTile
                                         key={taskKey}
@@ -198,6 +241,8 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
                                         width={tileWidth}
                                         tintColor={hideTilePressValue ? 'transparent' : selectedOption?.color}
                                         onPress={handleTilePress}
+                                        accessibilityBadgeIconName={badge?.iconName}
+                                        accessibilityBadgeColor={badge?.color}
                                     />
                                 );
                             })}
@@ -211,6 +256,7 @@ function TileGridTutorialSession(props: TutorialSessionProps) {
                 isPressed={hideTilePressValue}
                 containerStyle={styles.hideButton}
             />
+            {isAccessibilityEnabled && <AccessibilityInfoModal />}
         </View>
     );
 }
