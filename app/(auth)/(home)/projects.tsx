@@ -92,11 +92,11 @@ const createStyles = (theme: AppTheme) => (StyleSheet.create({
 
 const createProjectStyles = (
     theme: AppTheme,
-    { width, aspectRatio }: { width: number; aspectRatio: number },
+    { width, minHeight }: { width: number; minHeight: number },
 ) => StyleSheet.create({
     card: {
         width,
-        aspectRatio,
+        minHeight,
         borderRadius: 6,
         overflow: 'hidden',
         backgroundColor: theme.backgroundMuted,
@@ -143,10 +143,17 @@ const createProjectStyles = (
         borderRadius: 99,
         paddingHorizontal: 8,
         paddingVertical: 4,
+        boxShadow: [{
+            offsetX: 0,
+            offsetY: 1,
+            blurRadius: 3,
+            spreadDistance: 0,
+            color: 'rgba(0, 0, 0, 0.16)',
+        }],
     },
     pillText: {
         flexShrink: 1,
-        fontSize: 11,
+        fontSize: 8,
         color: '#333',
         fontWeight: '500',
     },
@@ -220,10 +227,11 @@ function ProjectItem(props: ProjectItemProps) {
     const cardWidth = featured ? (SCREEN_WIDTH - CARD_PADDING * 2) : CARD_WIDTH;
     // Featured cards are full-width 2:1 banners; regular cards stay taller (5/6).
     const cardAspectRatio = featured ? 2 / 1 : 5 / 6;
-    const styles = useThemedStyles(createProjectStyles, {
+    const styleOptions = useMemo(() => ({
         width: cardWidth,
-        aspectRatio: cardAspectRatio,
-    });
+        minHeight: cardWidth / cardAspectRatio,
+    }), [cardWidth, cardAspectRatio]);
+    const styles = useThemedStyles(createProjectStyles, styleOptions);
     const progressLabel = getProjectProgressForDisplay(project.progress);
     const progressNum = Number(progressLabel);
     const gradient = gradientForId(project.projectId);

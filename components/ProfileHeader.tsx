@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
+import {
+    StyleSheet,
+    useWindowDimensions,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { isDefined } from '@togglecorp/fujs';
 
@@ -18,12 +21,19 @@ import InlineListView from './InlineListView';
 import ProgressBar from './ProgressBar';
 import Text from './Text';
 
-const createStyles = (theme: AppTheme) => StyleSheet.create({
+const BADGE_MAX_SIZE = 100;
+const BADGE_WIDTH_RATIO = 0.22;
+const NARROW_WINDOW_WIDTH = 360;
+
+const createStyles = (
+    theme: AppTheme,
+    { badgeSize }: { badgeSize: number },
+) => StyleSheet.create({
     displayPicture: {
-        width: 100,
-        height: 100,
+        width: badgeSize,
+        height: badgeSize,
         aspectRatio: 1,
-        borderRadius: 50,
+        borderRadius: badgeSize / 2,
     },
     profileCard: {
         backgroundColor: theme.primaryBlue,
@@ -52,7 +62,11 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
 
 function ProfileHeader() {
     const { user } = useAuth();
-    const styles = useThemedStyles(createStyles);
+    const { width: windowWidth } = useWindowDimensions();
+    const styleOptions = useMemo(() => ({
+        badgeSize: Math.min(BADGE_MAX_SIZE, Math.round(windowWidth * BADGE_WIDTH_RATIO)),
+    }), [windowWidth]);
+    const styles = useThemedStyles(createStyles, styleOptions);
     const { t } = useTranslation('profileScreen');
 
     const userDetailQuery = useMemo(
@@ -76,7 +90,7 @@ function ProfileHeader() {
             style={styles.profileCard}
             withCenteredContent
             withPadding
-            spacing="lg"
+            spacing={windowWidth < NARROW_WINDOW_WIDTH ? 'xs' : 'lg'}
         >
             <Image
                 source={levelData.badge}
@@ -104,7 +118,11 @@ function ProfileHeader() {
                     colorVariant="green"
                     sizeVariant="large"
                 />
-                <Text style={styles.progressText}>{levelProgressText}</Text>
+                <Text
+                    style={styles.progressText}
+                >
+                    {levelProgressText}
+                </Text>
             </BlockListView>
         </InlineListView>
     );
