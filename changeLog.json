@@ -25,5 +25,12 @@
     "changes": [
       "fix tutorial render issue"
     ]
+  },
+  "3.0.5": {
+    "changes": [
+      "Added Swipe down and Accessibility in tutorial",
+      "Project number moved from the top-right pill into the card title as Topic (219)",
+      "Fixed large Display size Project card issue"
+    ]
   }
 }
