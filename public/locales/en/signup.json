@@ -35,5 +35,6 @@
   "createNewAccount": "Create New Account",
   "sendResetEmailWarning": "* We will send you an email to reset your password",
   "sendResetEmail": "Send Reset Email",
-  "backToLogin": "Back to login"
+  "backToLogin": "Back to login",
+  "success": "Success"
 }
