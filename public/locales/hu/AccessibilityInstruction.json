@@ -1,1 +1,10 @@
-{}
+{
+  "heading": "Kisegítő funkció",
+  "descriptions": "A térképezési képernyőkön mostantól színes csempék és ikonok is vannak, hogy jobban látszódjék a jelentésük.",
+  "tickIconInfo": "Koppints rá egyszer, hogy a csempe zöldre változzék, és megjelenjék egy pipa ikon.",
+  "questionMarkIconInfo": "Koppints rá kétszer, hogy a csempe sárgává váljál, és megjelenjék egy kérdőjel.",
+  "badImageIconInfo": "Koppints rá háromszor, hogy a csempe pirosra változzék, és megjelenjék egy hibás légi felvétel ikon.",
+  "turnOnOff": "Be- és kikapcsolás:",
+  "turnOnOffDescription": "A funkciót a profilban a beállításoknál lehet be- és kikapcsolni.",
+  "dontShowAgain": "Ne jelenjék meg többé"
+}
