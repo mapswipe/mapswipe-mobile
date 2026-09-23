@@ -273,3 +273,14 @@ jobs:
           - Date: $(date +'%Y-%m-%d %H:%M:%S UTC')
           - Package: \`org.missingmaps.mapswipe\`" \
             generated/mapswipe-${{ steps.tag.outputs.tag }}.apk
+
+      - name: Upload APK to Google Play (production)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.ANDROID_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: org.missingmaps.mapswipe
+          releaseFiles: generated/mapswipe-${{ steps.tag.outputs.tag }}.apk
+          track: production
+          # Upload only — leaves a draft release for the admin to review and
+          # roll out in the Play Console. Does NOT publish to users.
+          status: draft
