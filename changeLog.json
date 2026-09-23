@@ -39,5 +39,10 @@
       "Project number moved from the top-right pill into the card title as Topic (219)",
       "Fixed large Display size Project card issue"
     ]
+  },
+  "3.0.7": {
+    "changes": [
+      "Add automatic deployment to play store"
+    ]
   }
 }
