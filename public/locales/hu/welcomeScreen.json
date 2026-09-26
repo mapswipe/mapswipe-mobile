@@ -8,5 +8,6 @@
   "createData": "Hozz létre értelmes adatokat",
   "dataUse": "Az adatok arra szolgálnak, hogy a Missing Maps önkéntesei  az OpenStreetMap térkép szerkesztéséért tett erőfeszítéseit fókuszálhassák",
   "saveLives": "Ments életeket",
-  "mapHelps": "A térkép segélyszervezeteket támogat abban, hogy humanitárius erőfeszítéseiket összehangolják és életeket mentsenek"
+  "mapHelps": "A térkép segélyszervezeteket támogat abban, hogy humanitárius erőfeszítéseiket összehangolják és életeket mentsenek",
+  "skip": "átugrik"
 }
