@@ -1,7 +1,7 @@
 {
   "useTheButtonsToAnswer": "Használd a gombokat a válaszhoz:",
   "doesTheShapeOutlineABuilding": "Az alakzat egy épület körvonalait mutatja?",
-  "everyTimeYouSelectAnOption": "Minden alkalommal, amikor kiválasztasz egy lehetőséget, egy új alakzat és kép jelenik meg.",
+  "everyTimeYouSelectAnOption": "Valahányszor kiválasztasz egy lehetőséget, megjelenik egy új alakzat és kép.",
   "tapGreenText": "Igen – a képen az alakzat egy épület körvonalait jeleníti meg",
   "tapRedText": "Nem – a képen az alakzat nem olyan, mint egy épület körvonala",
   "tapGrayText": "Nem vagyok benne biztos – ha bizonytalan vagy vagy ha a kép felhős / rossz minőségű",
