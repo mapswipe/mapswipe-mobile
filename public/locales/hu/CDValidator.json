@@ -2,5 +2,7 @@
   "Yes": "Igen",
   "No": "Nem",
   "NotSure": "Bizonytalan",
-  "BadImagery": "Rossz műholdkép"
+  "BadImagery": "Rossz műholdkép",
+  "incorrectAnswerMessageTitle": "Hibás válasz",
+  "incorrectAnswerMessage": "Ezt válaszd: {{correctAnswer}}"
 }
