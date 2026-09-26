@@ -1,1 +1,8 @@
-{}
+{
+  "join": "Csatlakozás",
+  "leave": "Elhagyás",
+  "leaderBoards": "Rangsorok",
+  "settings": "Beállítások",
+  "leaveGroup": "Kilépés a csoportból",
+  "joinGroup": "Csatlakozás a csoporthoz"
+}
