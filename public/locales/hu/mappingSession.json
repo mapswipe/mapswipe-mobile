@@ -1,1 +1,22 @@
-{}
+{
+  "sessionCompleteTitle": "Remek munka!",
+  "sessionCompleteMessage": "Ezt a térképezési munkamenetet befejezted. Válaszd ki, mit szeretnél tenni most:",
+  "swipeBackToRevise": "Bármikor visszalapozhatsz, hogy átnézd vagy módosítsd a válaszaidat.",
+  "savingProgress": "Haladás mentése",
+  "saveFailed": "Nem sikerült elmenteni a haladásodat. Ellenőrizd az internetkapcsolatod, és próbáld meg újra.",
+  "saveSucceeded": "A haladásod el lett mentve.",
+  "continueMapping": "Térképezés folytatása",
+  "continueMappingHelp": "Mentsd el a közreműködésed, és hozz létre egy új feladatcsoportot ehhez a projekthez.",
+  "startNewTasks": "Új feladatcsoport elkezdése",
+  "completeSession": "Munkamenet befejezése",
+  "completeSessionHelp": "Mentsd el a közreműködésed, és térj vissza a kezdőképernyőre.",
+  "saveAndFinish": "Mentés & befejezés",
+  "tilesReviewed": "{{count}} csempe átnézve",
+  "timeMapping": "{{duration}} térképezés",
+  "goBack": "Vissza",
+  "goBackHelp": "Visszatér a térképezési munkamenethez, hogy áttekinthesd vagy módosíthasd a válaszaid.",
+  "discardSession": "Munkamenet elvetése",
+  "discardSessionHelp": "Törli a munkamenet során megadott válaszaidat, és visszatér a kezdőképernyőre.",
+  "enterSelectionMode": "Belépés a kijelölési módba",
+  "exitSelectionMode": "Kilépés a kijelölési módból"
+}
