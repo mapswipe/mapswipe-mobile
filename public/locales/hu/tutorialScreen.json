@@ -1,1 +1,16 @@
-{}
+{
+  "pageTitle": "Oktatóanyag",
+  "swipeThroughIntro": "Lapozz végig a következő oldalakon, hogy megismerd az útmutató működését, gyakorolj néhány példafeladaton, majd kezdj el ténylegesen térképezni.",
+  "readyToMap": "{{name}}, most már készen állsz a térképezésre.",
+  "outroMessage": "Remek munka! Befejezted az oktatóanyagot. Térj vissza a projekthez, és kezdj el komolyan térképezni.",
+  "backToProject": "Vissza a projekthez",
+  "unsupportedTitle": "A gyakorlat egyelőre nem elérhető",
+  "unsupportedDescription": "Hamarosan elérhető lesz az interaktív gyakorlat ehhez a projekttípushoz. Olvasd el a tippet, majd koppints a „Beküldés” gombra a folytatáshoz.",
+  "incorrectTitle": "Hibás",
+  "noAttemptsLeft": "Nincs több kísérleted. Koppints a „Válaszok megjelenítése” gombra a helyes válasz megtekintéséhez.",
+  "tryAgain": "Nem tűnik helyesnek. Próbáld meg újra.",
+  "showAnswers": "Válaszok megjelenítése",
+  "checkAnswer": "Válasz ellenőrzése ({{attempts}}/{{max}})",
+  "compareBefore": "Előtte",
+  "compareAfter": "Utána"
+}
