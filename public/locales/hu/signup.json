@@ -1,12 +1,13 @@
 {
   "chooseUsername": "Válassz egy felhasználónevet",
   "passwordError": "A jelszónak legalább 6 karakterből kell állnia",
-  "usernameError": "A felhasználónévnek legalább 4 karakterből kell állnia",
+  "usernameError": "A felhasználónév feltételei: 3–30 karakter hosszú, betűvel vagy számmal kezdődik és végződik, valamint kizárólag betűt, számot, '-' vagy '_' karaktert tartalmazhat.",
+  "usernameErrorText": "A felhasználónév feltételei: 3–30 karakter hosszú, betűvel vagy számmal kezdődik és végződik, valamint kizárólag betűt, számot, '-' vagy '_' karaktert tartalmazhat.",
+  "userNameExistError": "Ilyen felhasználónév már van, légy szíves, válassz egy másikat",
   "errorOnSignup": "Hiba történt a regisztráció során",
   "usernameErrorMessage": "A felhasználónévnek legalább 4 karakter hosszúnak kell lennie",
   "usernameNotEmail": "A felhasználónév nem lehet e-mail-cím",
   "usernamePublic": "Felhasználóneved nyilvánosan látható lesz",
-  "success": "Sikerült",
   "welcomeToMapSwipe": "Isten hozott a MapSwipe-ban, {{username}}!",
   "emailAlreadyUsed": "Ezt az e-mail-címet már egy másik fiók is használja",
   "emailInvalid": "Az e-mail-cím érvénytelen",
@@ -34,5 +35,6 @@
   "createNewAccount": "Új fiók létrehozása",
   "sendResetEmailWarning": "* A jelszavad alaphelyzetbe állításához küldünk egy e-mailt",
   "sendResetEmail": "Alaphelyzetbe állító e-mail küldése",
-  "backToLogin": "Vissza a bejelentkezéshez"
+  "backToLogin": "Vissza a bejelentkezéshez",
+  "success": "Sikerült"
 }

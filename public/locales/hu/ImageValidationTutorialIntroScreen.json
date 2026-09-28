@@ -1,1 +1,10 @@
-{}
+{
+  "useTheButtonsToAnswer": "Válaszolj a gombokkal:",
+  "everyTimeYouSelectAnOption": "Valahányszor kiválasztasz egy lehetőséget, megjelenik egy új alakzat és kép.",
+  "letsLearnHowToMap": "Lássunk néhány példát!",
+  "youllSeeASquare": "Egy képen látsz egy alakzatot. Az alábbi gombokkal válaszolhatsz:",
+  "squareContainsBuildings": "Van-e a négyzetben épület?",
+  "squareWillMove": "Ahogy haladsz, a négyzet a kép körül fog mozogni egy hálót követve, így:",
+  "swipeToGetStarted": "Húzd el a kezdéshez",
+  "swipeToContinue": "Húzd el a folytatáshoz"
+}

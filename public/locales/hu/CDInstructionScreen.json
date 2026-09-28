@@ -9,5 +9,7 @@
   "badImagery": "Baj van a képpel? (Például valamelyik képen felhők takarják el a földfelszínt.) <1>Koppints háromszor</1>, és a csempe vörös lesz.",
   "holdZoom": "Ha közelebbről szeretnél megnézni egy felvételt, koppints rá és tartsd rajta az ujjad egy kicsi, így megjelenik róla egy nagyítás.",
   "hint": "Tanács:",
-  "differentImagery": "Néha különböző légi felvételek jelennek meg. Lehet, hogy a képek ezért kissé más elrendezésűek, vagy más a felbontásuk. Ne feledd, hogy <1>határozott változásokat keresel a településeken és épületekben</1>. Ha tehát úgy néz ki, hogy a képen ugyanazok az épületek vannak, de mintha lecserélték volna a tetőjüket, akkor ez egy „nincs változás” forgatókönyv. Ilyenkor egyszerűen húzd be a következő képet."
+  "differentImagery": "Néha különböző légi felvételek jelennek meg. Lehet, hogy a képek ezért kissé más elrendezésűek, vagy más a felbontásuk. Ne feledd, hogy <1>határozott változásokat keresel a településeken és épületekben</1>. Ha tehát úgy néz ki, hogy a képen ugyanazok az épületek vannak, de mintha lecserélték volna a tetőjüket, akkor ez egy „nincs változás” forgatókönyv. Ilyenkor egyszerűen húzd be a következő képet.",
+  "swipeToGetStarted": "További információkhoz húzd el a képernyőt",
+  "hideIconDescription": "Az ikonok és a fedőréteg elrejtéséhez koppints és tartsd lenyomva az ujjad."
 }

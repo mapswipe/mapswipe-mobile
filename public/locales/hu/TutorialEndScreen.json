@@ -1,5 +1,6 @@
 {
-  "readyToStart": "Most már készen állsz a térképezésre!",
+  "readyToMap": "{{name}}, most már készen állsz a térképezésre.",
   "startMapping": "Térképezés elkezdése",
+  "backToProject": "Vissza a projekthez",
   "completedTutorial": "Most már minden tudással rendelkezel ahhoz, hogy az alkalmazás segítségével közreműködj a humanitárius célú térképészetben. Ha elbizonytalanodsz, bármikor visszatérhetsz, hogy felfrissítsd a tudásod."
 }

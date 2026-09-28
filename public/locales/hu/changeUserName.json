@@ -1,1 +1,10 @@
-{}
+{
+  "changeUserName": "Felhasználónév módosítása",
+  "currentUserName": "Jelenlegi felhasználónév",
+  "newUserName": "Új felhasználónév",
+  "confirmUserNameChange": "Felhasználónév-módosítás megerősítése",
+  "updatingUsername": "Felhasználónév frissítése",
+  "usernameUpdated": "A felhasználóneved frissült",
+  "errorOnUsernameChange": "Hiba történt a felhasználónév módosításakor",
+  "osmUsernameChangeNotAllowed": "OpenStreetMap-fiók esetében nem módosítható a felhasználónév."
+}
