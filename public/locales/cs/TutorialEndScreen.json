@@ -1,5 +1,6 @@
 {
-  "readyToStart": "Jste připraveni začít s MapSwipe!",
+  "readyToMap": "Jste připraveni mapovat {{name}}.",
   "startMapping": "Začít mapovat",
+  "backToProject": "Zpět k projektu",
   "completedTutorial": "Nyní víte vše, co potřebujete, abyste přispěli k humanitárnímu mapování pomocí této aplikace. Pro připomenutí se sem můžete kdykoli vrátit."
 }
