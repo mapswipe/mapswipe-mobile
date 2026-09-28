@@ -1,1 +1,22 @@
-{}
+{
+  "sessionCompleteTitle": "Skvělá práce!",
+  "sessionCompleteMessage": "Dokončili jste tuto relaci mapování. Vyberte, co dělat dál:",
+  "swipeBackToRevise": "Kdykoli se můžete vrátit zpět a zkontrolovat nebo změnit své odpovědi.",
+  "savingProgress": "Ukládání pokroku…",
+  "saveFailed": "Nepodařilo se nám uložit váš pokrok. Zkontrolujte připojení a zkuste to znovu.",
+  "saveSucceeded": "Váš pokrok byl uložen.",
+  "continueMapping": "Pokračovat v mapování",
+  "continueMappingHelp": "Uložte své příspěvky a založte pro tento projekt novou skupinu úkolů.",
+  "startNewTasks": "Zahájit novou sadu úkolů",
+  "completeSession": "Dokončit seanci",
+  "completeSessionHelp": "Uložte své příspěvky a vraťte se na domovskou obrazovku.",
+  "saveAndFinish": "Uložit a dokončit",
+  "tilesReviewed": "{{count}} dlaždic prohlédnuto",
+  "timeMapping": "{{duration}} mapování",
+  "goBack": "Zpět",
+  "goBackHelp": "Vraťte se k relaci mapování a zkontrolujte nebo změňte své odpovědi.",
+  "discardSession": "Zahodit seanci",
+  "discardSessionHelp": "Zahoďte odpovědi z této seance a vraťte se na domovskou obrazovku.",
+  "enterSelectionMode": "Vstoupit do režimu výběru",
+  "exitSelectionMode": "Ukončit režim výběru"
+}
