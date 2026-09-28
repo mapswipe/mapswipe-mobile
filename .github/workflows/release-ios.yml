@@ -398,6 +398,29 @@ jobs:
           path: ${{ runner.temp }}/ipa/*.ipa
           if-no-files-found: error
 
+      - name: Upload IPA to App Store Connect
+        env:
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        run: |
+          # altool locates the key as AuthKey_<KeyID>.p8 under ~/.appstoreconnect/private_keys
+          KEY_DIR="$HOME/.appstoreconnect/private_keys"
+          mkdir -p "$KEY_DIR"
+          echo "$APPSTORE_API_PRIVATE_KEY" | base64 --decode > "$KEY_DIR/AuthKey_${APPSTORE_API_KEY_ID}.p8"
+
+          IPA=$(ls "$RUNNER_TEMP"/ipa/*.ipa | head -1)
+          echo "Uploading $IPA to App Store Connect..."
+          # Uploads the build to App Store Connect / TestFlight. It does NOT
+          # submit for review or release to users — the admin does that.
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA" \
+            --apiKey "$APPSTORE_API_KEY_ID" \
+            --apiIssuer "$APPSTORE_API_ISSUER_ID"
+
+          rm -f "$KEY_DIR/AuthKey_${APPSTORE_API_KEY_ID}.p8"
+
       - name: Cleanup keychain
         if: always()
         run: |
