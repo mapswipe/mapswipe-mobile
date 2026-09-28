@@ -1,1 +1,10 @@
-{}
+{
+  "heading": "Funkce přístupnosti",
+  "descriptions": "Mapové obrazovky mají nyní barevné dlaždice a ikony, které lépe odrážejí jejich význam.",
+  "tickIconInfo": "Jedním klepnutím změníte barvu dlaždice na zelenou a zobrazíte ikonu zaškrtnutí.",
+  "questionMarkIconInfo": "Dvojitým klepnutím změníte barvu dlaždice na žlutou a zobrazíte ikonu otazníku.",
+  "badImageIconInfo": "Třikrát klepněte, aby dlaždice zčervenala a zobrazila se ikona označující nevhodný obrázek.",
+  "turnOnOff": "Jak zapnout/vypnout:",
+  "turnOnOffDescription": "Tuto funkci zapnete nebo vypnete v sekci Nastavení v rámci profilu.",
+  "dontShowAgain": "Už mi to neukazuj"
+}
