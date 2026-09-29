@@ -1,1 +1,8 @@
-{}
+{
+  "join": "Připojit se ",
+  "leave": "Opustit",
+  "leaderBoards": "Žebříčky",
+  "settings": "Nastavení",
+  "leaveGroup": "Opustit skupinu",
+  "joinGroup": "Přidat se k uživatelské skupině"
+}

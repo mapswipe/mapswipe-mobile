@@ -9,5 +9,6 @@
   "YouAreLookingFor": "Hledáte {{lookFor}}",
   "FromTheGround": "Ze země to vypadá takto:",
   "ImagesFromAbove": "Ale obrázky, které uvidíte, to ukáží shora a vypadá to takto:",
-  "SwipeToContinue": "Pokračujte přejetím prstem"
+  "SwipeToContinue": "Pokračujte přejetím prstem",
+  "hideIcon": "Klepnutím na ikonu ji skryjete."
 }

@@ -1,1 +1,10 @@
-{}
+{
+  "changeUserName": "Změnit uživatelské jméno",
+  "currentUserName": "Současné uživatelské jméno",
+  "newUserName": "Nové uživatelské jméno",
+  "confirmUserNameChange": "Potvrďte změnu uživatelského jména",
+  "updatingUsername": "Aktualizování uživatelského jména...",
+  "usernameUpdated": "Uživatelské jméno aktualizováno",
+  "errorOnUsernameChange": "Chyba při změně uživatelského jména",
+  "osmUsernameChangeNotAllowed": "Uživatelské jméno nelze změnit pro účty OpenStreetMapp"
+}

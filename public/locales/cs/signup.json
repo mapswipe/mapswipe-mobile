@@ -2,11 +2,12 @@
   "chooseUsername": "Zvolte své uživatelské jméno",
   "passwordError": "Heslo musí mít alespoň 6 znaků",
   "usernameError": "Uživatelské jméno musí mít alespoň 4 znaky",
+  "usernameErrorText": "Uživatelské jméno musí mít 3–30 znaků, začínat i končit písmenem nebo číslicí a obsahovat pouze písmena, číslice, pomlčky (-) nebo podtržítka (_).",
+  "userNameExistError": "Uživatelské jméno již existuje, zvolte prosím jiné uživatelské jméno.",
   "errorOnSignup": "Chyba při registraci",
   "usernameErrorMessage": "Vaše uživatelské jméno musí mít 4 nebo více znaků",
   "usernameNotEmail": "Vaše uživatelské jméno nemůže být e-mail",
   "usernamePublic": "Vaše uživatelské jméno bude veřejně viditelné",
-  "success": "Skvěle!",
   "welcomeToMapSwipe": "Vítejte v MapSwipe, {{username}}",
   "emailAlreadyUsed": "E-mail je již použitý jiným účtem",
   "emailInvalid": "E-mailová adresa je neplatná",
@@ -34,5 +35,6 @@
   "createNewAccount": "Vytvořit nový účet",
   "sendResetEmailWarning": "* Zašleme vám e-mail k obnovení vašeho hesla",
   "sendResetEmail": "Odeslat resetovací e-mail",
-  "backToLogin": "Zpět k přihlášení"
+  "backToLogin": "Zpět k přihlášení",
+  "success": "Skvěle!"
 }

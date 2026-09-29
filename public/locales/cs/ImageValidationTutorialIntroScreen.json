@@ -1,1 +1,10 @@
-{}
+{
+  "useTheButtonsToAnswer": "K odpovědi použijte tlačítka:",
+  "everyTimeYouSelectAnOption": "Při každém výběru možnosti se zobrazí nový tvar a obrázek.",
+  "letsLearnHowToMap": "Naučme se, jak mapovat na několika příkladech",
+  "youllSeeASquare": "Na obrázku se zobrazí tvar. Pomocí tlačítek odpovězte:",
+  "squareContainsBuildings": "Obsahuje čtverec nějaké budovy?",
+  "squareWillMove": "Čtverec se bude v průběhu práce pohybovat po obrázku podle následující mřížky:",
+  "swipeToGetStarted": "Začněte přejetím prstem",
+  "swipeToContinue": "Pokračujte přejetím prstem"
+}

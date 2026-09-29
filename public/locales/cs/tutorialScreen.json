@@ -1,1 +1,16 @@
-{}
+{
+  "pageTitle": "Názorný návod",
+  "swipeThroughIntro": "Projděte si další stránky, abyste zjistili, jak tento návod funguje, vyzkoušeli si několik ukázkových úkolů a poté se pustili do skutečného mapování.",
+  "readyToMap": "Jste připraveni mapovat {{name}}.",
+  "outroMessage": "Skvělá práce! Máte hotový tutoriál. Vraťte se k projektu a pusťte se do mapování naostro.",
+  "backToProject": "Zpět k projektu",
+  "unsupportedTitle": "Cvičení zatím není k dispozici.",
+  "unsupportedDescription": "Interaktivní procvičování pro tento typ projektu již brzy. Přečtěte si nápovědu a pokračujte klepnutím na tlačítko Odeslat.",
+  "incorrectTitle": "Chybně",
+  "noAttemptsLeft": "Nezbývají žádné pokusy. Klepnutím na „Zobrazit odpovědi“ odhalíte správnou volbu.",
+  "tryAgain": "To nevypadá správně. Zkuste to prosím znovu.",
+  "showAnswers": "Ukázat odpovědi",
+  "checkAnswer": "Zkontrolovat odpověď ({{attempts}}/{{max}})",
+  "compareBefore": "Předtím",
+  "compareAfter": "Potom"
+}
