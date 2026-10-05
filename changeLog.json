@@ -44,5 +44,10 @@
     "changes": [
       "Add automatic deployment to play store"
     ]
+  },
+  "3.0.8": {
+    "changes": [
+      "minor fixes and improvements"
+    ]
   }
 }
