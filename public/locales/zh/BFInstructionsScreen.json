@@ -1,1 +1,9 @@
-{}
+{
+  "doesShapeOutlineABuilding": "这是一栋建筑的形状吗？",
+  "howToContribute": "如何贡献",
+  "squareContainsBuildings": "这片区域含有建筑物吗？点击以下选项回答",
+  "instructionsYes": "是的：图块里有建筑物或部分建筑物",
+  "instructionsNo": "不是：图块里没有建筑物",
+  "instructionsNotSure": "不确定：无法确认那是不是建筑物",
+  "instructionsBadImagery": "图像质量不佳：图块被云层覆盖或图片质量异常"
+}
