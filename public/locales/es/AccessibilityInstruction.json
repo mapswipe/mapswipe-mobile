@@ -1,1 +1,10 @@
-{}
+{
+  "heading": "Función de accesibilidad",
+  "descriptions": "Las pantallas de mapeo ahora cuentan con mosaicos de colores, además de iconos, para reflejar mejor el significado.",
+  "tickIconInfo": "Toca una vez para que el recuadro se vuelva verde y muestre un icono de marca de verificación.",
+  "questionMarkIconInfo": "Toca dos veces para cambiar el color de la casilla a amarillo y mostrar un icono de interrogación.",
+  "badImageIconInfo": "Toca tres veces para cambiar el color de la casilla a rojo y mostrar un icono de imagen inapropiada.",
+  "turnOnOff": "Cómo encender/apagar:",
+  "turnOnOffDescription": "Activa o desactiva la función en la sección de Configuración, dentro de Perfil.",
+  "dontShowAgain": "No me muestres esto de nuevo."
+}
