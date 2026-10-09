@@ -1,1 +1,8 @@
-{}
+{
+  "dontWorryIfYoureUnsure": "如果您对一个图块不确定，别担心",
+  "youCanAlwaysTapUnsure": "记住，您随时可以点击“不确定”按钮",
+  "everyImageViewedBy": "每一张影像会由至少3位志愿者检视，所以您不用担心您是否遗漏了什么",
+  "wantToChangeYourAnswer": "想要更改您的答案吗？",
+  "youCanSwipeBack": "您可以往回划以更改您的答案，然后继续划动以回到之前的进度。",
+  "yourPreviousAnswerIsMarked": "您此前的答案会由白色圆圈标记"
+}
