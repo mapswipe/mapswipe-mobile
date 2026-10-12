@@ -1,1 +1,10 @@
-{}
+{
+  "useTheButtonsToAnswer": "Utiliza los botones para responder:",
+  "everyTimeYouSelectAnOption": "Cada vez que selecciones una opción, se te mostrarán una nueva forma y una nueva imagen.",
+  "letsLearnHowToMap": "Aprendamos a realizar mapeos con algunos ejemplos.",
+  "youllSeeASquare": "Verás una forma en una imagen. Usa los botones para responder:",
+  "squareContainsBuildings": "¿Contiene algún edificio la plaza?",
+  "squareWillMove": "El cuadrado se desplazará por la imagen a medida que avances, siguiendo una cuadrícula como esta:",
+  "swipeToGetStarted": "Desliza para comenzar",
+  "swipeToContinue": "Desliza para continuar"
+}
