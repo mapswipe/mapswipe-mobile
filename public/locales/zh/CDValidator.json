@@ -1,1 +1,8 @@
-{}
+{
+  "Yes": "是",
+  "No": "否",
+  "NotSure": "不确定",
+  "BadImagery": "图像质量不佳",
+  "incorrectAnswerMessageTitle": "答案不正确！",
+  "incorrectAnswerMessage": "请选择：{{正确答案}}"
+}

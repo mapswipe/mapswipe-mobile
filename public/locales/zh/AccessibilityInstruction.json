@@ -1,1 +1,10 @@
-{}
+{
+  "heading": "无障碍功能",
+  "descriptions": "制图屏幕现在增添了彩色图块和图标，以便更直观地反映含义。",
+  "tickIconInfo": "点击一次将图块标记为绿色，表示确定",
+  "questionMarkIconInfo": "点击两次将图块标记为黄色，表示不确定",
+  "badImageIconInfo": "点击三次将图块标记为红色，表示图片质量不佳",
+  "turnOnOff": "如何开启/关闭",
+  "turnOnOffDescription": "可在个人资料-设置界面开启/关闭该功能",
+  "dontShowAgain": "不再向我展示"
+}

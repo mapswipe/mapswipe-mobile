@@ -1,1 +1,10 @@
-{}
+{
+  "changeUserName": "更改用户名",
+  "currentUserName": "当前用户名",
+  "newUserName": "新用户名",
+  "confirmUserNameChange": "确认更改用户名",
+  "updatingUsername": "用户名更新中……",
+  "usernameUpdated": "用户名更新成功！",
+  "errorOnUsernameChange": "更改用户名错误",
+  "osmUsernameChangeNotAllowed": "OSM账号无法更改用户名"
+}

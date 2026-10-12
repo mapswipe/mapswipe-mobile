@@ -1,1 +1,10 @@
-{}
+{
+  "useTheButtonsToAnswer": "使用按钮来回答：",
+  "everyTimeYouSelectAnOption": "每次选择选项，您都会被展示新的形状与影像。",
+  "letsLearnHowToMap": "让我们通过一些案例学习如何绘图",
+  "youllSeeASquare": "你将看到影像上的图形。使用按钮回答：",
+  "squareContainsBuildings": "方块中包含建筑物吗？",
+  "squareWillMove": "随着你继续，方块会围绕图像移动，遵循如下网格：",
+  "swipeToGetStarted": "划动以开始",
+  "swipeToContinue": "划动以继续"
+}
