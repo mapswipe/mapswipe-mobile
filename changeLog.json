@@ -49,5 +49,10 @@
     "changes": [
       "minor fixes and improvements"
     ]
+  },
+  "3.0.9": {
+    "changes": [
+      "* Update translations for multiple languages"
+    ]
   }
 }
