@@ -200,6 +200,34 @@ jobs:
           path: ${{ runner.temp }}/ipa/*.ipa
           if-no-files-found: error
 
+      - name: Upload IPA to App Store Connect (staging / TestFlight)
+        # App Store Connect API key — one team-level credential that works for
+        # BOTH the production (org.missingmaps.mapswipe) and staging/dev
+        # (org.missingmaps.mapswipe-dev) apps. The same key is stored in both the
+        # `staging` and `production` environments, so each job reads it from its
+        # own environment.
+        env:
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        run: |
+          # altool locates the key as AuthKey_<KeyID>.p8 under ~/.appstoreconnect/private_keys
+          KEY_DIR="$HOME/.appstoreconnect/private_keys"
+          mkdir -p "$KEY_DIR"
+          echo "$APPSTORE_API_PRIVATE_KEY" | base64 --decode > "$KEY_DIR/AuthKey_${APPSTORE_API_KEY_ID}.p8"
+
+          IPA=$(ls "$RUNNER_TEMP"/ipa/*.ipa | head -1)
+          echo "Uploading $IPA to App Store Connect (org.missingmaps.mapswipe-dev)..."
+          # Uploads the staging build to App Store Connect / TestFlight. It does
+          # NOT submit for review or release — this verifies the upload link.
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA" \
+            --apiKey "$APPSTORE_API_KEY_ID" \
+            --apiIssuer "$APPSTORE_API_ISSUER_ID"
+
+          rm -f "$KEY_DIR/AuthKey_${APPSTORE_API_KEY_ID}.p8"
+
       - name: Cleanup keychain
         if: always()
         run: |
@@ -399,6 +427,11 @@ jobs:
           if-no-files-found: error
 
       - name: Upload IPA to App Store Connect
+        # App Store Connect API key — one team-level credential that works for
+        # BOTH the production (org.missingmaps.mapswipe) and staging/dev
+        # (org.missingmaps.mapswipe-dev) apps. The same key is stored in both the
+        # `staging` and `production` environments, so each job reads it from its
+        # own environment.
         env:
           APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
           APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
