@@ -1,1 +1,16 @@
-{}
+{
+  "pageTitle": "教程",
+  "swipeThroughIntro": "滑动页面以了解教程，进行一些联系后，就可以开始真实的制图。",
+  "readyToMap": "您已经准备好开始制图了{{名字}}",
+  "outroMessage": "做的好！您已经完成了教程，回到项目以开始真正制图。",
+  "backToProject": "回到项目",
+  "unsupportedTitle": "暂无练习",
+  "unsupportedDescription": "针对这种项目类型的交互式练习马上就绪。阅读提示并点击确认以继续。",
+  "incorrectTitle": "不正确",
+  "noAttemptsLeft": "尝试机会不足。点击显示答案以查看正确选项。",
+  "tryAgain": "看上去不对，请再次尝试。",
+  "showAnswers": "显示答案",
+  "checkAnswer": "检查答案（{{尝试机会/最大尝试次数}}）",
+  "compareBefore": "之前",
+  "compareAfter": "之后"
+}
