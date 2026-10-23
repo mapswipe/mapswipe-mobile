@@ -1,1 +1,6 @@
-{}
+{
+  "dontWorryIfYoureUnsure": "如果您对在一个图块中看到了什么不确定，别担心",
+  "youCanAlwaysTapTwice": "记住，您总是可以点击两次来把不确定的图块标记为黄色",
+  "everyImageViewedBy": "每一张影像会由多人检视，所以您不用担心您是否遗漏了什么",
+  "holdZoom": "您可以按住任何方块以放大，再次点击以取消。"
+}
