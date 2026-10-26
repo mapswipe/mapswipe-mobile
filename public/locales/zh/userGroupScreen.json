@@ -1,1 +1,8 @@
-{}
+{
+  "join": "加入",
+  "leave": "离开",
+  "leaderBoards": "排行榜",
+  "settings": "设置",
+  "leaveGroup": "离开群组",
+  "joinGroup": "加入群组"
+}
