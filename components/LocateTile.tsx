@@ -13,9 +13,12 @@ import {
     View,
 } from 'react-native';
 
+import ImageLoadError from '@/components/ImageLoadError';
 import { type AppTheme } from '@/constants/theme';
+import useImageLoadError from '@/hooks/useImageLoadError';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { ResultOption } from '@/utils/types';
+import upgradeToHttps from '@/utils/url';
 
 const createTileStyles = (
     theme: AppTheme,
@@ -144,6 +147,7 @@ function LocateTile(props: Props) {
     } = props;
 
     const styles = useThemedStyles(createTileStyles, { width });
+    const imageLoad = useImageLoadError(url, 'LocateTile');
     const cellSize = width / gridSize;
     const selectedSet = useMemo(() => new Set(selectedCells ?? []), [selectedCells]);
 
@@ -239,8 +243,11 @@ function LocateTile(props: Props) {
     return (
         <View style={styles.tile}>
             <ImageBackground
-                source={{ uri: url }}
+                key={imageLoad.retryKey}
+                source={{ uri: upgradeToHttps(url) }}
                 style={styles.image}
+                onError={imageLoad.onError}
+                onLoad={imageLoad.onLoad}
             />
             <View style={styles.grid}>
                 {cellValues.map((value, cellIndex) => (
@@ -256,6 +263,9 @@ function LocateTile(props: Props) {
                     />
                 ))}
             </View>
+            {imageLoad.failed && (
+                <ImageLoadError onRetry={imageLoad.retry} />
+            )}
             {selectionMode && onCellSelect && (
                 <View
                     // eslint-disable-next-line react/jsx-props-no-spreading

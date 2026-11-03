@@ -10,6 +10,7 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
+import Constants from 'expo-constants';
 import {
     useLocalSearchParams,
     useRouter,
@@ -142,13 +143,17 @@ function MapTaskGroup() {
             `v2/results/${projectId}/${taskGroupId}/${userId}`,
         );
 
+        const buildNumber = Platform.OS === 'ios'
+            ? Constants.expoConfig?.ios?.buildNumber
+            : Constants.expoConfig?.android?.versionCode;
+        const appVersion = `${Constants.expoConfig?.version ?? 'unknown'} (${buildNumber ?? '0'})`;
+
         const resultPayload = {
             startTime: startTimestampRef.current,
             endTime: endTimestampRef.current,
             results,
-            // FIXME: add actual appVersion and clientType
-            appVersion: '3.0.0 (0)-dev',
-            clientType: 'mobile-android',
+            appVersion,
+            clientType: `mobile-${Platform.OS}`,
         };
 
         try {

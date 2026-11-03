@@ -11,6 +11,7 @@ import {
 
 import { standardizeQuadKey } from '@/utils/geo';
 import { FbObjRasterTileServer } from '@/utils/types';
+import upgradeToHttps from '@/utils/url';
 
 const MapLazy = lazy(async () => {
     const mod = await import('@togglecorp/re-map');
@@ -56,7 +57,7 @@ function BaseMap(props: Props) {
                 'base-tile-source': {
                     type: 'raster',
                     // NOTE: maplibre uses `quadkey` but mapswipe backend uses `quad_key`
-                    tiles: [standardizeQuadKey(url)],
+                    tiles: [standardizeQuadKey(upgradeToHttps(url))],
                     tileSize,
                     attribution: credits ?? '',
                 },

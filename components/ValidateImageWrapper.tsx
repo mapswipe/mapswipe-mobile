@@ -27,6 +27,8 @@ import {
     type ImageLoadEventData,
 } from 'expo-image';
 
+import upgradeToHttps from '@/utils/url';
+
 import HideTileSelectionButton from './HideTileSelectionButton';
 
 // expo-image (memory+disk cache, fast decode) wrapped so the pinch-zoom
@@ -146,7 +148,7 @@ export default function ImageWrapper({
     const loadedRef = useRef(false);
 
     // Stable source so parent re-renders don't trigger a spurious reload.
-    const source = useMemo(() => ({ uri: item.url }), [item.url]);
+    const source = useMemo(() => ({ uri: upgradeToHttps(item.url) }), [item.url]);
 
     useEffect(() => {
         onImageLoadStart(itemIndex);

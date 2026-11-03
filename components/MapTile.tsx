@@ -28,6 +28,7 @@ import {
     standardizeQuadKey,
 } from '@/utils/geo';
 import { FbObjRasterTileServer } from '@/utils/types';
+import upgradeToHttps from '@/utils/url';
 
 interface Props {
     geoJson: GeoJSON.GeoJSON;
@@ -95,7 +96,7 @@ function MapTile(props: Props) {
                 <RasterSource
                     id={`${instanceId}-raster-source`}
                     tileUrlTemplates={[
-                        standardizeQuadKey(tileServer.url),
+                        standardizeQuadKey(upgradeToHttps(tileServer.url)),
                     ]}
                 >
                     <RasterLayer

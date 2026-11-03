@@ -11,13 +11,17 @@ import {
 import { Image } from 'expo-image';
 
 import Icon, { type IconName } from '@/components/Icon';
+import ImageLoadError from '@/components/ImageLoadError';
 import Modal from '@/components/Modal';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
+import useImageLoadError from '@/hooks/useImageLoadError';
 import useThemedStyles from '@/hooks/useThemedStyles';
+import upgradeToHttps from '@/utils/url';
 
 // Enlarged tile shown in the long-press preview popup.
 const PREVIEW_SIZE = SCREEN_WIDTH - 90;
+const COMPACT_ERROR_WIDTH = 150;
 
 const createStyles = (
     theme: AppTheme,
@@ -104,6 +108,15 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
 
     const [previewVisible, setPreviewVisible] = useState(false);
 
+    const imageLoad = useImageLoadError(url, 'ImageTile');
+    const imageBLoad = useImageLoadError(urlB, 'ImageTile:B');
+    const { retry: retryA } = imageLoad;
+    const { retry: retryB } = imageBLoad;
+    const handleRetry = useCallback(() => {
+        retryA();
+        retryB();
+    }, [retryA, retryB]);
+
     const handlePress = useCallback(() => {
         onPress(taskId);
     }, [taskId, onPress]);
@@ -124,13 +137,19 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
                 style={styles.imageTile}
             >
                 <ImageBackground
-                    source={{ uri: url }}
+                    key={imageLoad.retryKey}
+                    source={{ uri: upgradeToHttps(url) }}
                     style={styles.image}
+                    onError={imageLoad.onError}
+                    onLoad={imageLoad.onLoad}
                 >
                     {urlB && (
                         <Image
-                            source={urlB}
+                            key={imageBLoad.retryKey}
+                            source={upgradeToHttps(urlB)}
                             style={styles.imageB}
+                            onError={imageBLoad.onError}
+                            onLoad={imageBLoad.onLoad}
                         />
                     )}
                     <View
@@ -151,6 +170,12 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
                             />
                         </View>
                     )}
+                    {(imageLoad.failed || imageBLoad.failed) && (
+                        <ImageLoadError
+                            onRetry={handleRetry}
+                            compact={width < COMPACT_ERROR_WIDTH}
+                        />
+                    )}
                 </ImageBackground>
             </Pressable>
             {previewVisible && (
@@ -161,12 +186,12 @@ function ImageTile<const TASK_ID>(props: Props<TASK_ID>) {
                     closeButtonName="Close"
                 >
                     <ImageBackground
-                        source={{ uri: url }}
+                        source={{ uri: upgradeToHttps(url) }}
                         style={styles.previewImage}
                     >
                         {urlB && (
                             <Image
-                                source={urlB}
+                                source={upgradeToHttps(urlB)}
                                 style={styles.previewImageB}
                             />
                         )}
