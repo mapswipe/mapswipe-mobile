@@ -2,7 +2,7 @@
     "expo": {
         "name": "MapSwipe Dev",
         "slug": "mapswipe-mobile-staging",
-        "version": "3.0.9",
+        "version": "3.0.10",
         "orientation": "portrait",
         "icon": "./assets/images/icon.png",
         "scheme": "devmapswipe",
@@ -26,7 +26,7 @@
             },
             "predictiveBackGestureEnabled": false,
             "package": "org.missingmaps.mapswipe.dev",
-            "versionCode": 3000900,
+            "versionCode": 3001000,
             "userInterfaceStyle": "light"
         },
         "web": {

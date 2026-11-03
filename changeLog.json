@@ -54,5 +54,11 @@
     "changes": [
       "* Update translations for multiple languages"
     ]
+  },
+  "3.0.10": {
+    "changes": [
+      "* Fix locate project image redirection issue",
+      "* Add proper android/ios version while saving data"
+    ]
   }
 }
