@@ -32,8 +32,10 @@ import {
 import {
     FbProject,
     FbTutorial,
+    PROJECT_TYPE_VALIDATE,
     Results,
 } from '@/utils/types';
+import getValidateTileServers from '@/utils/validateImagery';
 
 const styles = StyleSheet.create({
     loaderContainer: {
@@ -97,6 +99,12 @@ function Tutorial() {
         // `screen` values aren't sequential 0/1-based indices.
         const list: TutorialStage[] = [];
         list.push({ type: 'intro', tutorial: tutorialDetails });
+        if (
+            tutorialDetails.projectType === PROJECT_TYPE_VALIDATE
+            && getValidateTileServers(tutorialDetails).length === 2
+        ) {
+            list.push({ type: 'twoView' });
+        }
         (tutorialDetails.informationPages ?? []).forEach((page) => {
             list.push({ type: 'info', page });
         });

@@ -16,6 +16,8 @@ export type ScenarioState =
 
 export type TutorialStage =
     | { type: 'intro'; tutorial: FbTutorial }
+    // Explains the before/after layout of validate tutorials with pre-event imagery
+    | { type: 'twoView' }
     | { type: 'info'; page: FbInformationPage }
     | {
         type: 'scenario';

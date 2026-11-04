@@ -14,5 +14,11 @@
   "compareBefore": "Before",
   "compareAfter": "After",
   "validateBefore": "Before",
-  "validateAfter": "After"
+  "validateAfter": "After",
+  "validateTwoViewTitle": "How to read this screen",
+  "validateTwoViewDescription": "Every task shows two images of the same place.",
+  "validateBeforeDescription": "The top image shows the place before the event.",
+  "validateAfterDescription": "The bottom image shows the same place after the event.",
+  "validateTwoViewTip": "Use the before image as your reference, then check the outlined shape in the after image.",
+  "validateTwoViewSwipe": "Swipe to try a few practice tasks."
 }

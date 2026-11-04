@@ -31,6 +31,7 @@ import TutorialInformationPage from './TutorialInformationPage';
 import TutorialIntroPage from './TutorialIntroPage';
 import TutorialOutroPage from './TutorialOutroPage';
 import TutorialScenarioPage from './TutorialScenarioPage';
+import TutorialTwoViewPage from './TutorialTwoViewPage';
 import {
     ScenarioState,
     TutorialStage,
@@ -121,6 +122,8 @@ function TutorialPager(props: Props) {
                     projectCustomOptions={projectCustomOptions}
                 />
             );
+        } else if (item.type === 'twoView') {
+            content = <TutorialTwoViewPage />;
         } else if (item.type === 'info') {
             content = <TutorialInformationPage page={item.page} />;
         } else if (item.type === 'outro') {
