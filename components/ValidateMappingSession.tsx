@@ -7,9 +7,11 @@ import {
     useRef,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     FlatList,
+    Platform,
     StyleSheet,
     View,
 } from 'react-native';
@@ -22,28 +24,25 @@ import { inflate } from 'pako';
 
 import BlockListView from '@/components/BlockListView';
 import InlineListView from '@/components/InlineListView';
-import MapTile from '@/components/MapTile';
 import ProgressBar from '@/components/ProgressBar';
-import ScaleBar from '@/components/ScaleBar';
+import ValidatePanes from '@/components/ValidatePanes';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
-import {
-    getBbox,
-    getOptimalZoomLevel,
-} from '@/utils/geo';
 import {
     FeatureGeoJson,
     Results,
     ValidateProject,
     ValidateTask,
 } from '@/utils/types';
+import getValidateTileServers from '@/utils/validateImagery';
 
-import HideTileSelectionButton from './HideTileSelectionButton';
 import { type IconName } from './Icon';
 import IconButton from './IconButton';
 
 type RefType = FlatList<ValidateTask> | null;
+const TASK_PADDING = 20;
+
 const viewabilityConfig = {
     viewAreaCoveragePercentThreshold: 50,
 };
@@ -63,26 +62,8 @@ const styles = StyleSheet.create({
     },
     task: {
         width: SCREEN_WIDTH,
-        padding: 20,
+        padding: TASK_PADDING,
     },
-    // Wraps the map (no padding) so the overlays are positioned relative to the
-    // map itself — guaranteeing they sit on it rather than drifting below.
-    mapWrapper: {
-        flex: 1,
-        position: 'relative',
-    },
-    // Overlays on the map, with a small padding.
-    scaleOverlay: {
-        position: 'absolute',
-        top: 8,
-        left: 8,
-    },
-    eyeOverlay: {
-        position: 'absolute',
-        bottom: 8,
-        right: 8,
-    },
-    eyeButton: {},
     buttons: {
         flexGrow: 0,
         flexShrink: 0,
@@ -112,8 +93,10 @@ function ValidateMappingSession(props: Props) {
         onSessionComplete,
     } = props;
 
+    const { t } = useTranslation('mappingSession');
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
+    const [zoomOffset, setZoomOffset] = useState(0);
     const completedRef = useRef(false);
 
     const taskQuery = useMemo(() => (
@@ -183,6 +166,7 @@ function ValidateMappingSession(props: Props) {
             const { index } = viewableItems[0];
             if (index !== undefined && index !== null) {
                 setCurrentTaskIndex(index);
+                setZoomOffset(0);
             }
         }
     }, []);
@@ -212,15 +196,16 @@ function ValidateMappingSession(props: Props) {
         }
     }, [currentTaskIndex, maxTasks, totalSwipedTasks, onSessionComplete]);
 
-    const tileWidth = SCREEN_WIDTH - 40;
-
-    const handleHideTilePressIn = useCallback(() => {
-        setHideTilePressValue(true);
-    }, []);
-
-    const handleHideTilePressOut = useCallback(() => {
-        setHideTilePressValue(false);
-    }, []);
+    const panes = useMemo(() => {
+        const tileServers = getValidateTileServers(projectDetails);
+        if (tileServers.length === 1) {
+            return [{ tileServer: tileServers[0] }];
+        }
+        return [
+            { tileServer: tileServers[0], label: t('validateBefore') },
+            { tileServer: tileServers[1], label: t('validateAfter') },
+        ];
+    }, [projectDetails, t]);
 
     const disableOptions = currentTaskIndex === undefined || currentTaskIndex === -1;
 
@@ -240,47 +225,23 @@ function ValidateMappingSession(props: Props) {
                     ref={flatListRef}
                     data={limitedTasks}
                     keyExtractor={(_, index) => index.toString()}
-                    extraData={hideTilePressValue}
-                    renderItem={({ item }) => {
-                        const itemGeoJson = item.geojson as FeatureGeoJson;
-                        const itemBbox = getBbox(itemGeoJson);
-                        const itemLatitude = isDefined(itemBbox)
-                            ? (itemBbox[1] + itemBbox[3]) / 2
-                            : undefined;
-                        const itemZoom = isDefined(itemBbox)
-                            ? getOptimalZoomLevel(itemBbox)
-                            : undefined;
-                        return (
-                            <View style={styles.task}>
-                                <View style={styles.mapWrapper}>
-                                    <MapTile
-                                        geoJson={itemGeoJson}
-                                        tileServer={projectDetails.tileServer}
-                                        hideLines={hideTilePressValue}
-                                    />
-                                    {isDefined(itemLatitude) && isDefined(itemZoom) && (
-                                        <View style={styles.scaleOverlay} pointerEvents="none">
-                                            <ScaleBar
-                                                latitude={itemLatitude}
-                                                referenceSize={tileWidth}
-                                                tileSize={tileWidth}
-                                                zoomLevel={itemZoom}
-                                                inline
-                                            />
-                                        </View>
-                                    )}
-                                    <View style={styles.eyeOverlay}>
-                                        <HideTileSelectionButton
-                                            handleHideTileSelectionPressIn={handleHideTilePressIn}
-                                            handleHideTileSelectionPressOut={handleHideTilePressOut}
-                                            isPressed={hideTilePressValue}
-                                            containerStyle={styles.eyeButton}
-                                        />
-                                    </View>
-                                </View>
-                            </View>
-                        );
-                    }}
+                    extraData={[hideTilePressValue, zoomOffset, currentTaskIndex]}
+                    renderItem={({ item, index }) => (
+                        <View style={styles.task}>
+                            <ValidatePanes
+                                geoJson={item.geojson as FeatureGeoJson}
+                                panes={panes}
+                                zoomOffset={index === currentTaskIndex ? zoomOffset : 0}
+                                onZoomOffsetChange={setZoomOffset}
+                                hideLines={hideTilePressValue}
+                                onHideLinesChange={setHideTilePressValue}
+                            />
+                        </View>
+                    )}
+                    windowSize={3}
+                    initialNumToRender={1}
+                    maxToRenderPerBatch={1}
+                    removeClippedSubviews={Platform.OS === 'android'}
                     onViewableItemsChanged={onViewableItemsChanged}
                     viewabilityConfig={viewabilityConfig}
                     horizontal

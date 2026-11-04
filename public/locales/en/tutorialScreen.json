@@ -12,5 +12,7 @@
   "showAnswers": "Show answers",
   "checkAnswer": "Check answer ({{attempts}}/{{max}})",
   "compareBefore": "Before",
-  "compareAfter": "After"
+  "compareAfter": "After",
+  "validateBefore": "Before",
+  "validateAfter": "After"
 }

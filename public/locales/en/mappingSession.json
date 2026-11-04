@@ -19,5 +19,7 @@
   "discardSessionHelp": "Throw away your answers from this session and return to the home screen.",
   "enterSelectionMode": "Enter selection mode",
   "exitSelectionMode": "Exit selection mode",
-  "imageLoadFailedRetry": "Couldn't load image. Tap to retry"
+  "imageLoadFailedRetry": "Couldn't load image. Tap to retry",
+  "validateBefore": "Before",
+  "validateAfter": "After"
 }

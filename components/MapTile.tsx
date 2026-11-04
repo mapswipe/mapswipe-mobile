@@ -24,7 +24,8 @@ import {
 import useThemedStyles from '@/hooks/useThemedStyles';
 import {
     getBbox,
-    getOptimalZoomLevel,
+    MAP_MAX_ZOOM_LEVEL,
+    MAP_MIN_ZOOM_LEVEL,
     standardizeQuadKey,
 } from '@/utils/geo';
 import { FbObjRasterTileServer } from '@/utils/types';
@@ -34,6 +35,7 @@ interface Props {
     geoJson: GeoJSON.GeoJSON;
     tileServer: FbObjRasterTileServer;
     hideLines?: boolean;
+    zoomLevel?: number;
     // Applied to the tile container, e.g. `{ flex: 1 }` so the map fills a
     // flex slot (the container otherwise sizes to content and can collapse).
     style?: StyleProp<ViewStyle>;
@@ -56,11 +58,11 @@ function MapTile(props: Props) {
         geoJson,
         tileServer,
         hideLines = false,
+        zoomLevel,
         style,
     } = props;
 
     const instanceId = useId();
-
     const styles = useThemedStyles(createStyles);
 
     const bounds = useMemo(() => getBbox(geoJson), [geoJson]);
@@ -71,11 +73,6 @@ function MapTile(props: Props) {
         }
         return [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2];
     }, [bounds]);
-
-    const zoomLevel = useMemo(
-        () => (isDefined(bounds) ? getOptimalZoomLevel(bounds) : 18),
-        [bounds],
-    );
 
     const lineLayerStyle = useMemo(() => ({
         lineWidth: 1,
@@ -95,6 +92,9 @@ function MapTile(props: Props) {
             >
                 <RasterSource
                     id={`${instanceId}-raster-source`}
+                    tileSize={256}
+                    minZoomLevel={tileServer.minZoom}
+                    maxZoomLevel={tileServer.maxZoom}
                     tileUrlTemplates={[
                         standardizeQuadKey(upgradeToHttps(tileServer.url)),
                     ]}
@@ -114,9 +114,11 @@ function MapTile(props: Props) {
                         style={lineLayerStyle}
                     />
                 </ShapeSource>
-                {isDefined(center) && (
+                {isDefined(center) && isDefined(zoomLevel) && (
                     <Camera
                         zoomLevel={zoomLevel}
+                        minZoomLevel={MAP_MIN_ZOOM_LEVEL}
+                        maxZoomLevel={MAP_MAX_ZOOM_LEVEL}
                         centerCoordinate={center}
                         animationDuration={100}
                     />
