@@ -1,3 +1,4 @@
+import { viewport } from '@mapbox/geo-viewport';
 import {
     bboxToTile,
     pointToTileFraction,
@@ -64,32 +65,23 @@ export function getScaleBarZoomLevel(mapLibreZoom: number) {
     return mapLibreZoom + 1;
 }
 
-// Web Mercator y of a latitude, from 0 (north edge) to 1 (south edge)
-function latitudeToUnit(latitude: number) {
-    const sin = Math.sin(latitude * (Math.PI / 180));
-    return 0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI);
-}
-
 // Zoom at which the bbox fits the given size with padding, like MapLibre's
-// fitBounds. The world is 512px wide at zoom 0 and doubles every zoom level.
+// fitBounds. MapLibre's world is 512px wide at zoom 0, hence the tile size.
 export function getFitZoomLevel(
     bbox: BoundingBox,
     width: number,
     height: number,
     paddingRatio = 0.1,
-    maxZoom = MAP_MAX_ZOOM_LEVEL,
 ): number {
-    const [minLon, minLat, maxLon, maxLat] = bbox;
     const usable = 1 - 2 * paddingRatio;
-
-    const bboxWidth = ((maxLon - minLon) / 360) * MAPLIBRE_WORLD_SIZE;
-    const bboxHeight = (latitudeToUnit(minLat) - latitudeToUnit(maxLat)) * MAPLIBRE_WORLD_SIZE;
-    const zoom = Math.log2(Math.min(
-        (width * usable) / bboxWidth,
-        (height * usable) / bboxHeight,
-    ));
-
-    return Math.min(zoom, maxZoom);
+    return viewport(
+        bbox,
+        [width * usable, height * usable],
+        MAP_MIN_ZOOM_LEVEL,
+        MAP_MAX_ZOOM_LEVEL,
+        MAPLIBRE_WORLD_SIZE,
+        true,
+    ).zoom;
 }
 
 export function standardizeQuadKey(url: string) {

@@ -1,9 +1,7 @@
 import {
     useCallback,
-    useMemo,
     useState,
 } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     StyleSheet,
@@ -14,7 +12,7 @@ import { type IconName } from '@/components/Icon';
 import IconButton from '@/components/IconButton';
 import InlineListView from '@/components/InlineListView';
 import { TutorialSessionProps } from '@/components/tutorial/types';
-import ValidatePanes, { type Pane } from '@/components/ValidatePanes';
+import ValidatePanes from '@/components/ValidatePanes';
 import {
     SPACING_2XS,
     SPACING_3XS,
@@ -24,7 +22,6 @@ import {
     FeatureGeoJson,
     PROJECT_TYPE_VALIDATE,
 } from '@/utils/types';
-import getValidateTileServers from '@/utils/validateImagery';
 
 const styles = StyleSheet.create({
     container: {
@@ -64,7 +61,6 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
         disabled,
     } = props;
 
-    const { t } = useTranslation('tutorialScreen');
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
     const [taskZoom, setTaskZoom] = useState<{ taskKey: string, offset: number }>();
 
@@ -77,20 +73,6 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
             [taskId]: value,
         }));
     }, [disabled, onResultsChange]);
-
-    const panes = useMemo<Pane[]>(() => {
-        if (tutorial.projectType !== PROJECT_TYPE_VALIDATE) {
-            return [];
-        }
-        const tileServers = getValidateTileServers(tutorial);
-        if (tileServers.length === 1) {
-            return [{ tileServer: tileServers[0] }];
-        }
-        return [
-            { tileServer: tileServers[0], label: t('validateBefore') },
-            { tileServer: tileServers[1], label: t('validateAfter') },
-        ];
-    }, [tutorial, t]);
 
     if (tutorial.projectType !== PROJECT_TYPE_VALIDATE) {
         return null;
@@ -114,7 +96,8 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
                 {geoJson ? (
                     <ValidatePanes
                         geoJson={geoJson}
-                        panes={panes}
+                        tileServer={tutorial.postEventTileServer ?? tutorial.tileServer}
+                        preEventTileServer={tutorial.preEventTileServer}
                         zoomOffset={zoomOffset}
                         onZoomOffsetChange={(offset) => setTaskZoom({ taskKey, offset })}
                         hideLines={hideTilePressValue}

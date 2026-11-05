@@ -7,7 +7,6 @@ import {
     useRef,
     useState,
 } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     FlatList,
@@ -35,7 +34,6 @@ import {
     ValidateProject,
     ValidateTask,
 } from '@/utils/types';
-import getValidateTileServers from '@/utils/validateImagery';
 
 import { type IconName } from './Icon';
 import IconButton from './IconButton';
@@ -93,7 +91,6 @@ function ValidateMappingSession(props: Props) {
         onSessionComplete,
     } = props;
 
-    const { t } = useTranslation('mappingSession');
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
     const [zoomOffset, setZoomOffset] = useState(0);
@@ -128,6 +125,7 @@ function ValidateMappingSession(props: Props) {
     }, [compressedTasks]);
 
     const currentTask = taskList[currentTaskIndex] as ValidateTask | undefined;
+    const postEventTileServer = projectDetails.postEventTileServer ?? projectDetails.tileServer;
     const options = projectDetails.customOptions;
     const maxTasks = taskList.length;
 
@@ -196,17 +194,6 @@ function ValidateMappingSession(props: Props) {
         }
     }, [currentTaskIndex, maxTasks, totalSwipedTasks, onSessionComplete]);
 
-    const panes = useMemo(() => {
-        const tileServers = getValidateTileServers(projectDetails);
-        if (tileServers.length === 1) {
-            return [{ tileServer: tileServers[0] }];
-        }
-        return [
-            { tileServer: tileServers[0], label: t('validateBefore') },
-            { tileServer: tileServers[1], label: t('validateAfter') },
-        ];
-    }, [projectDetails, t]);
-
     const disableOptions = currentTaskIndex === undefined || currentTaskIndex === -1;
 
     if (!currentTask?.geojson) {
@@ -230,7 +217,8 @@ function ValidateMappingSession(props: Props) {
                         <View style={styles.task}>
                             <ValidatePanes
                                 geoJson={item.geojson as FeatureGeoJson}
-                                panes={panes}
+                                tileServer={postEventTileServer}
+                                preEventTileServer={projectDetails.preEventTileServer}
                                 zoomOffset={index === currentTaskIndex ? zoomOffset : 0}
                                 onZoomOffsetChange={setZoomOffset}
                                 hideLines={hideTilePressValue}

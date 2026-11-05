@@ -2,6 +2,7 @@ import {
     useCallback,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     type LayoutChangeEvent,
     StyleSheet,
@@ -19,6 +20,14 @@ import MapZoomButtons from '@/components/MapZoomButtons';
 import ScaleBar from '@/components/ScaleBar';
 import Text from '@/components/Text';
 import {
+    FONT_SIZE_2XS,
+    FONT_SIZE_XS,
+    SPACING_3XS,
+    SPACING_4XS,
+} from '@/constants/dimensions';
+import { type AppTheme } from '@/constants/theme';
+import useThemedStyles from '@/hooks/useThemedStyles';
+import {
     getBbox,
     getFitZoomLevel,
     getScaleBarZoomLevel,
@@ -31,13 +40,12 @@ import {
     type FeatureGeoJson,
 } from '@/utils/types';
 
-const PANE_GAP = 8;
+const PANE_GAP = SPACING_3XS;
 const MAX_PANE_HEIGHT_RATIO = 3 / 4;
-// Small features start at this zoom instead of filling the pane, so their
-// surroundings stay visible. The zoom buttons can still go further in.
-const MAX_START_ZOOM_LEVEL = 18;
+// Room kept free for the zoom buttons next to the credits
+const CONTROLS_RESERVED_WIDTH = 56;
 
-const styles = StyleSheet.create({
+const createStyles = (theme: AppTheme) => StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
@@ -52,54 +60,132 @@ const styles = StyleSheet.create({
     },
     topLeftOverlay: {
         position: 'absolute',
-        top: 8,
-        left: 8,
-        gap: 4,
+        top: SPACING_3XS,
+        left: SPACING_3XS,
+        gap: SPACING_4XS,
     },
     label: {
         alignSelf: 'flex-start',
-        paddingHorizontal: 6,
+        paddingHorizontal: SPACING_4XS,
         paddingVertical: 2,
         borderRadius: 4,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        color: '#ffffff',
-        fontSize: 12,
+        backgroundColor: theme.overlay,
+        color: theme.textOnPrimary,
+        fontSize: FONT_SIZE_XS,
     },
     controlsOverlay: {
         position: 'absolute',
-        bottom: 8,
-        right: 8,
+        bottom: SPACING_3XS,
+        right: SPACING_3XS,
     },
     eyeButton: {},
     creditsOverlay: {
         position: 'absolute',
-        bottom: 8,
-        left: 8,
+        bottom: SPACING_3XS,
+        left: SPACING_3XS,
     },
     creditsOverlayBesideControls: {
-        right: 56,
+        right: CONTROLS_RESERVED_WIDTH,
     },
     creditsOverlayFull: {
-        right: 8,
+        right: SPACING_3XS,
     },
     credits: {
         alignSelf: 'flex-start',
-        paddingHorizontal: 4,
+        paddingHorizontal: SPACING_4XS,
         borderRadius: 2,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        color: '#ffffff',
-        fontSize: 10,
+        backgroundColor: theme.overlay,
+        color: theme.textOnPrimary,
+        fontSize: FONT_SIZE_2XS,
     },
 });
 
-export interface Pane {
+interface PaneProps {
+    geoJson: FeatureGeoJson;
     tileServer: FbObjRasterTileServer;
     label?: string;
+    width: number;
+    height: number;
+    zoom: number | undefined;
+    latitude: number | undefined;
+    hideLines: boolean;
+    showScaleBar: boolean;
+    controls?: React.ReactNode;
+}
+
+function ValidatePane(props: PaneProps) {
+    const {
+        geoJson,
+        tileServer,
+        label,
+        width,
+        height,
+        zoom,
+        latitude,
+        hideLines,
+        showScaleBar,
+        controls,
+    } = props;
+
+    const styles = useThemedStyles(createStyles);
+
+    return (
+        <View style={[styles.pane, { height }]}>
+            <MapTile
+                geoJson={geoJson}
+                tileServer={tileServer}
+                hideLines={hideLines}
+                zoomLevel={zoom}
+                style={styles.mapTile}
+            />
+            <View style={styles.topLeftOverlay} pointerEvents="none">
+                {isDefined(label) && (
+                    <Text style={styles.label}>
+                        {label}
+                    </Text>
+                )}
+                {showScaleBar && isDefined(latitude) && isDefined(zoom) && (
+                    <ScaleBar
+                        latitude={latitude}
+                        referenceSize={SCALE_BAR_REFERENCE_SIZE}
+                        tileSize={width}
+                        zoomLevel={getScaleBarZoomLevel(zoom)}
+                        inline
+                    />
+                )}
+            </View>
+            {isDefined(tileServer.credits) && (
+                <View
+                    style={[
+                        styles.creditsOverlay,
+                        isDefined(controls)
+                            ? styles.creditsOverlayBesideControls
+                            : styles.creditsOverlayFull,
+                    ]}
+                    pointerEvents="none"
+                >
+                    <Text
+                        style={styles.credits}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
+                        {tileServer.credits}
+                    </Text>
+                </View>
+            )}
+            {isDefined(controls) && (
+                <BlockListView spacing="xs" style={styles.controlsOverlay}>
+                    {controls}
+                </BlockListView>
+            )}
+        </View>
+    );
 }
 
 interface Props {
     geoJson: FeatureGeoJson;
-    panes: Pane[];
+    tileServer: FbObjRasterTileServer;
+    preEventTileServer?: FbObjRasterTileServer;
     zoomOffset: number;
     onZoomOffsetChange: (zoomOffset: number) => void;
     hideLines: boolean;
@@ -109,12 +195,16 @@ interface Props {
 function ValidatePanes(props: Props) {
     const {
         geoJson,
-        panes,
+        tileServer,
+        preEventTileServer,
         zoomOffset,
         onZoomOffsetChange,
         hideLines,
         onHideLinesChange,
     } = props;
+
+    const { t } = useTranslation('mappingSession');
+    const styles = useThemedStyles(createStyles);
 
     const [size, setSize] = useState<{ width: number, height: number }>();
 
@@ -131,13 +221,13 @@ function ValidatePanes(props: Props) {
         onHideLinesChange(false);
     }, [onHideLinesChange]);
 
-    const isBeforeAfter = panes.length > 1;
+    const hasPreEvent = isDefined(preEventTileServer);
     const paneWidth = size?.width ?? 0;
     let paneHeight = 0;
     if (isDefined(size)) {
-        paneHeight = isBeforeAfter
+        paneHeight = hasPreEvent
             ? Math.min(
-                (size.height - PANE_GAP * (panes.length - 1)) / panes.length,
+                (size.height - PANE_GAP) / 2,
                 size.width * MAX_PANE_HEIGHT_RATIO,
             )
             : size.height;
@@ -146,7 +236,7 @@ function ValidatePanes(props: Props) {
     const bbox = getBbox(geoJson);
     const latitude = isDefined(bbox) ? (bbox[1] + bbox[3]) / 2 : undefined;
     const fitZoom = isDefined(bbox) && paneWidth > 0 && paneHeight > 0
-        ? getFitZoomLevel(bbox, paneWidth, paneHeight, undefined, MAX_START_ZOOM_LEVEL)
+        ? getFitZoomLevel(bbox, paneWidth, paneHeight)
         : undefined;
     const zoom = isDefined(fitZoom) ? fitZoom + zoomOffset : undefined;
 
@@ -162,82 +252,54 @@ function ValidatePanes(props: Props) {
         }
     }, [fitZoom, zoomOffset, onZoomOffsetChange]);
 
+    const controls = (
+        <>
+            <MapZoomButtons
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                zoomInDisabled={isNotDefined(zoom) || zoom >= MAP_MAX_ZOOM_LEVEL}
+                zoomOutDisabled={isNotDefined(zoom) || zoom <= MAP_MIN_ZOOM_LEVEL}
+            />
+            <HideTileSelectionButton
+                handleHideTileSelectionPressIn={handleHideLinesPressIn}
+                handleHideTileSelectionPressOut={handleHideLinesPressOut}
+                isPressed={hideLines}
+                containerStyle={styles.eyeButton}
+            />
+        </>
+    );
+
     return (
         <View style={styles.container} onLayout={handleLayout}>
-            {paneHeight > 0 && panes.map((pane, paneIndex) => {
-                const isFirst = paneIndex === 0;
-                const isLast = paneIndex === panes.length - 1;
-                return (
-                    <View
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={paneIndex}
-                        style={[styles.pane, { height: paneHeight }]}
-                    >
-                        <MapTile
+            {paneHeight > 0 && (
+                <>
+                    {isDefined(preEventTileServer) && (
+                        <ValidatePane
                             geoJson={geoJson}
-                            tileServer={pane.tileServer}
+                            tileServer={preEventTileServer}
+                            label={t('validateBefore')}
+                            width={paneWidth}
+                            height={paneHeight}
+                            zoom={zoom}
+                            latitude={latitude}
                             hideLines={hideLines}
-                            zoomLevel={zoom}
-                            style={styles.mapTile}
+                            showScaleBar
                         />
-                        <View style={styles.topLeftOverlay} pointerEvents="none">
-                            {isDefined(pane.label) && (
-                                <Text style={styles.label}>
-                                    {pane.label}
-                                </Text>
-                            )}
-                            {isFirst && isDefined(latitude) && isDefined(zoom) && (
-                                <ScaleBar
-                                    latitude={latitude}
-                                    referenceSize={SCALE_BAR_REFERENCE_SIZE}
-                                    tileSize={paneWidth}
-                                    zoomLevel={getScaleBarZoomLevel(zoom)}
-                                    inline
-                                />
-                            )}
-                        </View>
-                        {isDefined(pane.tileServer.credits) && (
-                            <View
-                                style={[
-                                    styles.creditsOverlay,
-                                    isLast
-                                        ? styles.creditsOverlayBesideControls
-                                        : styles.creditsOverlayFull,
-                                ]}
-                                pointerEvents="none"
-                            >
-                                <Text
-                                    style={styles.credits}
-                                    numberOfLines={1}
-                                    ellipsizeMode="tail"
-                                >
-                                    {pane.tileServer.credits}
-                                </Text>
-                            </View>
-                        )}
-                        {isLast && (
-                            <BlockListView spacing="xs" style={styles.controlsOverlay}>
-                                <MapZoomButtons
-                                    onZoomIn={handleZoomIn}
-                                    onZoomOut={handleZoomOut}
-                                    zoomInDisabled={
-                                        isNotDefined(zoom) || zoom >= MAP_MAX_ZOOM_LEVEL
-                                    }
-                                    zoomOutDisabled={
-                                        isNotDefined(zoom) || zoom <= MAP_MIN_ZOOM_LEVEL
-                                    }
-                                />
-                                <HideTileSelectionButton
-                                    handleHideTileSelectionPressIn={handleHideLinesPressIn}
-                                    handleHideTileSelectionPressOut={handleHideLinesPressOut}
-                                    isPressed={hideLines}
-                                    containerStyle={styles.eyeButton}
-                                />
-                            </BlockListView>
-                        )}
-                    </View>
-                );
-            })}
+                    )}
+                    <ValidatePane
+                        geoJson={geoJson}
+                        tileServer={tileServer}
+                        label={hasPreEvent ? t('validateAfter') : undefined}
+                        width={paneWidth}
+                        height={paneHeight}
+                        zoom={zoom}
+                        latitude={latitude}
+                        hideLines={hideLines}
+                        showScaleBar={!hasPreEvent}
+                        controls={controls}
+                    />
+                </>
+            )}
         </View>
     );
 }

@@ -24,8 +24,6 @@ import {
 import useThemedStyles from '@/hooks/useThemedStyles';
 import {
     getBbox,
-    MAP_MAX_ZOOM_LEVEL,
-    MAP_MIN_ZOOM_LEVEL,
     standardizeQuadKey,
 } from '@/utils/geo';
 import { FbObjRasterTileServer } from '@/utils/types';
@@ -117,8 +115,6 @@ function MapTile(props: Props) {
                 {isDefined(center) && isDefined(zoomLevel) && (
                     <Camera
                         zoomLevel={zoomLevel}
-                        minZoomLevel={MAP_MIN_ZOOM_LEVEL}
-                        maxZoomLevel={MAP_MAX_ZOOM_LEVEL}
                         centerCoordinate={center}
                         animationDuration={100}
                     />
