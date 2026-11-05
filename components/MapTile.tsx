@@ -24,6 +24,8 @@ import {
 import useThemedStyles from '@/hooks/useThemedStyles';
 import {
     getBbox,
+    MAP_MAX_ZOOM_LEVEL,
+    MAP_MIN_ZOOM_LEVEL,
     standardizeQuadKey,
 } from '@/utils/geo';
 import { FbObjRasterTileServer } from '@/utils/types';
@@ -90,6 +92,10 @@ function MapTile(props: Props) {
             >
                 <RasterSource
                     id={`${instanceId}-raster-source`}
+                    // NOTE: maplibre assumes 512 px tiles for non-Mapbox URLs and
+                    // fetches tile zoom = round(map zoom + log2(512 / tileSize)).
+                    // The images are 256 px, so 256 fetches imagery one level finer
+                    // than 512 and draws it at its real size instead of enlarged.
                     tileSize={256}
                     minZoomLevel={tileServer.minZoom}
                     maxZoomLevel={tileServer.maxZoom}
@@ -115,6 +121,9 @@ function MapTile(props: Props) {
                 {isDefined(center) && isDefined(zoomLevel) && (
                     <Camera
                         zoomLevel={zoomLevel}
+                        // NOTE: iOS stops at zoom 22 unless the limit is raised
+                        minZoomLevel={MAP_MIN_ZOOM_LEVEL}
+                        maxZoomLevel={MAP_MAX_ZOOM_LEVEL}
                         centerCoordinate={center}
                         animationDuration={100}
                     />

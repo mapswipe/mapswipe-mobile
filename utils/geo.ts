@@ -57,8 +57,12 @@ export function getOptimalZoomLevel(bbox: BoundingBox): number {
 
 const MAPLIBRE_WORLD_SIZE = 512;
 
+// NOTE: The view limit, not the imagery limit. Each layer's own zoom range
+// goes to its raster source, and tiles above it are enlarged.
 export const MAP_MIN_ZOOM_LEVEL = 0;
-export const MAP_MAX_ZOOM_LEVEL = 22;
+export const MAP_MAX_ZOOM_LEVEL = 24;
+// NOTE: Keeps a point or very small feature from starting at the view limit
+const MAP_MAX_FIT_ZOOM_LEVEL = 22;
 
 export const SCALE_BAR_REFERENCE_SIZE = 256;
 export function getScaleBarZoomLevel(mapLibreZoom: number) {
@@ -78,7 +82,7 @@ export function getFitZoomLevel(
         bbox,
         [width * usable, height * usable],
         MAP_MIN_ZOOM_LEVEL,
-        MAP_MAX_ZOOM_LEVEL,
+        MAP_MAX_FIT_ZOOM_LEVEL,
         MAPLIBRE_WORLD_SIZE,
         true,
     ).zoom;
