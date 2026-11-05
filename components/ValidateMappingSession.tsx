@@ -193,6 +193,11 @@ function ValidateMappingSession(props: Props) {
 
     const limitedTasks = [...(taskList ?? [])].slice(0, totalSwipedTasks + 1);
 
+    const extraData = useMemo(
+        () => ({ hideTilePressValue, zoomOffset, currentTaskIndex }),
+        [hideTilePressValue, zoomOffset, currentTaskIndex],
+    );
+
     // After "Go back" from the outro the session re-mounts at the first task
     // with all answers intact; re-show the outro once the user swipes back to
     // the final task. (The initial pass completes via handleAnswerSelect.)
@@ -239,7 +244,7 @@ function ValidateMappingSession(props: Props) {
                     ref={flatListRef}
                     data={limitedTasks}
                     keyExtractor={(_, index) => index.toString()}
-                    extraData={[hideTilePressValue, zoomOffset, currentTaskIndex]}
+                    extraData={extraData}
                     renderItem={({ item, index }) => (
                         <View style={styles.task}>
                             <ValidatePanes
