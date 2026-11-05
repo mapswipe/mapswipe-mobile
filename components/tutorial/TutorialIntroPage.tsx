@@ -21,6 +21,7 @@ import {
     SPACING_SM,
     SPACING_XS,
 } from '@/constants/dimensions';
+import { getValidateTileServers } from '@/utils/task';
 import {
     FbObjCustomOption,
     FbTutorial,
@@ -85,7 +86,7 @@ function TutorialIntroPage(props: Props) {
             <ValidateInstructions customOptions={tutorial.customOptions} />
         );
         hasTwoViews = tutorial.projectType === PROJECT_TYPE_VALIDATE
-            && isDefined(tutorial.preEventTileServer);
+            && isDefined(getValidateTileServers(tutorial)?.preEventTileServer);
     } else if (tutorial.projectType === PROJECT_TYPE_COMPARE) {
         typeInstructions = <CompareInstructions />;
     } else if (tutorial.projectType === PROJECT_TYPE_LOCATE_FEATURES) {

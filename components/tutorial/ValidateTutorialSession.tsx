@@ -2,21 +2,26 @@ import {
     useCallback,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     StyleSheet,
     View,
 } from 'react-native';
 
+import BlockListView from '@/components/BlockListView';
 import { type IconName } from '@/components/Icon';
 import IconButton from '@/components/IconButton';
 import InlineListView from '@/components/InlineListView';
+import Text from '@/components/Text';
 import { TutorialSessionProps } from '@/components/tutorial/types';
 import ValidatePanes from '@/components/ValidatePanes';
 import {
     SPACING_2XS,
     SPACING_3XS,
+    SPACING_MD,
 } from '@/constants/dimensions';
+import { getValidateTileServers } from '@/utils/task';
 import { getTutorialTaskKey } from '@/utils/tutorial';
 import {
     FeatureGeoJson,
@@ -50,6 +55,12 @@ const styles = StyleSheet.create({
         flexShrink: 0,
         paddingTop: SPACING_3XS,
     },
+    message: {
+        flex: 1,
+        padding: SPACING_MD,
+        justifyContent: 'center',
+        gap: SPACING_2XS,
+    },
 });
 
 function ValidateTutorialSession(props: TutorialSessionProps) {
@@ -61,6 +72,7 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
         disabled,
     } = props;
 
+    const { t } = useTranslation('tutorialScreen');
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
     const [taskZoom, setTaskZoom] = useState<{ taskKey: string, offset: number }>();
 
@@ -79,7 +91,21 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
     }
 
     const { customOptions } = tutorial;
+    const tileServers = getValidateTileServers(tutorial);
     const task = tasks[0];
+
+    if (!tileServers) {
+        return (
+            <BlockListView style={styles.message} spacing="sm">
+                <Text variant="title" colorVariant="brand">
+                    {t('validateImageryIncompleteTitle')}
+                </Text>
+                <Text colorVariant="brand">
+                    {t('validateImageryIncompleteDescription')}
+                </Text>
+            </BlockListView>
+        );
+    }
 
     if (!task) {
         return null;
@@ -96,8 +122,8 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
                 {geoJson ? (
                     <ValidatePanes
                         geoJson={geoJson}
-                        tileServer={tutorial.postEventTileServer ?? tutorial.tileServer}
-                        preEventTileServer={tutorial.preEventTileServer}
+                        tileServer={tileServers.tileServer}
+                        preEventTileServer={tileServers.preEventTileServer}
                         zoomOffset={zoomOffset}
                         onZoomOffsetChange={(offset) => setTaskZoom({ taskKey, offset })}
                         hideLines={hideTilePressValue}

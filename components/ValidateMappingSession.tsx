@@ -7,6 +7,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     FlatList,
@@ -24,10 +25,16 @@ import { inflate } from 'pako';
 import BlockListView from '@/components/BlockListView';
 import InlineListView from '@/components/InlineListView';
 import ProgressBar from '@/components/ProgressBar';
+import Text from '@/components/Text';
 import ValidatePanes from '@/components/ValidatePanes';
-import { SCREEN_WIDTH } from '@/constants/dimensions';
+import {
+    SCREEN_WIDTH,
+    SPACING_2XS,
+    SPACING_MD,
+} from '@/constants/dimensions';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
+import { getValidateTileServers } from '@/utils/task';
 import {
     FeatureGeoJson,
     Results,
@@ -72,6 +79,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    message: {
+        flex: 1,
+        padding: SPACING_MD,
+        justifyContent: 'center',
+        gap: SPACING_2XS,
+    },
 });
 
 interface Props {
@@ -91,6 +104,7 @@ function ValidateMappingSession(props: Props) {
         onSessionComplete,
     } = props;
 
+    const { t } = useTranslation('mappingSession');
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
     const [zoomOffset, setZoomOffset] = useState(0);
@@ -125,7 +139,7 @@ function ValidateMappingSession(props: Props) {
     }, [compressedTasks]);
 
     const currentTask = taskList[currentTaskIndex] as ValidateTask | undefined;
-    const postEventTileServer = projectDetails.postEventTileServer ?? projectDetails.tileServer;
+    const tileServers = getValidateTileServers(projectDetails);
     const options = projectDetails.customOptions;
     const maxTasks = taskList.length;
 
@@ -196,6 +210,19 @@ function ValidateMappingSession(props: Props) {
 
     const disableOptions = currentTaskIndex === undefined || currentTaskIndex === -1;
 
+    if (!tileServers) {
+        return (
+            <BlockListView style={styles.message} spacing="sm">
+                <Text variant="title" colorVariant="brand">
+                    {t('validateImageryIncompleteTitle')}
+                </Text>
+                <Text colorVariant="brand">
+                    {t('validateImageryIncompleteDescription')}
+                </Text>
+            </BlockListView>
+        );
+    }
+
     if (!currentTask?.geojson) {
         return (
             <BlockListView style={styles.loadingContainer}>
@@ -217,8 +244,8 @@ function ValidateMappingSession(props: Props) {
                         <View style={styles.task}>
                             <ValidatePanes
                                 geoJson={item.geojson as FeatureGeoJson}
-                                tileServer={postEventTileServer}
-                                preEventTileServer={projectDetails.preEventTileServer}
+                                tileServer={tileServers.tileServer}
+                                preEventTileServer={tileServers.preEventTileServer}
                                 zoomOffset={index === currentTaskIndex ? zoomOffset : 0}
                                 onZoomOffsetChange={setZoomOffset}
                                 hideLines={hideTilePressValue}

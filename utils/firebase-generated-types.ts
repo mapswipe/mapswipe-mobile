@@ -213,6 +213,7 @@ export type FbEnumValidateInputType = 'aoi_file' | 'link' | 'TMId';
 export interface FbProjectValidateCreateOnlyInput {
     customOptions?: FbObjCustomOption[];
     tileServer: FbObjRasterTileServer;
+    hasPreImagery?: boolean;
     preEventTileServer?: FbObjRasterTileServer;
     postEventTileServer?: FbObjRasterTileServer;
     inputType: FbEnumValidateInputType;
@@ -452,6 +453,7 @@ export interface FbValidateTutorial {
     inputGeometries: string;
     projectType: 2;
     tileServer: FbObjRasterTileServer;
+    hasPreImagery?: boolean;
     preEventTileServer?: FbObjRasterTileServer;
     postEventTileServer?: FbObjRasterTileServer;
     zoomLevel: number;

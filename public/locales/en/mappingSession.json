@@ -21,5 +21,7 @@
   "exitSelectionMode": "Exit selection mode",
   "imageLoadFailedRetry": "Couldn't load image. Tap to retry",
   "validateBefore": "Before",
-  "validateAfter": "After"
+  "validateAfter": "After",
+  "validateImageryIncompleteTitle": "This project cannot be shown",
+  "validateImageryIncompleteDescription": "Its imagery setup is incomplete. Please contact the project manager."
 }
