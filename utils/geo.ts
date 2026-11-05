@@ -61,8 +61,27 @@ const MAPLIBRE_WORLD_SIZE = 512;
 // goes to its raster source, and tiles above it are enlarged.
 export const MAP_MIN_ZOOM_LEVEL = 0;
 export const MAP_MAX_ZOOM_LEVEL = 24;
-// NOTE: Keeps a point or very small feature from starting at the view limit
-const MAP_MAX_FIT_ZOOM_LEVEL = 22;
+
+// NOTE: A point or a very small feature is shown with this much ground around
+// it, enough context for satellite imagery
+const MIN_FIT_SIZE_IN_METERS = 20;
+const METERS_PER_DEGREE_LATITUDE = 111_320;
+
+// Grow the bbox around its center to at least the given size on the ground
+function expandBbox(bbox: BoundingBox, minSizeInMeters: number): BoundingBox {
+    const [minLon, minLat, maxLon, maxLat] = bbox;
+    const [centerLon, centerLat] = getCenterFromBBox(bbox);
+
+    const halfLat = minSizeInMeters / 2 / METERS_PER_DEGREE_LATITUDE;
+    const halfLon = halfLat / Math.cos((centerLat * Math.PI) / 180);
+
+    return [
+        Math.min(minLon, centerLon - halfLon),
+        Math.min(minLat, centerLat - halfLat),
+        Math.max(maxLon, centerLon + halfLon),
+        Math.max(maxLat, centerLat + halfLat),
+    ];
+}
 
 export const SCALE_BAR_REFERENCE_SIZE = 256;
 export function getScaleBarZoomLevel(mapLibreZoom: number) {
@@ -79,10 +98,10 @@ export function getFitZoomLevel(
 ): number {
     const usable = 1 - 2 * paddingRatio;
     return viewport(
-        bbox,
+        expandBbox(bbox, MIN_FIT_SIZE_IN_METERS),
         [width * usable, height * usable],
         MAP_MIN_ZOOM_LEVEL,
-        MAP_MAX_FIT_ZOOM_LEVEL,
+        MAP_MAX_ZOOM_LEVEL,
         MAPLIBRE_WORLD_SIZE,
         true,
     ).zoom;
