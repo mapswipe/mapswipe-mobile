@@ -19,5 +19,9 @@
   "discardSessionHelp": "Throw away your answers from this session and return to the home screen.",
   "enterSelectionMode": "Enter selection mode",
   "exitSelectionMode": "Exit selection mode",
-  "imageLoadFailedRetry": "Couldn't load image. Tap to retry"
+  "imageLoadFailedRetry": "Couldn't load image. Tap to retry",
+  "validateBefore": "Before",
+  "validateAfter": "After",
+  "validateImageryIncompleteTitle": "This project cannot be shown",
+  "validateImageryIncompleteDescription": "Its imagery setup is incomplete. Please contact the project manager."
 }

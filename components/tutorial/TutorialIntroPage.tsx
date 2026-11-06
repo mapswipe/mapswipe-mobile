@@ -15,11 +15,13 @@ import CompareInstructions from '@/components/tutorial/CompareInstructions';
 import LocateInstructions from '@/components/tutorial/LocateInstructions';
 import TileGridInstructions from '@/components/tutorial/TileGridInstructions';
 import ValidateInstructions from '@/components/tutorial/ValidateInstructions';
+import ValidateTwoViewInstructions from '@/components/tutorial/ValidateTwoViewInstructions';
 import {
     IMAGE_SIZE_MD,
     SPACING_SM,
     SPACING_XS,
 } from '@/constants/dimensions';
+import { getValidateTileServers } from '@/utils/task';
 import {
     FbObjCustomOption,
     FbTutorial,
@@ -70,6 +72,7 @@ function TutorialIntroPage(props: Props) {
     })();
 
     let typeInstructions: React.ReactNode = null;
+    let hasTwoViews = false;
     if (
         tutorial.projectType === PROJECT_TYPE_FIND
         || tutorial.projectType === PROJECT_TYPE_COMPLETENESS
@@ -82,6 +85,8 @@ function TutorialIntroPage(props: Props) {
         typeInstructions = (
             <ValidateInstructions customOptions={tutorial.customOptions} />
         );
+        hasTwoViews = tutorial.projectType === PROJECT_TYPE_VALIDATE
+            && isDefined(getValidateTileServers(tutorial)?.preEventTileServer);
     } else if (tutorial.projectType === PROJECT_TYPE_COMPARE) {
         typeInstructions = <CompareInstructions />;
     } else if (tutorial.projectType === PROJECT_TYPE_LOCATE_FEATURES) {
@@ -105,6 +110,14 @@ function TutorialIntroPage(props: Props) {
                     source={tutorial.exampleImage1}
                     style={styles.image}
                 />
+            )}
+            {hasTwoViews && (
+                <BlockListView spacing="xs">
+                    <Text colorVariant="brand" variant="description">
+                        {t('tutorialScreen:validateTwoViewDescription')}
+                    </Text>
+                    <ValidateTwoViewInstructions />
+                </BlockListView>
             )}
             {typeInstructions}
             <Text colorVariant="brand">

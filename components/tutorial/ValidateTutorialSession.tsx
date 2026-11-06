@@ -2,28 +2,26 @@ import {
     useCallback,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     StyleSheet,
     View,
 } from 'react-native';
-import { isDefined } from '@togglecorp/fujs';
 
-import HideTileSelectionButton from '@/components/HideTileSelectionButton';
+import BlockListView from '@/components/BlockListView';
 import { type IconName } from '@/components/Icon';
 import IconButton from '@/components/IconButton';
 import InlineListView from '@/components/InlineListView';
-import MapTile from '@/components/MapTile';
-import ScaleBar from '@/components/ScaleBar';
+import Text from '@/components/Text';
 import { TutorialSessionProps } from '@/components/tutorial/types';
+import ValidatePanes from '@/components/ValidatePanes';
 import {
     SPACING_2XS,
     SPACING_3XS,
+    SPACING_MD,
 } from '@/constants/dimensions';
-import {
-    getBbox,
-    getOptimalZoomLevel,
-} from '@/utils/geo';
+import { getValidateTileServers } from '@/utils/task';
 import { getTutorialTaskKey } from '@/utils/tutorial';
 import {
     FeatureGeoJson,
@@ -44,26 +42,11 @@ const styles = StyleSheet.create({
         minHeight: 0,
         overflow: 'hidden',
     },
-    map: {
-        width: '100%',
-    },
     loading: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    // Overlays on the map, with a small padding.
-    scaleOverlay: {
-        position: 'absolute',
-        top: 8,
-        left: 8,
-    },
-    eyeOverlay: {
-        position: 'absolute',
-        bottom: 8,
-        right: 8,
-    },
-    eyeButton: {},
     controls: {
         flexShrink: 0,
         paddingTop: SPACING_3XS,
@@ -71,6 +54,12 @@ const styles = StyleSheet.create({
     buttons: {
         flexShrink: 0,
         paddingTop: SPACING_3XS,
+    },
+    message: {
+        flex: 1,
+        padding: SPACING_MD,
+        justifyContent: 'center',
+        gap: SPACING_2XS,
     },
 });
 
@@ -83,10 +72,9 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
         disabled,
     } = props;
 
+    const { t } = useTranslation('tutorialScreen');
     const [hideTilePressValue, setHideTilePressValue] = useState(false);
-    // MapLibre's MapView ignores a flex height, so we measure the (flex-sized)
-    // map slot and pass that as an explicit pixel size to MapTile / the scale bar.
-    const [mapSlotSize, setMapSlotSize] = useState({ width: 0, height: 0 });
+    const [taskZoom, setTaskZoom] = useState<{ taskKey: string, offset: number }>();
 
     const handleSelect = useCallback((taskId: string, value: number) => {
         if (disabled) {
@@ -98,75 +86,52 @@ function ValidateTutorialSession(props: TutorialSessionProps) {
         }));
     }, [disabled, onResultsChange]);
 
-    const handleHideTilePressIn = useCallback(() => {
-        setHideTilePressValue(true);
-    }, []);
-
-    const handleHideTilePressOut = useCallback(() => {
-        setHideTilePressValue(false);
-    }, []);
-
     if (tutorial.projectType !== PROJECT_TYPE_VALIDATE) {
         return null;
     }
 
     const { customOptions } = tutorial;
+    const tileServers = getValidateTileServers(tutorial);
     const task = tasks[0];
+
+    if (!tileServers) {
+        return (
+            <BlockListView style={styles.message} spacing="sm">
+                <Text variant="title" colorVariant="brand">
+                    {t('validateImageryIncompleteTitle')}
+                </Text>
+                <Text colorVariant="brand">
+                    {t('validateImageryIncompleteDescription')}
+                </Text>
+            </BlockListView>
+        );
+    }
 
     if (!task) {
         return null;
     }
 
     const geoJson = 'geojson' in task ? task.geojson as FeatureGeoJson : undefined;
-    const selectedValue = results[getTutorialTaskKey(task)];
-
-    // Scale-bar geometry, derived from the task's geojson the same way MapTile
-    // frames it (optimal zoom for the bbox).
-    const bbox = geoJson ? getBbox(geoJson) : undefined;
-    const latitude = bbox ? (bbox[1] + bbox[3]) / 2 : undefined;
-    const zoomLevel = bbox ? getOptimalZoomLevel(bbox) : undefined;
+    const taskKey = getTutorialTaskKey(task);
+    const selectedValue = results[taskKey];
+    const zoomOffset = taskZoom?.taskKey === taskKey ? taskZoom.offset : 0;
 
     return (
         <View style={styles.container}>
-            <View
-                style={styles.mapSlot}
-                onLayout={(event) => setMapSlotSize({
-                    width: event.nativeEvent.layout.width,
-                    height: event.nativeEvent.layout.height,
-                })}
-            >
+            <View style={styles.mapSlot}>
                 {geoJson ? (
-                    <MapTile
+                    <ValidatePanes
                         geoJson={geoJson}
-                        tileServer={tutorial.tileServer}
+                        tileServer={tileServers.tileServer}
+                        preEventTileServer={tileServers.preEventTileServer}
+                        zoomOffset={zoomOffset}
+                        onZoomOffsetChange={(offset) => setTaskZoom({ taskKey, offset })}
                         hideLines={hideTilePressValue}
-                        style={[styles.map, { height: mapSlotSize.height || undefined }]}
+                        onHideLinesChange={setHideTilePressValue}
                     />
                 ) : (
                     <View style={styles.loading}>
                         <ActivityIndicator size="large" />
-                    </View>
-                )}
-                {geoJson && isDefined(latitude)
-                && isDefined(zoomLevel) && mapSlotSize.width > 0 && (
-                    <View style={styles.scaleOverlay} pointerEvents="none">
-                        <ScaleBar
-                            latitude={latitude}
-                            referenceSize={mapSlotSize.width}
-                            tileSize={mapSlotSize.width}
-                            zoomLevel={zoomLevel}
-                            inline
-                        />
-                    </View>
-                )}
-                {geoJson && (
-                    <View style={styles.eyeOverlay}>
-                        <HideTileSelectionButton
-                            handleHideTileSelectionPressIn={handleHideTilePressIn}
-                            handleHideTileSelectionPressOut={handleHideTilePressOut}
-                            isPressed={hideTilePressValue}
-                            containerStyle={styles.eyeButton}
-                        />
                     </View>
                 )}
             </View>
