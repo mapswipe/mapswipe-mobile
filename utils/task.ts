@@ -6,6 +6,7 @@ import {
     LocateFeaturesProject,
     PROJECT_TYPE_COMPLETENESS,
     TileTask,
+    ValidateProject,
 } from './types';
 
 const getQuadKeyFromCoordsAndZoom = (x: number, y: number, zoom: number) => {
@@ -84,6 +85,36 @@ export const getTileUrlFromCoordsAndTileserver = (
     }
 
     return url;
+};
+
+type ValidateImagery = Pick<
+    ValidateProject,
+    'tileServer' | 'hasPreImagery' | 'preEventTileServer' | 'postEventTileServer'
+>;
+
+// NOTE: With the flag, `tileServer` is the update-app image for older apps,
+// so it is never shown; without both event servers the imagery is invalid
+export const getValidateTileServers = (imagery: ValidateImagery): {
+    tileServer: FbObjRasterTileServer,
+    preEventTileServer?: FbObjRasterTileServer,
+} | undefined => {
+    const {
+        tileServer,
+        hasPreImagery,
+        preEventTileServer,
+        postEventTileServer,
+    } = imagery;
+
+    if (!hasPreImagery) {
+        return { tileServer };
+    }
+    if (!preEventTileServer || !postEventTileServer) {
+        return undefined;
+    }
+    return {
+        tileServer: postEventTileServer,
+        preEventTileServer,
+    };
 };
 
 export const buildTasks = (

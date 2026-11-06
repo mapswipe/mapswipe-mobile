@@ -12,5 +12,13 @@
   "showAnswers": "Show answers",
   "checkAnswer": "Check answer ({{attempts}}/{{max}})",
   "compareBefore": "Before",
-  "compareAfter": "After"
+  "compareAfter": "After",
+  "validateBefore": "Before",
+  "validateAfter": "After",
+  "validateTwoViewDescription": "Every task shows two images of the same place.",
+  "validateBeforeDescription": "The top image shows the place before the event.",
+  "validateAfterDescription": "The bottom image shows the same place after the event.",
+  "validateTwoViewTip": "Use the before image as your reference, then check the outlined shape in the after image.",
+  "validateImageryIncompleteTitle": "This tutorial cannot be shown",
+  "validateImageryIncompleteDescription": "Its imagery setup is incomplete. Please contact the project manager."
 }
