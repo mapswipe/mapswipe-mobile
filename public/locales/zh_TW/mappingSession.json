@@ -1,0 +1,23 @@
+{
+  "sessionCompleteTitle": "做得不錯！",
+  "sessionCompleteMessage": "您已經完成這次畫地圖任務，請挑選先一個任務：",
+  "swipeBackToRevise": "您隨時可以回來再檢視或是更改您的回應。",
+  "savingProgress": "儲存您的進度…",
+  "saveFailed": "我們無法儲存您的進度。請檢查您的連線狀況並且再試一次。",
+  "saveSucceeded": "您的進度已經儲存了。",
+  "continueMapping": "繼續畫地圖",
+  "continueMappingHelp": "儲存您的貢獻並且為新的群組開始新的挑戰組。",
+  "startNewTasks": "開始新的挑戰組",
+  "completeSession": "完成任務",
+  "completeSessionHelp": "儲存您的貢獻並且回到主畫面。",
+  "saveAndFinish": "儲存與完成",
+  "tilesReviewed": "{{count}} 個圖磚已經檢視",
+  "timeMapping": "{{duration}} 已經畫地圖了",
+  "goBack": "回去",
+  "goBackHelp": "回到畫地圖階段來檢視或更改您的回應。",
+  "discardSession": "棄置階段",
+  "discardSessionHelp": "這一階段棄置您的回應，並且回到主畫面。",
+  "enterSelectionMode": "進入選擇模式",
+  "exitSelectionMode": "離開選擇模式",
+  "imageLoadFailedRetry": "無法載入影像，點一下再試一次"
+}
