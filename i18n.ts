@@ -162,6 +162,7 @@ const resources: Record<string, Record<string, () => Promise<unknown>>> = {
         TutorialEndScreen: () => import('./public/locales/en/TutorialEndScreen.json'),
         TutorialIntroScreen: () => import('./public/locales/en/TutorialIntroScreen.json'),
         TutorialOutroScreen: () => import('./public/locales/en/TutorialOutroScreen.json'),
+        appUpdate: () => import('./public/locales/en/appUpdate.json'),
         changePassword: () => import('./public/locales/en/changePassword.json'),
         changeUserName: () => import('./public/locales/en/changeUserName.json'),
         informationPage: () => import('./public/locales/en/informationPage.json'),

@@ -23,6 +23,7 @@ import { User } from 'firebase/auth';
 import { onValue } from 'firebase/database';
 import { Provider as UrqlProvider } from 'urql';
 
+import AppUpdatePrompt from '@/components/AppUpdatePrompt';
 import ChangeLogModal from '@/components/ChangeLogModal';
 import LoadingComponent from '@/components/Loader';
 import Page from '@/components/Page';
@@ -229,34 +230,35 @@ export default function AppLayout() {
         <GestureHandlerRootView style={styles.gestureHandlerRoot}>
             <UrqlProvider value={client}>
                 <AuthContext.Provider value={authContextValue}>
-
-                    <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="index" />
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="languageSplashScreen" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="onboarding" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="login" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="register" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={!isAuthenticated}>
-                            <Stack.Screen name="forgotPassword" />
-                        </Stack.Protected>
-                        <Stack.Protected guard={isAuthenticated}>
-                            <Stack.Screen name="(auth)" />
-                        </Stack.Protected>
-                        <Stack.Screen
-                            name="languageSelectionList"
-                            options={{ headerShown: true }}
-                        />
-                    </Stack>
-                    <Toast config={toastConfig} />
-                    <ChangeLogModal />
+                    <AppUpdatePrompt>
+                        <Stack screenOptions={{ headerShown: false }}>
+                            <Stack.Screen name="index" />
+                            <Stack.Protected guard={!isAuthenticated}>
+                                <Stack.Screen name="languageSplashScreen" />
+                            </Stack.Protected>
+                            <Stack.Protected guard={!isAuthenticated}>
+                                <Stack.Screen name="onboarding" />
+                            </Stack.Protected>
+                            <Stack.Protected guard={!isAuthenticated}>
+                                <Stack.Screen name="login" />
+                            </Stack.Protected>
+                            <Stack.Protected guard={!isAuthenticated}>
+                                <Stack.Screen name="register" />
+                            </Stack.Protected>
+                            <Stack.Protected guard={!isAuthenticated}>
+                                <Stack.Screen name="forgotPassword" />
+                            </Stack.Protected>
+                            <Stack.Protected guard={isAuthenticated}>
+                                <Stack.Screen name="(auth)" />
+                            </Stack.Protected>
+                            <Stack.Screen
+                                name="languageSelectionList"
+                                options={{ headerShown: true }}
+                            />
+                        </Stack>
+                        <Toast config={toastConfig} />
+                        <ChangeLogModal />
+                    </AppUpdatePrompt>
                 </AuthContext.Provider>
             </UrqlProvider>
         </GestureHandlerRootView>

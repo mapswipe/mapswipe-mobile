@@ -18,6 +18,7 @@ import {
 } from 'firebase/database';
 
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import AppUpdateBanner from '@/components/AppUpdateBanner';
 import BlockListView from '@/components/BlockListView';
 import Icon from '@/components/Icon';
 import InlineListView from '@/components/InlineListView';
@@ -477,6 +478,7 @@ function Projects() {
                     <BlockListView
                         spacing="2xs"
                     >
+                        <AppUpdateBanner />
                         <AnnouncementBanner />
                         {featuredProjects.map((project) => (
                             <ProjectItem

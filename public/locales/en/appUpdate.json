@@ -1,0 +1,13 @@
+{
+  "updateAvailableTitle": "Update available",
+  "updateAvailableDescription": "MapSwipe {{latestVersion}} is available. You are using {{installedVersion}}.",
+  "updateRequiredTitle": "Update required",
+  "updateRequiredDescription": "This version of MapSwipe ({{installedVersion}}) is no longer supported. Please update to keep mapping.",
+  "incompatibleChangesTitle": "Won't work until you update",
+  "whatsNewTitle": "What's new",
+  "versionTitle": "Version {{version}}",
+  "update": "Update",
+  "later": "Later",
+  "bannerText": "MapSwipe {{latestVersion}} is available",
+  "bannerAction": "View"
+}

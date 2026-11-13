@@ -9,6 +9,7 @@ import {
     Modal as NativeModal,
     ScrollView,
     StyleSheet,
+    View,
 } from 'react-native';
 import { isDefined } from '@togglecorp/fujs';
 
@@ -19,6 +20,7 @@ import {
 
 import BlockListView from './BlockListView';
 import Button from './Button';
+import { type ButtonStyleVariant } from './ButtonLayout';
 
 interface Props<OPEN> {
     open: OPEN;
@@ -26,6 +28,9 @@ interface Props<OPEN> {
     onClose?: (open: OPEN) => void;
     children: ReactNode;
     closeButtonName?: string;
+    closeButtonStyleVariant?: ButtonStyleVariant;
+    // Rendered below the scrollable content, next to the close button
+    footer?: ReactNode;
     animationType?: 'slide' | 'fade' | 'none';
 }
 
@@ -38,12 +43,21 @@ const styles = StyleSheet.create({
     },
     modalBox: {
         width: SCREEN_WIDTH - 50,
+        // NOTE: Avoid very wide modals on tablets and web
+        maxWidth: 480,
         maxHeight: SCREEN_HEIGHT * 0.7,
         backgroundColor: '#fff',
         borderRadius: 16,
     },
     scrollContent: {
         flexGrow: 1,
+    },
+    actions: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    action: {
+        flex: 1,
     },
 });
 
@@ -54,6 +68,8 @@ function Modal<const OPEN>(props: Props<OPEN>) {
         onClose,
         children,
         closeButtonName,
+        closeButtonStyleVariant = 'filled',
+        footer,
         animationType = 'slide',
     } = props;
 
@@ -92,6 +108,16 @@ function Modal<const OPEN>(props: Props<OPEN>) {
 
     const isCustomSlide = animationType === 'slide';
 
+    const closeButton = isDefined(onClose) && (
+        <Button
+            spacing="xs"
+            name="close"
+            styleVariant={closeButtonStyleVariant}
+            onPress={handleClose}
+            title={closeButtonName ?? 'Close'}
+        />
+    );
+
     return (
         <NativeModal
             visible={visible}
@@ -112,15 +138,18 @@ function Modal<const OPEN>(props: Props<OPEN>) {
                         <ScrollView contentContainerStyle={styles.scrollContent}>
                             {children}
                         </ScrollView>
-                        {isDefined(onClose) && (
-                            <Button
-                                spacing="xs"
-                                name="close"
-                                styleVariant="filled"
-                                onPress={handleClose}
-                                title={closeButtonName ?? 'Close'}
-                            />
-                        )}
+                        {isDefined(footer) ? (
+                            <View style={styles.actions}>
+                                {closeButton && (
+                                    <View style={styles.action}>
+                                        {closeButton}
+                                    </View>
+                                )}
+                                <View style={styles.action}>
+                                    {footer}
+                                </View>
+                            </View>
+                        ) : closeButton}
                     </BlockListView>
                 </Animated.View>
             </Animated.View>
