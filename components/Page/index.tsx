@@ -149,6 +149,22 @@ function Page(props: Props) {
                     headerTitle,
                     headerRight,
                     headerLeft: backButton,
+                    // iOS 26 wraps header buttons in a Liquid Glass bubble that
+                    // sometimes turns white behind our white icons, hiding them.
+                    // These iOS-only options override headerLeft/headerRight and
+                    // drop the bubble; Android keeps using headerLeft/headerRight.
+                    unstable_headerLeftItems: () => [{
+                        type: 'custom',
+                        element: backButton(),
+                        hidesSharedBackground: true,
+                    }],
+                    unstable_headerRightItems: headerRight
+                        ? () => [{
+                            type: 'custom',
+                            element: <>{headerRight()}</>,
+                            hidesSharedBackground: true,
+                        }]
+                        : undefined,
                 });
             } catch {
                 // not inside a navigator screen — no header to configure
