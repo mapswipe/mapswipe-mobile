@@ -149,6 +149,19 @@ function Page(props: Props) {
                     headerTitle,
                     headerRight,
                     headerLeft: backButton,
+                    // iOS 26: hide the glass bubble that can hide our white icons.
+                    unstable_headerLeftItems: () => [{
+                        type: 'custom',
+                        element: backButton(),
+                        hidesSharedBackground: true,
+                    }],
+                    unstable_headerRightItems: headerRight
+                        ? () => [{
+                            type: 'custom',
+                            element: <>{headerRight()}</>,
+                            hidesSharedBackground: true,
+                        }]
+                        : undefined,
                 });
             } catch {
                 // not inside a navigator screen — no header to configure
