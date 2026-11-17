@@ -52,6 +52,15 @@ const createStyles = () => StyleSheet.create({
     content: {
         alignItems: 'center',
     },
+    // Each page holds two columns of `columnWidth` (half the page). Push the
+    // left tile right and the right tile left so the pair meets in the middle
+    // when the tile is narrower than the column (e.g. on iPad).
+    columnLeft: {
+        alignItems: 'flex-end',
+    },
+    columnRight: {
+        alignItems: 'flex-start',
+    },
     tileGridWrapper: {
         flex: 1,
         overflow: 'hidden',
@@ -213,12 +222,16 @@ function TileGridMappingSession(props: Props) {
     const flatListRef = useRef<FlatList<typeof groupedTasks[number]>>(null);
 
     const tileWidth = Math.min(pageWidth / 2, pageHeight / 4);
+    // Columns always take half the page so one page = exactly two columns,
+    // even when tiles are height-limited (wide screens like iPad). On phones
+    // columnWidth === tileWidth.
+    const columnWidth = pageWidth / 2;
 
     // The completion page is appended as a full-width page after the tile
     // columns. `completionLeftFiller` pads the columns up to the next page
     // boundary so the outro always snaps cleanly (handles odd column counts and
     // single-column groups). The trailing snap offset is the completion page.
-    const columnsWidth = groupedTasks.length * tileWidth;
+    const columnsWidth = groupedTasks.length * columnWidth;
     const contentPages = groupedTasks.length === 0
         ? 0
         : Math.ceil(columnsWidth / pageWidth);
@@ -325,8 +338,13 @@ function TileGridMappingSession(props: Props) {
                     data={groupedTasks}
                     contentContainerStyle={styles.content}
                     keyExtractor={(groupedTaskItem) => groupedTaskItem.taskX}
-                    renderItem={({ item: groupedTasksFromRenderer }) => (
-                        <View>
+                    renderItem={({ item: groupedTasksFromRenderer, index }) => (
+                        <View
+                            style={[
+                                { width: columnWidth },
+                                index % 2 === 0 ? styles.columnLeft : styles.columnRight,
+                            ]}
+                        >
                             {groupedTasksFromRenderer.taskList.map((task) => {
                                 const result = results[task.taskId];
                                 const selectedOption = typeof result === 'number'
