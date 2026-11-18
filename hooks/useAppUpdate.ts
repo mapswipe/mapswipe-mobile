@@ -9,6 +9,7 @@ import {
     startAfter,
 } from 'firebase/database';
 
+import { SUPPORTED_FEATURES } from '@/constants/features';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import { firebaseRef } from '@/utils/firebase';
 import { type FbAppInfoRelease } from '@/utils/firebase-generated-types';
@@ -32,6 +33,9 @@ export interface AppUpdate {
     isUpdateRequired: boolean;
     // NOTE: Releases newer than the installed version, up to the latest version (ascending)
     missedReleases: FbAppInfoRelease[];
+    // NOTE: Features supported by the installed version.
+    // Set for the installed version in the backend, otherwise the ones bundled in the app.
+    supportedFeatures: string[];
 }
 
 // Compares the installed app version with `v2/appInfo/{platform}`.
@@ -62,6 +66,24 @@ function useAppUpdate(): AppUpdate {
         query: minSupportedVersionQuery,
         skip: !minSupportedVersionQuery,
     });
+
+    // NOTE: Supported features of the installed version can be overridden from the backend
+    const installedSupportedFeaturesQuery = useMemo(
+        () => (platform && installedVersion
+            ? firebaseRef(`v2/appInfo/${platform}/releases/${installedVersion.replace(/\./g, '_')}/supportedFeatures`)
+            : undefined),
+        [installedVersion],
+    );
+    const { data: installedSupportedFeatures } = useFirebaseDatabase<string[]>({
+        query: installedSupportedFeaturesQuery,
+        skip: !installedSupportedFeaturesQuery,
+    });
+    const supportedFeatures = useMemo(
+        () => (installedSupportedFeatures && installedSupportedFeatures.length > 0
+            ? installedSupportedFeatures
+            : SUPPORTED_FEATURES),
+        [installedSupportedFeatures],
+    );
 
     const isUpdateAvailable = isDefined(installedVersion)
         && isDefined(latestVersion)
@@ -100,7 +122,15 @@ function useAppUpdate(): AppUpdate {
         isUpdateAvailable,
         isUpdateRequired,
         missedReleases,
-    }), [installedVersion, latestVersion, isUpdateAvailable, isUpdateRequired, missedReleases]);
+        supportedFeatures,
+    }), [
+        installedVersion,
+        latestVersion,
+        isUpdateAvailable,
+        isUpdateRequired,
+        missedReleases,
+        supportedFeatures,
+    ]);
 }
 
 export default useAppUpdate;

@@ -9,5 +9,13 @@
   "update": "Update",
   "later": "Later",
   "bannerText": "MapSwipe {{latestVersion}} is available",
-  "bannerAction": "View"
+  "bannerAction": "View",
+  "featureUpdateTitle": "Update needed",
+  "featureNotSupportedTitle": "Not supported yet",
+  "featureUpdateToDescription": "Update MapSwipe to {{version}} to open this. This version doesn't support:",
+  "featureUpdateDescription": "Update MapSwipe to open this. This version doesn't support:",
+  "featureNotSupportedDescription": "This version of MapSwipe doesn't support:",
+  "unknownFeature": "A feature added in a newer version",
+  "updateNeededBadge": "Update needed",
+  "notSupportedBadge": "Not supported"
 }

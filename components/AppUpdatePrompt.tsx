@@ -21,6 +21,7 @@ import Modal from '@/components/Modal';
 import Text from '@/components/Text';
 import { type AppTheme } from '@/constants/theme';
 import AppUpdateContext, { type AppUpdateContextProps } from '@/contexts/appUpdate';
+import useAppFeatureLabels from '@/hooks/useAppFeatureLabels';
 import useAppUpdate from '@/hooks/useAppUpdate';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import openAppStore from '@/utils/appStore';
@@ -163,6 +164,7 @@ function AppUpdatePrompt(props: Props) {
     const { children } = props;
 
     const appUpdate = useAppUpdate();
+    const featureLabels = useAppFeatureLabels();
     const {
         latestVersion,
         isUpdateAvailable,
@@ -201,8 +203,9 @@ function AppUpdatePrompt(props: Props) {
 
     const contextValue = useMemo(() => ({
         ...appUpdate,
+        featureLabels,
         showUpdatePrompt,
-    }), [appUpdate, showUpdatePrompt]);
+    }), [appUpdate, featureLabels, showUpdatePrompt]);
 
     return (
         <AppUpdateContext.Provider value={contextValue}>

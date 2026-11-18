@@ -11,6 +11,7 @@ import heartIcon from '@/assets/images/custom/heart_icon.png';
 import mmwhiteLogo from '@/assets/images/custom/mmwhite.png';
 import BackButton from '@/components/BackButton';
 import BlockListView from '@/components/BlockListView';
+import FeatureUnsupportedNotice from '@/components/FeatureUnsupportedNotice';
 import InlineListView from '@/components/InlineListView';
 import Link from '@/components/Link';
 import Page from '@/components/Page';
@@ -21,9 +22,11 @@ import {
     SPACING_2XS,
 } from '@/constants/dimensions';
 import { AppTheme } from '@/constants/theme';
+import useFeatureSupport from '@/hooks/useFeatureSupport';
 import useFirebaseDatabase from '@/hooks/useFirebaseDatabase';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { getProjectProgressForDisplay } from '@/utils/common';
+import { getProjectRequiredFeatures } from '@/utils/features';
 import { firebaseRef } from '@/utils/firebase';
 import { FbProject } from '@/utils/types';
 
@@ -127,6 +130,10 @@ export default function ProjectDetail() {
     // available). progress is a 0–100 percentage.
     const isProjectComplete = (project?.progress ?? 0) >= 100;
 
+    // NOTE: Projects that need features this version doesn't support cannot be started
+    const requiredFeatures = useMemo(() => getProjectRequiredFeatures(project), [project]);
+    const featureSupport = useFeatureSupport(requiredFeatures);
+
     return (
         <Page
             title={project?.name ?? 'Project'}
@@ -187,27 +194,33 @@ export default function ProjectDetail() {
                             },
                         }}
                     />
-                    <Link
-                        href={{
-                            pathname: '/project/[id]/tutorial',
-                            params: {
-                                id: projectId,
-                            },
-                        }}
-                        colorVariant="primaryGreen"
-                        title="Start tutorial"
-                    />
-                    <Link
-                        href={{
-                            pathname: '/project/[id]/map',
-                            params: {
-                                id: projectId,
-                                projectInstruction: project?.projectInstruction,
-                            },
-                        }}
-                        title={isProjectComplete ? 'Project completed' : 'Map now'}
-                        disabled={isProjectComplete}
-                    />
+                    {featureSupport.isSupported ? (
+                        <>
+                            <Link
+                                href={{
+                                    pathname: '/project/[id]/tutorial',
+                                    params: {
+                                        id: projectId,
+                                    },
+                                }}
+                                colorVariant="primaryGreen"
+                                title="Start tutorial"
+                            />
+                            <Link
+                                href={{
+                                    pathname: '/project/[id]/map',
+                                    params: {
+                                        id: projectId,
+                                        projectInstruction: project?.projectInstruction,
+                                    },
+                                }}
+                                title={isProjectComplete ? 'Project completed' : 'Map now'}
+                                disabled={isProjectComplete}
+                            />
+                        </>
+                    ) : (
+                        <FeatureUnsupportedNotice featureSupport={featureSupport} />
+                    )}
                 </BlockListView>
             </BlockListView>
         </Page>

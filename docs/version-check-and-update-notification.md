@@ -181,6 +181,45 @@ flowchart TD
 
 ---
 
+## Required features
+
+> To add a new feature, follow
+> [mapswipe-backend `docs/app-features.md`](https://github.com/mapswipe/mapswipe-backend/blob/develop/docs/app-features.md).
+
+A version number says *whether* an app is old, not whether it can open a
+specific project. Example: an older app showed a fallback image instead of a
+Completeness vector overlay (or Validate pre/post-event imagery) and still
+accepted answers. So resources declare the **features** they need, and each
+client checks them against the features it supports.
+
+- **Catalogue:** `AppFeatureEnum` in the backend (`apps/common/models.py`).
+  Value = name (eg. `PROJECT_COMPLETENESS_VECTOR_LAYER`), prefixed by area
+  (`PROJECT_`, `TUTORIAL_`, `MAPPING_`, …). Only add, never rename or remove.
+  Exposed via GraphQL `enums { AppFeatureEnum { key label } }`, so app codegen
+  generates the TypeScript enum.
+- **Required:** `requiredFeatures: string[]` on projects and tutorials in
+  Firebase, derived by the backend from the configuration
+  (`get_required_features()` per project type), pushed on create and update.
+  `./manage.py push_required_features` backfills data already in Firebase.
+- **Supported:** each app bundles `SUPPORTED_FEATURES` (`constants/features.ts`).
+  `AppRelease.supported_features` (checkboxes in the admin) is pushed as
+  `releases/{key}/supportedFeatures`; when set for the installed version it
+  **replaces** the bundled list (eg. to withdraw a buggy feature). Empty = use
+  the bundled list.
+- **Check:** `useFeatureSupport(requiredFeatures)` — missing = required −
+  supported; **unknown keys count as missing**. Projects stay visible with an
+  "Update needed" / "Not supported" badge; the project page replaces
+  *Start tutorial* / *Map now* with the reason. If a newer release lists the
+  missing features in `supportedFeatures`, it says "Update to X".
+- **Labels** come from the GraphQL query and are cached (AsyncStorage), so an
+  old app can name a feature added after it was released.
+- **Order:** ship clients with the check before any project uses a new feature.
+  Apps without the check ignore `requiredFeatures`; for them, use
+  `minSupportedVersion`. Rejecting answers from unsupported apps (eg. by
+  `appVersion` in results) is a separate decision.
+
+---
+
 ## Work: MapSwipe Web (future)
 
 - [ ] Separate `v2/appInfo/web` node with its **own versioning scheme** (web is

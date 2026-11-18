@@ -17,6 +17,8 @@ export interface FbAppInfoRelease {
     updates?: string;
     /** What won't work on older versions after this release (markdown). */
     incompatibleChanges?: string;
+    /** Features (AppFeatureEnum values) supported by this version. When set, it overrides the list bundled in the app. */
+    supportedFeatures?: string[];
 }
 /** Represents version information of the mobile app for a platform (ios/android). */
 export interface FbAppInfo {
@@ -81,6 +83,8 @@ export interface FbProjectUpdateInput {
     maxTasksPerUser?: number;
     contributorCount: number;
     progress: number;
+    /** Features (AppFeatureEnum values) a client must support to open this. Unknown values must be treated as unsupported. */
+    requiredFeatures?: string[];
 }
 
 /** Represents project fields that are valid while creating a project */
@@ -372,6 +376,8 @@ export interface FbBaseTutorial {
     projectTopicKey: string;
     status: 'tutorial';
     tutorialDraftId: string;
+    /** Features (AppFeatureEnum values) a client must support to open this. Unknown values must be treated as unsupported. */
+    requiredFeatures?: string[];
     screens?: FbScreen[];
 }
 
