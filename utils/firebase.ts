@@ -5,11 +5,13 @@ import {
     initializeApp,
 } from 'firebase/app';
 import {
+    connectAuthEmulator,
     getAuth,
     getReactNativePersistence,
     initializeAuth,
 } from 'firebase/auth';
 import {
+    connectDatabaseEmulator,
     getDatabase,
     ref,
 } from 'firebase/database';
@@ -43,6 +45,23 @@ const getAuthForApp = (app: FirebaseApp) => {
 export const firebaseApp = initializeApp(firebaseConfig);
 export const firebaseDatabase = getDatabase(firebaseApp);
 export const firebaseAuth = getAuthForApp(firebaseApp);
+
+// NOTE: Local development only. Use the local firebase emulators, eg. the ones
+// started with the backend (docker compose). Eg. "localhost:9000" and "localhost:9099"
+const databaseEmulatorHost = __DEV__
+    ? process.env.EXPO_PUBLIC_FIREBASE_DATABASE_EMULATOR_HOST
+    : undefined;
+const authEmulatorHost = __DEV__
+    ? process.env.EXPO_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST
+    : undefined;
+
+if (databaseEmulatorHost) {
+    const [host = 'localhost', port = '9000'] = databaseEmulatorHost.split(':');
+    connectDatabaseEmulator(firebaseDatabase, host, Number(port));
+}
+if (authEmulatorHost) {
+    connectAuthEmulator(firebaseAuth, `http://${authEmulatorHost}`, { disableWarnings: true });
+}
 
 export function firebaseRef(path?: string) {
     return ref(firebaseDatabase, path);

@@ -8,6 +8,28 @@ export interface FbAnnouncement {
     text: string;
 }
 
+/** Release notes for a single app version on a platform. */
+export interface FbAppInfoRelease {
+    version: string;
+    /** Sortable number of the version used for range queries. Eg. 3.0.10 -> 3000010 */
+    versionCode: number;
+    /** What's new in this version (markdown). */
+    updates?: string;
+    /** What won't work on older versions after this release (markdown). */
+    incompatibleChanges?: string;
+    /** Features (AppFeatureEnum values) supported by this version. When set, it overrides the list bundled in the app. */
+    supportedFeatures?: string[];
+}
+/** Represents version information of the mobile app for a platform (ios/android). */
+export interface FbAppInfo {
+    /** Latest version available on the store. */
+    latestVersion?: string;
+    /** Installed versions below this must update. */
+    minSupportedVersion: string;
+    /** Release notes up to the latest version, keyed by version with "." replaced by "_". Eg. 3_0_10 */
+    releases?: Record<string, FbAppInfoRelease>;
+}
+
 /** Represents the requesting organisation. */
 export interface FbOrganisation {
     name: string;
@@ -61,6 +83,8 @@ export interface FbProjectUpdateInput {
     maxTasksPerUser?: number;
     contributorCount: number;
     progress: number;
+    /** Features (AppFeatureEnum values) a client must support to open this. Unknown values must be treated as unsupported. */
+    requiredFeatures?: string[];
 }
 
 /** Represents project fields that are valid while creating a project */
@@ -352,6 +376,8 @@ export interface FbBaseTutorial {
     projectTopicKey: string;
     status: 'tutorial';
     tutorialDraftId: string;
+    /** Features (AppFeatureEnum values) a client must support to open this. Unknown values must be treated as unsupported. */
+    requiredFeatures?: string[];
     screens?: FbScreen[];
 }
 

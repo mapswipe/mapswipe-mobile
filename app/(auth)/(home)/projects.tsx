@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     FlatList,
     StyleSheet,
@@ -6,10 +7,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-    isDefined,
-    isNotDefined,
-} from '@togglecorp/fujs';
+import { isDefined } from '@togglecorp/fujs';
 import {
     equalTo,
     limitToFirst,
@@ -18,6 +16,7 @@ import {
 } from 'firebase/database';
 
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import AppUpdateBanner from '@/components/AppUpdateBanner';
 import BlockListView from '@/components/BlockListView';
 import Icon from '@/components/Icon';
 import InlineListView from '@/components/InlineListView';
@@ -29,10 +28,12 @@ import { SUPPORTED_PROJECT_TYPES } from '@/constants/common';
 import { SCREEN_WIDTH } from '@/constants/dimensions';
 import { type AppTheme } from '@/constants/theme';
 import useAuth from '@/hooks/useAuth';
+import useFeatureSupport from '@/hooks/useFeatureSupport';
 import useFirebaseDatabaseList from '@/hooks/useFirebaseDatabaseList';
 import useTheme from '@/hooks/useTheme';
 import useThemedStyles from '@/hooks/useThemedStyles';
 import { getProjectProgressForDisplay } from '@/utils/common';
+import { getProjectRequiredFeatures } from '@/utils/features';
 import { firebaseRef } from '@/utils/firebase';
 import {
     FbProject,
@@ -151,6 +152,9 @@ const createProjectStyles = (
             color: 'rgba(0, 0, 0, 0.16)',
         }],
     },
+    unsupportedPill: {
+        backgroundColor: 'rgba(255, 213, 79, 0.92)',
+    },
     pillText: {
         flexShrink: 1,
         fontSize: 8,
@@ -232,6 +236,9 @@ function ProjectItem(props: ProjectItemProps) {
         minHeight: cardWidth / cardAspectRatio,
     }), [cardWidth, cardAspectRatio]);
     const styles = useThemedStyles(createProjectStyles, styleOptions);
+    const { t } = useTranslation('appUpdate');
+    const requiredFeatures = useMemo(() => getProjectRequiredFeatures(project), [project]);
+    const featureSupport = useFeatureSupport(requiredFeatures);
     const progressLabel = getProjectProgressForDisplay(project.progress);
     const progressNum = Number(progressLabel);
     const gradient = gradientForId(project.projectId);
@@ -257,6 +264,24 @@ function ProjectItem(props: ProjectItemProps) {
                         {projectTypeTextMapping[project.projectType]}
                     </Text>
                 </View>
+                {!featureSupport.isSupported && (
+                    <View style={[styles.pill, styles.unsupportedPill]}>
+                        <Icon
+                            name="warning-outline"
+                            size={12}
+                            color="#333"
+                        />
+                        <Text
+                            style={styles.pillText}
+                            numberOfLines={1}
+                            allowFontScaling={false}
+                        >
+                            {featureSupport.updateToVersion || featureSupport.isUpdateAvailable
+                                ? t('updateNeededBadge')
+                                : t('notSupportedBadge')}
+                        </Text>
+                    </View>
+                )}
             </View>
             <View style={styles.bottomContent}>
                 <Text
@@ -426,24 +451,7 @@ function Projects() {
                 ) {
                     return false;
                 }
-                if (
-                    project.projectType === PROJECT_TYPE_COMPLETENESS
-                ) {
-                    if (
-                        project.overlayTileServer?.type
-                        === 'raster'
-                    ) {
-                        return true;
-                    }
-                    if (
-                        isNotDefined(
-                            project.overlayTileServer?.type,
-                        )
-                    ) {
-                        return true;
-                    }
-                    return false;
-                }
+                // NOTE: Projects that need unsupported features are shown, but cannot be started
                 return true;
             });
         sortedProjects.sort((a, b) => +b.isFeatured - +a.isFeatured);
@@ -477,6 +485,7 @@ function Projects() {
                     <BlockListView
                         spacing="2xs"
                     >
+                        <AppUpdateBanner />
                         <AnnouncementBanner />
                         {featuredProjects.map((project) => (
                             <ProjectItem
