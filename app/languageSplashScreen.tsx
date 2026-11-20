@@ -30,7 +30,6 @@ const createStyles = () => StyleSheet.create({
         justifyContent: 'space-between',
     },
     icon: {
-        resizeMode: 'contain',
         height: SCREEN_HEIGHT * 0.3,
         width: SCREEN_WIDTH * 0.8,
 
@@ -85,6 +84,7 @@ function LanguageSplashScreen() {
                     <Image
                         style={styles.icon}
                         source={splashScreen}
+                        contentFit="contain"
                     />
                 </View>
                 <BlockListView>

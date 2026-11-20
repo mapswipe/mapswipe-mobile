@@ -77,7 +77,6 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
         justifyContent: 'center',
     },
     icon: {
-        resizeMode: 'contain',
         height: SCREEN_HEIGHT * 0.3,
         width: SCREEN_WIDTH * 0.8,
     },
@@ -177,6 +176,7 @@ export default function Onboarding() {
                             <Image
                                 style={styles.icon}
                                 source={item.imageUrl}
+                                contentFit="contain"
                             />
                             <BlockListView withCenteredContent withPadding>
                                 <Text style={styles.heading}>
