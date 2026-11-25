@@ -87,7 +87,6 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     mmLogo: {
         width: 100,
         height: 30,
-        resizeMode: 'contain',
     },
     contributionText: {
         color: theme.card,
@@ -169,6 +168,7 @@ export default function ProjectDetail() {
                             <Image
                                 style={styles.mmLogo}
                                 source={mmwhiteLogo}
+                                contentFit="contain"
                             />
                         </InlineListView>
                     </View>

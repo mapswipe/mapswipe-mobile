@@ -28,7 +28,7 @@
         "@expo/metro-runtime": "~56.0.15",
         "@mapbox/geo-viewport": "0.5.0",
         "@mapbox/tilebelt": "^2.0.3",
-        "@maplibre/maplibre-react-native": "^10.4.2",
+        "@maplibre/maplibre-react-native": "^11.5.1",
         "@react-native-async-storage/async-storage": "^2.2.0",
         "@symbiot.dev/react-native-heatmap": "^1.0.0",
         "@togglecorp/fujs": "^2.2.0",
