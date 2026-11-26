@@ -98,6 +98,12 @@ function MapTile(props: Props) {
         }],
     }), [tileServer.url, tileServer.minZoom, tileServer.maxZoom]);
 
+    const initialViewState = useMemo(() => (
+        isDefined(center) && isDefined(zoomLevel)
+            ? { center, zoom: zoomLevel }
+            : undefined
+    ), [center, zoomLevel]);
+
     const linePaint = useMemo(() => ({
         'line-width': 1,
         'line-opacity': hideLines ? 0 : 0.9,
@@ -116,12 +122,14 @@ function MapTile(props: Props) {
                 dragPan={false}
                 touchZoom={false}
                 doubleTapZoom={false}
+                doubleTapHoldZoom={false}
                 touchPitch={false}
                 touchRotate={false}
             >
                 <GeoJSONSource
                     id={`${instanceId}-shape-source`}
                     data={geoJson}
+                    maxzoom={MAP_MAX_ZOOM_LEVEL}
                 >
                     <Layer
                         id={`${instanceId}-shape-line-layer`}
@@ -131,7 +139,7 @@ function MapTile(props: Props) {
                 </GeoJSONSource>
                 {isDefined(center) && isDefined(zoomLevel) && (
                     <Camera
-                        initialViewState={{ center, zoom: zoomLevel }}
+                        initialViewState={initialViewState}
                         zoom={zoomLevel}
                         // NOTE: iOS stops at zoom 22 unless the limit is raised
                         minZoom={MAP_MIN_ZOOM_LEVEL}
