@@ -52,6 +52,13 @@ const createStyles = () => StyleSheet.create({
     content: {
         alignItems: 'center',
     },
+    // Centre the tile pair when tiles are narrower than the column (iPad).
+    columnLeft: {
+        alignItems: 'flex-end',
+    },
+    columnRight: {
+        alignItems: 'flex-start',
+    },
     tileGridWrapper: {
         flex: 1,
         overflow: 'hidden',
@@ -213,12 +220,14 @@ function TileGridMappingSession(props: Props) {
     const flatListRef = useRef<FlatList<typeof groupedTasks[number]>>(null);
 
     const tileWidth = Math.min(pageWidth / 2, pageHeight / 4);
+    // Half the page, so one page is always exactly two columns.
+    const columnWidth = pageWidth / 2;
 
     // The completion page is appended as a full-width page after the tile
     // columns. `completionLeftFiller` pads the columns up to the next page
     // boundary so the outro always snaps cleanly (handles odd column counts and
     // single-column groups). The trailing snap offset is the completion page.
-    const columnsWidth = groupedTasks.length * tileWidth;
+    const columnsWidth = groupedTasks.length * columnWidth;
     const contentPages = groupedTasks.length === 0
         ? 0
         : Math.ceil(columnsWidth / pageWidth);
@@ -325,8 +334,13 @@ function TileGridMappingSession(props: Props) {
                     data={groupedTasks}
                     contentContainerStyle={styles.content}
                     keyExtractor={(groupedTaskItem) => groupedTaskItem.taskX}
-                    renderItem={({ item: groupedTasksFromRenderer }) => (
-                        <View>
+                    renderItem={({ item: groupedTasksFromRenderer, index }) => (
+                        <View
+                            style={[
+                                { width: columnWidth },
+                                index % 2 === 0 ? styles.columnLeft : styles.columnRight,
+                            ]}
+                        >
                             {groupedTasksFromRenderer.taskList.map((task) => {
                                 const result = results[task.taskId];
                                 const selectedOption = typeof result === 'number'

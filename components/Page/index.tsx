@@ -4,6 +4,7 @@ import {
     useState,
 } from 'react';
 import {
+    Platform,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
@@ -34,7 +35,8 @@ type Variant = 'normal' | 'brand';
 // Horizontal space (px) reserved for the header buttons on each side combined,
 // so the centered/left-aligned title truncates with an ellipsis instead of
 // sliding under the back / right buttons. Tune if the buttons change size.
-const HEADER_TITLE_RESERVE = 120;
+// iOS native bar items add extra spacing.
+const HEADER_TITLE_RESERVE = Platform.OS === 'ios' ? 160 : 120;
 
 const createStyles = (theme: AppTheme, { variant }: { variant: Variant }) => StyleSheet.create({
     page: {
@@ -149,6 +151,19 @@ function Page(props: Props) {
                     headerTitle,
                     headerRight,
                     headerLeft: backButton,
+                    // iOS 26: hide the glass bubble that can hide our white icons.
+                    unstable_headerLeftItems: () => [{
+                        type: 'custom',
+                        element: backButton(),
+                        hidesSharedBackground: true,
+                    }],
+                    unstable_headerRightItems: headerRight
+                        ? () => [{
+                            type: 'custom',
+                            element: <>{headerRight()}</>,
+                            hidesSharedBackground: true,
+                        }]
+                        : undefined,
                 });
             } catch {
                 // not inside a navigator screen — no header to configure
