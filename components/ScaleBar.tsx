@@ -88,9 +88,12 @@ function ScaleBar(props: Props) {
         let m: number;
         let f: number;
 
-        if (tileWidth < 200) {
+        if (tileWidth < 20) {
+            m = Math.max(Math.trunc(tileWidth / 2), 1);
+            f = Math.round(m / 0.3048);
+        } else if (tileWidth < 200) {
             m = Math.trunc(tileWidth / 10 / 2) * 10;
-            f = Math.round(m / 0.3048 / 100) * 100;
+            f = Math.round(m / 0.3048 / 10) * 10;
         } else {
             m = Math.trunc(tileWidth / 100 / 2) * 100;
             f = Math.round(m / 0.3048 / 100) * 100;

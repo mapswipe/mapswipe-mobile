@@ -1,3 +1,4 @@
+import { viewport } from '@mapbox/geo-viewport';
 import {
     bboxToTile,
     pointToTileFraction,
@@ -52,6 +53,58 @@ export function getOptimalZoomLevel(bbox: BoundingBox): number {
         z -= 1;
     }
     return z;
+}
+
+const MAPLIBRE_WORLD_SIZE = 512;
+
+// NOTE: The view limit, not the imagery limit. Each layer's own zoom range
+// goes to its raster source, and tiles above it are enlarged.
+export const MAP_MIN_ZOOM_LEVEL = 0;
+export const MAP_MAX_ZOOM_LEVEL = 24;
+
+// NOTE: A point or a very small feature is shown with this much ground around
+// it, enough context for satellite imagery
+const MIN_FIT_SIZE_IN_METERS = 20;
+const METERS_PER_DEGREE_LATITUDE = 111_320;
+
+// Grow the bbox around its center to at least the given size on the ground
+function expandBbox(bbox: BoundingBox, minSizeInMeters: number): BoundingBox {
+    const [minLon, minLat, maxLon, maxLat] = bbox;
+    const [centerLon, centerLat] = getCenterFromBBox(bbox);
+
+    const halfLat = minSizeInMeters / 2 / METERS_PER_DEGREE_LATITUDE;
+    const halfLon = halfLat / Math.cos((centerLat * Math.PI) / 180);
+
+    return [
+        Math.min(minLon, centerLon - halfLon),
+        Math.min(minLat, centerLat - halfLat),
+        Math.max(maxLon, centerLon + halfLon),
+        Math.max(maxLat, centerLat + halfLat),
+    ];
+}
+
+export const SCALE_BAR_REFERENCE_SIZE = 256;
+export function getScaleBarZoomLevel(mapLibreZoom: number) {
+    return mapLibreZoom + 1;
+}
+
+// Zoom at which the bbox fits the given size with padding, like MapLibre's
+// fitBounds. MapLibre's world is 512px wide at zoom 0, hence the tile size.
+export function getFitZoomLevel(
+    bbox: BoundingBox,
+    width: number,
+    height: number,
+    paddingRatio = 0.1,
+): number {
+    const usable = 1 - 2 * paddingRatio;
+    return viewport(
+        expandBbox(bbox, MIN_FIT_SIZE_IN_METERS),
+        [width * usable, height * usable],
+        MAP_MIN_ZOOM_LEVEL,
+        MAP_MAX_ZOOM_LEVEL,
+        MAPLIBRE_WORLD_SIZE,
+        true,
+    ).zoom;
 }
 
 export function standardizeQuadKey(url: string) {

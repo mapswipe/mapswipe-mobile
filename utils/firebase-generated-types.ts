@@ -213,6 +213,9 @@ export type FbEnumValidateInputType = 'aoi_file' | 'link' | 'TMId';
 export interface FbProjectValidateCreateOnlyInput {
     customOptions?: FbObjCustomOption[];
     tileServer: FbObjRasterTileServer;
+    hasPreImagery?: boolean;
+    preEventTileServer?: FbObjRasterTileServer;
+    postEventTileServer?: FbObjRasterTileServer;
     inputType: FbEnumValidateInputType;
     filter?: string;
     TMId?: string;
@@ -270,6 +273,8 @@ export interface FbObjRasterTileServer {
     credits: string;
     name: FbEnumRasterTileServerName;
     url: string;
+    minZoom?: number;
+    maxZoom?: number;
 }
 
 /** Represents an overlay layer for raster layer */
@@ -448,6 +453,9 @@ export interface FbValidateTutorial {
     inputGeometries: string;
     projectType: 2;
     tileServer: FbObjRasterTileServer;
+    hasPreImagery?: boolean;
+    preEventTileServer?: FbObjRasterTileServer;
+    postEventTileServer?: FbObjRasterTileServer;
     zoomLevel: number;
     customOptions?: FbObjCustomOption[];
 }
